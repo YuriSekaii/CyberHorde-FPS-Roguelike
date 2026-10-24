@@ -135,8 +135,8 @@ var upgrade_database: Dictionary = {
 		"id": "explosive_payload",
 		"name": "Explosive Payload",
 		"desc": "Bullets explode on impact. Plasma Core gains +100% AoE radius!",
-		"rarity": "Rare",
-		"color": Color(0.8, 0.3, 1.0),
+		"rarity": "Epic",
+		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 1
 	},
 	"energy_shield": {
