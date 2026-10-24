@@ -4,6 +4,7 @@ signal health_changed(current: float, max_hp: float)
 signal shield_changed(current: float, max_shield: float)
 signal ammo_changed(current: int, max_mag: int, is_reloading: bool)
 signal weapon_changed(weapon_index: int, weapon_name: String)
+signal charge_changed(ratio: float)
 signal downed_state_changed(is_downed: bool)
 
 # Multiplayer & Identity
@@ -431,35 +432,44 @@ func _handle_weapons(delta: float) -> void:
 			ammo_changed.emit(w.current_ammo, w.max_ammo, false)
 		return
 	
-	# Process active charge delay (Slot 3: Plasma Core)
-	if is_charging:
-		charge_timer -= delta
-		var p = clampf(1.0 - (charge_timer / maxf(0.001, charge_duration)), 0.0, 1.0)
-		
-		# Charging visual feedback: core pulses and weapon vibrates
-		if plasma_core_mesh and active_weapon_idx == 2:
-			plasma_core_mesh.scale = Vector3.ONE * (1.0 + p * 0.35)
-		
-		muzzle_flash_light.visible = true
-		muzzle_flash_light.light_color = Color(0.85, 0.2, 1.0)
-		muzzle_flash_light.light_energy = p * 2.2
-		
-		# Slight pre-fire coil vibration and draw-back
-		weapon_kick_z = lerpf(weapon_kick_z, -0.015 * p, 18.0 * delta)
-		target_sway_pos += Vector3(randf_range(-0.002, 0.002), randf_range(-0.002, 0.002), 0.0) * p
-		
-		if charge_timer <= 0.0:
-			is_charging = false
-			if plasma_core_mesh:
-				plasma_core_mesh.scale = Vector3.ONE
-			_fire_active_weapon()
-		return
-	
 	if Input.is_action_just_pressed("reload") and w.current_ammo < w.max_ammo:
+		if is_charging:
+			_cancel_charge()
 		_start_reload()
 		return
 	
-	var wants_fire = Input.is_action_pressed("shoot") if w.is_auto else Input.is_action_just_pressed("shoot")
+	# Process active charge delay (Slot 3: Plasma Core)
+	# Requires player to hold LMB for at least the charge delay time.
+	# If held longer without release, the weapon will not shoot until released.
+	# If released before charge delay is reached, the shot is cancelled (must fully charge again).
+	if is_charging:
+		if Input.is_action_pressed("shoot"):
+			charge_timer = maxf(-0.01, charge_timer - delta)
+			var p = clampf(1.0 - (charge_timer / maxf(0.001, charge_duration)), 0.0, 1.0)
+			
+			# Charging visual feedback: core pulses and weapon vibrates
+			if plasma_core_mesh and active_weapon_idx == 2:
+				plasma_core_mesh.scale = Vector3.ONE * (1.0 + p * 0.35)
+			
+			muzzle_flash_light.visible = true
+			muzzle_flash_light.light_color = Color(0.85, 0.2, 1.0)
+			muzzle_flash_light.light_energy = p * 2.2
+			
+			# Slight pre-fire coil vibration and draw-back
+			weapon_kick_z = lerpf(weapon_kick_z, -0.015 * p, 18.0 * delta)
+			target_sway_pos += Vector3(randf_range(-0.002, 0.002), randf_range(-0.002, 0.002), 0.0) * p
+			charge_changed.emit(p)
+			# Do not fire while button is still held down!
+			return
+		else:
+			# Player released LMB (or stopped holding shoot action)
+			var can_fire = (charge_timer <= 0.0)
+			_cancel_charge()
+			if can_fire:
+				_fire_active_weapon()
+			return
+	
+	var wants_fire = Input.is_action_pressed("shoot") if (w.is_auto or w.charge_time > 0.0) else Input.is_action_just_pressed("shoot")
 	if wants_fire:
 		if w.current_ammo > 0:
 			if fire_cooldown <= 0.0:
@@ -476,14 +486,17 @@ func _start_charge(w: Weapon) -> void:
 	charge_duration = w.charge_time / GameManager.fire_rate_mult
 	charge_timer = charge_duration
 	SoundManager.play("plasma_charge", 0.06, 1.0)
+	charge_changed.emit(0.0)
 
 func _cancel_charge() -> void:
 	is_charging = false
 	charge_timer = 0.0
+	charge_duration = 0.0
 	if muzzle_flash_light:
 		muzzle_flash_light.visible = false
 	if plasma_core_mesh:
 		plasma_core_mesh.scale = Vector3.ONE
+	charge_changed.emit(0.0)
 
 func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
@@ -504,6 +517,10 @@ func _fire_active_weapon() -> void:
 		head.rotation.x = clampf(head.rotation.x + deg_to_rad(2.6 if not is_aiming else 1.4), -deg_to_rad(88.0), deg_to_rad(88.0))
 		# Heavy backward concussive impulse
 		velocity += camera.global_transform.basis.z * (4.2 if not is_on_floor() else 2.5)
+		if plasma_core_mesh:
+			var tw = create_tween()
+			plasma_core_mesh.scale = Vector3.ONE * 0.65
+			tw.tween_property(plasma_core_mesh, "scale", Vector3.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	elif active_weapon_idx == 1:
 		# Slot 2 (Scatter Cannon): Punchy shotgun recoil
 		weapon_kick_z = 0.085 if not is_aiming else 0.05
@@ -568,10 +585,10 @@ func _start_reload() -> void:
 	ammo_changed.emit(w.current_ammo, w.max_ammo, true)
 
 func _switch_weapon(new_idx: int) -> void:
-	if new_idx == active_weapon_idx and not is_reloading:
-		return
 	if is_charging:
 		_cancel_charge()
+	if new_idx == active_weapon_idx and not is_reloading:
+		return
 	active_weapon_idx = new_idx
 	is_reloading = false
 	fire_cooldown = 0.1
@@ -791,6 +808,8 @@ func apply_impulse_jump(force: float) -> void:
 	SoundManager.play("jump_pad", 0.05)
 
 func die() -> void:
+	if is_charging:
+		_cancel_charge()
 	if NetworkManager.is_multiplayer:
 		# Check if any teammate is still alive
 		var any_alive = false

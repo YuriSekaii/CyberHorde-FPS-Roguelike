@@ -102,7 +102,7 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
 | **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 15% | Close-quarters shotgun spread |
-| **Plasma Core** | `3` | Semi-Auto (Charge) | 150.0 direct + 150.0 AoE | 1 | 0.50s (0.18s charge + 0.32s cd) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
+| **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.50s (0.18s charge + 0.32s cd) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
@@ -112,7 +112,11 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
    - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 15% base crit chance.
 3. **Plasma Core (`Key 3`)**:
    - High-yield heavy energy launcher firing concentrated plasma orbs.
-   - **Charge Delay Mechanic**: Features a brief 0.18s magnetic capacitor spin-up delay on trigger pull with pulsing core glow, coil whine synth SFX, and weapon vibration before discharging.
+   - **Hold-to-Charge & Release-to-Fire Mechanic**:
+     - Requires holding `LMB` for at least the charge delay time (**0.18s base**, accelerated by fire rate perks).
+     - **Charge Retention**: If held longer than the charge delay without releasing, the weapon stays charged and **will not fire until released**.
+     - **Shot Cancellation**: Releasing `LMB` before reaching the required charge delay cancels the shot completely without consuming ammo or triggering cooldown. To shoot, you must charge from scratch again.
+     - Dynamic visual & HUD feedback: Pulsing plasma core chamber (expands to 135%), radiant purple muzzle illumination, focused crosshair reticle contraction with neon magenta glow, and capacitor whine audio.
    - **High Concussive Recoil**: Unleashes massive gun kickback, +13° muzzle pitch lift, camera vertical recoil, screen trauma shake (0.38 intensity), and a backward propulsion impulse.
    - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s total shot cycle, 2.0s reload time, 25% base crit chance.
    - **Exclusive Tesla Arc Synergy**: When paired with **Tesla Arc Emitter**, strikes *every* enemy in its explosive radius before detonating, and each arc chains outward to alive enemies within 8.5m!

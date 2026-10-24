@@ -53,6 +53,8 @@ func connect_player(player: Node) -> void:
 		player.ammo_changed.connect(_on_ammo_changed)
 	if player.has_signal("weapon_changed"):
 		player.weapon_changed.connect(_on_weapon_changed)
+	if player.has_signal("charge_changed"):
+		player.charge_changed.connect(_on_charge_changed)
 
 func connect_spawner(spawner: Node) -> void:
 	if spawner.has_signal("wave_progress"):
@@ -102,6 +104,21 @@ func _on_ammo_changed(current: int, max_mag: int, is_reloading: bool) -> void:
 
 func _on_weapon_changed(idx: int, w_name: String) -> void:
 	weapon_label.text = "[%d] %s" % [idx + 1, w_name.to_upper()]
+	_on_charge_changed(0.0)
+
+func _on_charge_changed(ratio: float) -> void:
+	if not crosshair:
+		return
+	if ratio > 0.0:
+		if ratio >= 1.0:
+			crosshair.modulate = Color(1.2, 0.35, 1.3, 1.0)
+			crosshair.scale = Vector2(0.85, 0.85)
+		else:
+			crosshair.modulate = Color(1.0, 1.0 - ratio * 0.65, 1.0, 0.9)
+			crosshair.scale = Vector2.ONE.lerp(Vector2(0.85, 0.85), ratio)
+	else:
+		crosshair.modulate = Color.WHITE
+		crosshair.scale = Vector2.ONE
 
 func _on_hitmarker(is_crit: bool) -> void:
 	hitmarker.visible = true
