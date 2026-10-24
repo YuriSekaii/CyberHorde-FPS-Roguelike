@@ -106,7 +106,7 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Rapid Loader** | `Common` (Cyan) | +25% Reload Speed across all weapons (stacks up to 6x). |
 | **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
 | **Kinetic Thrusters** | `Common` (Cyan) | +18% Movement Speed and +15% Jump Power. |
-| **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
+| **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius (Max 2 stacks). |
 | **Hardened Alloy** | `Rare` (Purple) | +10% Damage Reduction against all incoming damage (Max 5 stacks: 50% Reduction). |
 | **Hollow-Point Rounds** | `Rare` (Purple) | +0.5x Critical Hit Damage Multiplier (**Stacks Infinitely**). |
 | **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy (stacks up to 2x). |
@@ -116,6 +116,7 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
 | **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (4.5m → 9.0m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
+| **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |

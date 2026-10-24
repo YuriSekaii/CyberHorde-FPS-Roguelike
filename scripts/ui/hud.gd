@@ -19,7 +19,9 @@ extends CanvasLayer
 @onready var boss_name_label: Label = $BossContainer/BossNameLabel
 @onready var boss_bar: ProgressBar = $BossContainer/BossBar
 @onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
+@onready var null_barrier_label: Label = get_node_or_null("BottomLeft/NullBarrierLabel")
 
+var local_player: Node = null
 var hitmarker_timer: float = 0.0
 
 func _ready() -> void:
@@ -42,6 +44,7 @@ func _ready() -> void:
 	_update_scrap_display(GameManager.scrap)
 
 func connect_player(player: Node) -> void:
+	local_player = player
 	if player.has_signal("health_changed"):
 		player.health_changed.connect(_on_health_changed)
 	if player.has_signal("shield_changed"):
@@ -62,6 +65,21 @@ func _process(delta: float) -> void:
 		hitmarker_timer -= delta
 		if hitmarker_timer <= 0.0:
 			hitmarker.visible = false
+	
+	if null_barrier_label:
+		if GameManager.null_barrier_unlocked:
+			null_barrier_label.visible = true
+			if local_player and is_instance_valid(local_player):
+				if local_player.get("null_barrier_ready") == true:
+					null_barrier_label.text = "[NULL BARRIER: READY]"
+					null_barrier_label.modulate = Color(0.3, 0.9, 1.0, 1.0)
+				else:
+					var timer_val = local_player.get("null_barrier_timer")
+					var sec_left: float = float(timer_val) if timer_val != null else 0.0
+					null_barrier_label.text = "[NULL BARRIER: %.1fs]" % sec_left
+					null_barrier_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
+		else:
+			null_barrier_label.visible = false
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp

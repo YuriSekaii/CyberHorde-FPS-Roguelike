@@ -41,6 +41,8 @@ var current_shield: float = 0.0
 var shield_regen_timer: float = 0.0
 var is_invulnerable: bool = false
 var invulnerable_timer: float = 0.0
+var null_barrier_timer: float = 0.0
+var null_barrier_ready: bool = true
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
@@ -104,6 +106,7 @@ const DRONE_SCENE = preload("res://scenes/player/drone.tscn")
 @onready var downed_beacon: OmniLight3D = $DownedBeacon
 
 const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
+const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 
 func _ready() -> void:
 	add_to_group("player")
@@ -246,6 +249,9 @@ func _update_stats() -> void:
 	if is_local_player:
 		_sync_drones()
 	
+	if GameManager.null_barrier_unlocked and null_barrier_timer <= 0.0:
+		null_barrier_ready = true
+	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
 	if active_weapon_idx < weapons.size():
@@ -296,15 +302,6 @@ func _input(event: InputEvent) -> void:
 			_switch_weapon((active_weapon_idx + 1) % weapons.size())
 
 func _physics_process(delta: float) -> void:
-	# Remote player interpolation
-	if not is_local_player:
-		global_position = global_position.lerp(target_net_pos, 18.0 * delta)
-		rotation.y = lerp_angle(rotation.y, target_net_rot_y, 18.0 * delta)
-		if tp_head:
-			tp_head.rotation.x = target_net_head_pitch
-		_animate_third_person_legs(delta)
-		return
-	
 	if GameManager.state != GameManager.GameState.PLAYING:
 		return
 	
@@ -313,6 +310,24 @@ func _physics_process(delta: float) -> void:
 		invulnerable_timer -= delta
 		if invulnerable_timer <= 0.0:
 			is_invulnerable = false
+	
+	# Null Barrier cooldown timer (Every 5s, nullifies next instance of damage)
+	if GameManager.null_barrier_unlocked and not null_barrier_ready:
+		null_barrier_timer -= delta
+		if null_barrier_timer <= 0.0:
+			null_barrier_timer = 0.0
+			null_barrier_ready = true
+			if is_local_player:
+				SoundManager.play("upgrade_select", 0.05, 1.8)
+	
+	# Remote player interpolation
+	if not is_local_player:
+		global_position = global_position.lerp(target_net_pos, 18.0 * delta)
+		rotation.y = lerp_angle(rotation.y, target_net_rot_y, 18.0 * delta)
+		if tp_head:
+			tp_head.rotation.x = target_net_head_pitch
+		_animate_third_person_legs(delta)
+		return
 	
 	# Broadcast transform to squad peers
 	if NetworkManager.is_multiplayer:
@@ -616,6 +631,26 @@ func trigger_invulnerability(duration: float) -> void:
 
 func take_damage(amount: float) -> void:
 	if is_invulnerable:
+		return
+	
+	# Epic perk: Null Barrier (Every 5s, nullifies next instance of damage)
+	if GameManager.null_barrier_unlocked and null_barrier_ready:
+		null_barrier_ready = false
+		null_barrier_timer = 5.0
+		SoundManager.play("shield_hit", 0.15, 1.8)
+		shake_intensity = 0.08
+		
+		# Visual floating popup
+		var scene_root = get_tree().current_scene if get_tree() else get_parent()
+		if scene_root:
+			var dnum = DAMAGE_NUMBER_SCENE.instantiate()
+			scene_root.add_child(dnum)
+			dnum.global_position = global_position + Vector3(0, 1.8, 0)
+			dnum.setup_text("NULLIFIED!", Color(0.2, 0.9, 1.0))
+		
+		# (This still triggers invulnerability duration perk)
+		if GameManager.hit_invulnerability_duration > 0.0:
+			trigger_invulnerability(GameManager.hit_invulnerability_duration)
 		return
 	
 	# Rare perk: Hardened Alloy (10% Dmg Reduction per stack, max 50%)

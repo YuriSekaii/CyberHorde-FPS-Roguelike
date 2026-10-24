@@ -57,6 +57,7 @@ var crit_damage: float = 2.0
 var max_health_bonus: float = 0.0
 var player_damage_reduction: float = 0.0
 var hit_invulnerability_duration: float = 0.0
+var null_barrier_unlocked: bool = false
 var second_wind_unlocked: bool = false
 var second_wind_available: bool = false
 var second_wind_cooldown_waves: int = 0
@@ -94,10 +95,10 @@ var upgrade_database: Dictionary = {
 	"nanite_magnet": {
 		"id": "nanite_magnet",
 		"name": "Nanite Magnet",
-		"desc": "+60% Pickup & Magnet Collection Radius.",
+		"desc": "+60% Pickup & Magnet Collection Radius (Max 2 stacks).",
 		"rarity": "Common",
 		"color": Color(0.4, 0.8, 1.0),
-		"max_stacks": 4
+		"max_stacks": 2
 	},
 	"tactical_reload": {
 		"id": "tactical_reload",
@@ -218,6 +219,14 @@ var upgrade_database: Dictionary = {
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 2
+	},
+	"null_barrier": {
+		"id": "null_barrier",
+		"name": "Null Barrier",
+		"desc": "Every 5s, nullifies the next instance of damage taken (Triggers invulnerability perks).",
+		"rarity": "Epic",
+		"color": Color(1.0, 0.6, 0.1),
+		"max_stacks": 1
 	},
 	"loot_greed": {
 		"id": "loot_greed",
@@ -346,6 +355,7 @@ func reset_game() -> void:
 	max_health_bonus = 0.0
 	player_damage_reduction = 0.0
 	hit_invulnerability_duration = 0.0
+	null_barrier_unlocked = false
 	second_wind_unlocked = false
 	second_wind_available = false
 	second_wind_cooldown_waves = 0
@@ -471,7 +481,7 @@ func apply_upgrade(upgrade_id: String) -> void:
 		"kinetic_thrusters":
 			speed_mult += 0.18
 		"nanite_magnet":
-			magnet_radius += 4.5
+			magnet_radius += 3.6
 		"tactical_reload":
 			reload_speed_mult += 0.25
 		"extended_mag":
@@ -507,6 +517,8 @@ func apply_upgrade(upgrade_id: String) -> void:
 			player_damage_reduction = minf(0.50, player_damage_reduction + 0.10)
 		"reactive_barrier":
 			hit_invulnerability_duration = minf(2.0, hit_invulnerability_duration + 1.0)
+		"null_barrier":
+			null_barrier_unlocked = true
 		"loot_greed":
 			greed_mult += 0.40
 		"precision_lens":

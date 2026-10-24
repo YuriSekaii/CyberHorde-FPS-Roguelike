@@ -31,6 +31,20 @@ func setup(amount: float, is_crit: bool) -> void:
 		randf_range(-1.2, 1.2)
 	)
 
+func setup_text(text: String, col: Color = Color(0.2, 0.9, 1.0)) -> void:
+	if not is_node_ready():
+		await ready
+	label.text = text
+	label.modulate = col
+	label.outline_modulate = Color(0.05, 0.1, 0.2, 1.0)
+	label.font_size = 36
+	scale = Vector3.ONE * 1.2
+	velocity = Vector3(
+		randf_range(-0.5, 0.5),
+		randf_range(2.2, 3.2),
+		randf_range(-0.5, 0.5)
+	)
+
 func _process(delta: float) -> void:
 	timer += delta
 	global_position += velocity * delta
