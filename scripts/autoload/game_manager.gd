@@ -10,6 +10,11 @@ signal stats_updated()
 signal wave_started(wave_number: int)
 signal wave_cleared(wave_number: int)
 signal game_over_triggered()
+signal victory_triggered()
+signal boss_spawned(boss_node: Node)
+signal boss_health_updated(current: float, max_hp: float)
+signal boss_defeated()
+signal second_wind_recharged()
 signal hitmarker_triggered(is_crit: bool)
 signal enemy_killed(enemy_type: String)
 signal upgrade_requested()
@@ -47,10 +52,14 @@ var shield_max: float = 0.0
 var current_shield: float = 0.0
 var drone_count: int = 0
 var cryo_slow: bool = false
-var crit_chance: float = 0.15
+var crit_chance: float = 0.10
 var crit_damage: float = 2.0
 var max_health_bonus: float = 0.0
+var player_damage_reduction: float = 0.0
+var hit_invulnerability_duration: float = 0.0
+var second_wind_unlocked: bool = false
 var second_wind_available: bool = false
+var second_wind_cooldown_waves: int = 0
 var greed_mult: float = 1.0
 
 # Active Upgrades tracker: id -> count
@@ -181,10 +190,34 @@ var upgrade_database: Dictionary = {
 	"second_wind": {
 		"id": "second_wind",
 		"name": "Emergency Defibrillator",
-		"desc": "Survive fatal damage once, gaining 3s of invulnerability.",
+		"desc": "Survive fatal damage, gaining 5s of invulnerability. Reactivates after 10 waves.",
 		"rarity": "Legendary",
 		"color": Color(1.0, 0.9, 0.2),
 		"max_stacks": 1
+	},
+	"vital_plating": {
+		"id": "vital_plating",
+		"name": "Vital Plating",
+		"desc": "+25 Maximum Health. Stacks infinitely.",
+		"rarity": "Common",
+		"color": Color(0.4, 0.8, 1.0),
+		"max_stacks": 9999
+	},
+	"hardened_alloy": {
+		"id": "hardened_alloy",
+		"name": "Hardened Alloy",
+		"desc": "+10% Damage Reduction across all incoming damage (Max 5 stacks: 50% Reduction).",
+		"rarity": "Rare",
+		"color": Color(0.8, 0.3, 1.0),
+		"max_stacks": 5
+	},
+	"reactive_barrier": {
+		"id": "reactive_barrier",
+		"name": "Reactive Phase-Shield",
+		"desc": "When taking damage, gain 1s of invulnerability (Max 2 stacks: 2s).",
+		"rarity": "Epic",
+		"color": Color(1.0, 0.6, 0.1),
+		"max_stacks": 2
 	},
 	"loot_greed": {
 		"id": "loot_greed",
@@ -193,6 +226,22 @@ var upgrade_database: Dictionary = {
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
 		"max_stacks": 3
+	},
+	"precision_lens": {
+		"id": "precision_lens",
+		"name": "Precision Optics",
+		"desc": "+10% Critical Strike Chance.",
+		"rarity": "Common",
+		"color": Color(0.4, 0.8, 1.0),
+		"max_stacks": 4
+	},
+	"hollow_point": {
+		"id": "hollow_point",
+		"name": "Hollow-Point Rounds",
+		"desc": "+0.5x Critical Hit Damage Multiplier.",
+		"rarity": "Rare",
+		"color": Color(0.8, 0.3, 1.0),
+		"max_stacks": 4
 	}
 }
 
@@ -202,6 +251,16 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_inputs()
+	wave_cleared.connect(_on_wave_cleared)
+
+func _on_wave_cleared(_wave_num: int) -> void:
+	if second_wind_unlocked and not second_wind_available:
+		second_wind_cooldown_waves -= 1
+		if second_wind_cooldown_waves <= 0:
+			second_wind_available = true
+			second_wind_cooldown_waves = 0
+			SoundManager.play("level_up", 0.2, 1.8)
+			second_wind_recharged.emit()
 
 func _process(delta: float) -> void:
 	if state == GameState.PLAYING:
@@ -282,13 +341,18 @@ func reset_game() -> void:
 	current_shield = 0.0
 	drone_count = 0
 	cryo_slow = false
-	crit_chance = 0.15
+	crit_chance = 0.10
 	crit_damage = 2.0
 	max_health_bonus = 0.0
+	player_damage_reduction = 0.0
+	hit_invulnerability_duration = 0.0
+	second_wind_unlocked = false
 	second_wind_available = false
+	second_wind_cooldown_waves = 0
 	greed_mult = 1.0
 	
 	active_upgrades.clear()
+	boss_defeated.emit()
 	get_tree().paused = false
 
 func add_xp(amount: int) -> void:
@@ -434,13 +498,29 @@ func apply_upgrade(upgrade_id: String) -> void:
 		"combat_drone":
 			drone_count += 1
 		"second_wind":
+			second_wind_unlocked = true
 			second_wind_available = true
+			second_wind_cooldown_waves = 0
+		"vital_plating":
+			max_health_bonus += 25.0
+		"hardened_alloy":
+			player_damage_reduction = minf(0.50, player_damage_reduction + 0.10)
+		"reactive_barrier":
+			hit_invulnerability_duration = minf(2.0, hit_invulnerability_duration + 1.0)
 		"loot_greed":
 			greed_mult += 0.40
+		"precision_lens":
+			crit_chance += 0.10
+		"hollow_point":
+			crit_damage += 0.5
 	
 	stats_updated.emit()
 	SoundManager.play("upgrade_select")
 	resume_game()
+
+func trigger_second_wind() -> void:
+	second_wind_available = false
+	second_wind_cooldown_waves = 10
 
 func resume_game() -> void:
 	state = GameState.PLAYING
@@ -453,3 +533,10 @@ func trigger_game_over() -> void:
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	game_over_triggered.emit()
+
+func trigger_victory() -> void:
+	state = GameState.GAME_OVER
+	get_tree().paused = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	SoundManager.play("level_up", 0.3, 0.8)
+	victory_triggered.emit()

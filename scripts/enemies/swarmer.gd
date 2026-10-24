@@ -1,8 +1,12 @@
 extends "res://scripts/enemies/enemy_base.gd"
 
-var attack_cooldown: float = 0.0
+var attack_cooldown: float = 0.5
 const ATTACK_RATE: float = 0.8
 const ATTACK_RANGE: float = 1.6
+
+func _ready() -> void:
+	super._ready()
+	attack_cooldown = 0.5
 
 func _behave(delta: float) -> void:
 	if not is_on_floor():
@@ -31,7 +35,7 @@ func _behave(delta: float) -> void:
 	
 	# Attack if in range
 	if dist <= ATTACK_RANGE and attack_cooldown <= 0.0:
-		attack_cooldown = ATTACK_RATE
+		attack_cooldown = ATTACK_RATE / attack_speed_mult
 		if target_player.has_method("take_damage"):
 			target_player.take_damage(attack_damage)
 			SoundManager.play("player_hurt", 0.1, 0.0)

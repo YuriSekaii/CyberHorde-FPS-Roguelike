@@ -15,6 +15,10 @@ extends CanvasLayer
 @onready var xp_bar: ProgressBar = $TopCenter/XPBar
 @onready var level_label: Label = $TopCenter/XPBar/LevelLabel
 @onready var scrap_label: Label = $TopRight/ScrapLabel
+@onready var boss_container: VBoxContainer = $BossContainer
+@onready var boss_name_label: Label = $BossContainer/BossNameLabel
+@onready var boss_bar: ProgressBar = $BossContainer/BossBar
+@onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
 
 var hitmarker_timer: float = 0.0
 
@@ -22,12 +26,16 @@ func _ready() -> void:
 	hitmarker.visible = false
 	reload_label.visible = false
 	intermission_label.visible = false
+	boss_container.visible = false
 	
 	GameManager.xp_changed.connect(_on_xp_changed)
 	GameManager.level_up.connect(_on_level_up)
 	GameManager.scrap_changed.connect(_on_scrap_changed)
 	GameManager.hitmarker_triggered.connect(_on_hitmarker)
 	GameManager.wave_started.connect(_on_wave_started)
+	GameManager.boss_spawned.connect(_on_boss_spawned)
+	GameManager.boss_health_updated.connect(_on_boss_health_updated)
+	GameManager.boss_defeated.connect(_on_boss_defeated)
 	
 	_update_xp_display(GameManager.player_xp, GameManager.xp_to_next_level)
 	_update_level_display(GameManager.player_level)
@@ -84,8 +92,30 @@ func _on_hitmarker(is_crit: bool) -> void:
 	hitmarker.scale = Vector2(1.4, 1.4) if is_crit else Vector2.ONE
 
 func _on_wave_started(wave_num: int) -> void:
-	wave_label.text = "WAVE %d" % wave_num
+	if wave_num >= 100:
+		wave_label.text = "WAVE 100 [FINAL BOSS]"
+		wave_label.modulate = Color(1.0, 0.25, 0.25)
+	else:
+		wave_label.text = "WAVE %d" % wave_num
+		wave_label.modulate = Color.WHITE
 	intermission_label.visible = false
+
+func _on_boss_spawned(boss_node: Node) -> void:
+	boss_container.visible = true
+	if boss_node and "enemy_name" in boss_node:
+		boss_name_label.text = "[FINAL BOSS] %s" % boss_node.enemy_name.to_upper()
+	else:
+		boss_name_label.text = "[FINAL BOSS] APEX OVERLORD"
+
+func _on_boss_health_updated(cur_hp: float, max_hp: float) -> void:
+	boss_container.visible = true
+	boss_bar.max_value = max_hp
+	boss_bar.value = cur_hp
+	var pct = (cur_hp / maxf(1.0, max_hp)) * 100.0
+	boss_hp_label.text = "%d / %d (%.0f%%)" % [int(cur_hp), int(max_hp), pct]
+
+func _on_boss_defeated() -> void:
+	boss_container.visible = false
 
 func _on_wave_progress(alive_count: int, _total: int) -> void:
 	enemies_label.text = "ENEMIES: %d" % alive_count

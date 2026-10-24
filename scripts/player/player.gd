@@ -40,6 +40,7 @@ var max_health: float = 100.0
 var current_shield: float = 0.0
 var shield_regen_timer: float = 0.0
 var is_invulnerable: bool = false
+var invulnerable_timer: float = 0.0
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
@@ -222,7 +223,10 @@ func _setup_weapons() -> void:
 	_switch_weapon(0)
 
 func _update_stats() -> void:
+	var old_max = max_health
 	max_health = 100.0 + GameManager.max_health_bonus
+	if max_health > old_max:
+		current_health += (max_health - old_max)
 	current_health = minf(current_health, max_health)
 	current_shield = minf(current_shield, GameManager.shield_max)
 	
@@ -303,6 +307,12 @@ func _physics_process(delta: float) -> void:
 	
 	if GameManager.state != GameManager.GameState.PLAYING:
 		return
+	
+	# Invulnerability timer
+	if is_invulnerable:
+		invulnerable_timer -= delta
+		if invulnerable_timer <= 0.0:
+			is_invulnerable = false
 	
 	# Broadcast transform to squad peers
 	if NetworkManager.is_multiplayer:
@@ -600,9 +610,17 @@ func _update_third_person_weapon(idx: int) -> void:
 	if tp_shotgun: tp_shotgun.visible = (idx == 1)
 	if tp_plasma: tp_plasma.visible = (idx == 2)
 
+func trigger_invulnerability(duration: float) -> void:
+	is_invulnerable = true
+	invulnerable_timer = maxf(invulnerable_timer, duration)
+
 func take_damage(amount: float) -> void:
 	if is_invulnerable:
 		return
+	
+	# Rare perk: Hardened Alloy (10% Dmg Reduction per stack, max 50%)
+	if GameManager.player_damage_reduction > 0.0:
+		amount *= (1.0 - GameManager.player_damage_reduction)
 	
 	shield_regen_timer = 0.0
 	shake_intensity = 0.25
@@ -630,16 +648,17 @@ func take_damage(amount: float) -> void:
 			rpc_set_downed.rpc(true)
 		else:
 			die()
+	else:
+		# Survived hit: check Epic perk Reactive Phase-Shield (1s invulnerability per stack, max 2s)
+		if GameManager.hit_invulnerability_duration > 0.0:
+			trigger_invulnerability(GameManager.hit_invulnerability_duration)
 
 func _trigger_second_wind() -> void:
-	GameManager.second_wind_available = false
+	GameManager.trigger_second_wind()
 	current_health = 45.0
-	is_invulnerable = true
+	trigger_invulnerability(5.0)
 	SoundManager.play("level_up", 0.2, 2.0)
 	health_changed.emit(current_health, max_health)
-	
-	await get_tree().create_timer(3.0).timeout
-	is_invulnerable = false
 
 func heal(amount: float) -> void:
 	current_health = minf(max_health, current_health + amount)
@@ -724,7 +743,5 @@ func rpc_set_downed(downed: bool) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func rpc_revive() -> void:
 	rpc_set_downed(false)
-	is_invulnerable = true
+	trigger_invulnerability(3.0)
 	SoundManager.play("level_up", 0.2, 1.5)
-	await get_tree().create_timer(3.0).timeout
-	is_invulnerable = false

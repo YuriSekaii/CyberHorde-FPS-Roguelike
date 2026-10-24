@@ -152,7 +152,7 @@ func _generate_all_sounds() -> void:
 		var freq = 140.0 * exp(-t * 9.0)
 		var sub = sin(TAU * freq * t)
 		var noise = (randf() * 2.0 - 1.0)
-		return (sub * 0.7 + noise * 0.8) * env
+		return (sub * 0.7 + noise * 0.8) * env * (1.0 / 3.0)
 	)
 	
 	# 9. Player hurt (alarm pulse)
@@ -224,4 +224,21 @@ func _generate_all_sounds() -> void:
 		var note = 440.0 + (t / d) * 660.0
 		var harmonic = sin(TAU * note * t) + 0.5 * sin(TAU * note * 2.0 * t)
 		return harmonic * env * 0.7
+	)
+	
+	# 19. Spawn telegraph (subtle cyber warning ping)
+	sounds["spawn_telegraph"] = _create_wav(0.28, func(t, d):
+		var env = exp(-t * 9.0)
+		var freq = 680.0 + sin(TAU * 14.0 * t) * 70.0
+		var tone = sin(TAU * freq * t)
+		return tone * env * 0.35
+	)
+	
+	# 20. Spawn emerge (cyber warp materialization burst)
+	sounds["spawn_emerge"] = _create_wav(0.22, func(t, d):
+		var env = exp(-t * 12.0)
+		var freq = 720.0 * exp(-t * 13.0) + 120.0
+		var tone = sin(TAU * freq * t)
+		var noise = (randf() * 2.0 - 1.0) * 0.35
+		return (tone * 0.6 + noise * 0.4) * env * 0.55
 	)

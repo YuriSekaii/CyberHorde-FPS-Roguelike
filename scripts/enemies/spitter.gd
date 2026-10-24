@@ -52,7 +52,7 @@ func _behave(delta: float) -> void:
 	
 	# Shoot plasma
 	if shoot_timer <= 0.0 and dist <= 25.0:
-		shoot_timer = SHOOT_INTERVAL
+		shoot_timer = SHOOT_INTERVAL / attack_speed_mult
 		_shoot()
 
 func _shoot() -> void:

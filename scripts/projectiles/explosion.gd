@@ -28,14 +28,23 @@ func _deal_damage() -> void:
 	for b in bodies:
 		if b.is_in_group("enemies") and not b in hit_targets:
 			hit_targets.append(b)
-			if b.has_method("take_damage"):
-				b.take_damage(damage, false, global_position)
+			_damage_enemy(b)
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not body in hit_targets:
 		hit_targets.append(body)
-		if body.has_method("take_damage"):
-			body.take_damage(damage, false, global_position)
+		_damage_enemy(body)
+
+func _damage_enemy(enemy: Node) -> void:
+	if damage <= 0.0:
+		return
+	var is_crit = randf() < GameManager.crit_chance
+	var final_dmg = damage * (GameManager.crit_damage if is_crit else 1.0)
+	if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+		enemy.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
+	elif enemy.has_method("take_damage"):
+		enemy.take_damage(final_dmg, is_crit, global_position)
+	GameManager.record_damage(final_dmg, is_crit)
 
 func _process(delta: float) -> void:
 	timer += delta

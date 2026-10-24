@@ -15,6 +15,8 @@ var slow_timer: float = 0.0
 var slow_multiplier: float = 1.0
 var knockback_velocity: Vector3 = Vector3.ZERO
 var retarget_timer: float = 0.0
+var attack_speed_mult: float = 1.0
+var damage_reduction: float = 0.0
 
 @onready var mesh_root: Node3D = $MeshRoot
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
@@ -22,12 +24,26 @@ const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
 func _ready() -> void:
 	add_to_group("enemies")
-	# Wave scaling: 5% compounding more health per wave (1.05 ^ n)
-	var wave_factor = pow(1.05, float(GameManager.current_wave))
+	_apply_wave_scaling()
+	_find_player()
+
+func _apply_wave_scaling() -> void:
+	var wave_num = GameManager.current_wave
+	# 1. Every wave: 10% more HP and DMG compounding
+	var wave_factor = pow(1.10, float(maxi(0, wave_num - 1)))
 	current_health = max_health * wave_factor
 	max_health = current_health
+	attack_damage = attack_damage * wave_factor
 	
-	_find_player()
+	# 2. Every 5 waves: 10% more Attack SPD and Movement SPD
+	var speed_tier: int = int(wave_num / 5)
+	var speed_mult: float = 1.0 + (float(speed_tier) * 0.10)
+	speed *= speed_mult
+	attack_speed_mult = speed_mult
+	
+	# 3. Every 10 waves: 10% dmg reduction (capped at 80%)
+	var reduction_tier: int = int(wave_num / 10)
+	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.80)
 
 func _find_player() -> void:
 	var players = get_tree().get_nodes_in_group("player")
@@ -86,6 +102,10 @@ func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	if is_dead:
 		return
+	
+	# Apply enemy damage reduction (10% per 10 waves)
+	if damage_reduction > 0.0:
+		amount *= (1.0 - damage_reduction)
 	
 	current_health -= amount
 	SoundManager.play( "crit_hit" if is_crit else "enemy_hit", 0.15)

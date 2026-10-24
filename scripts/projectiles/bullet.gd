@@ -157,8 +157,13 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, igno
 		if enemy is Node3D and is_instance_valid(enemy) and enemy != ignore_enemy:
 			var d = origin_pos.distance_to(enemy.global_position)
 			if d < 8.5:
-				if enemy.has_method("take_damage"):
-					enemy.take_damage(chain_dmg, false, origin_pos)
+				var is_crit = randf() < GameManager.crit_chance
+				var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
+				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+					enemy.rpc_take_damage.rpc(final_dmg, is_crit, origin_pos)
+				elif enemy.has_method("take_damage"):
+					enemy.take_damage(final_dmg, is_crit, origin_pos)
+				GameManager.record_damage(final_dmg, is_crit)
 				if GameManager.cryo_slow and enemy.has_method("apply_slow"):
 					enemy.apply_slow(0.3, 2.0)
 				_create_lightning_beam(origin_pos, enemy.global_position + Vector3(0, 0.6, 0))
