@@ -4,7 +4,7 @@ extends Area3D
 @export var damage: float = 15.0
 
 var direction: Vector3 = Vector3.FORWARD
-var lifetime: float = 6.0
+var lifetime: float = 3.5
 var timer: float = 0.0
 
 func setup(dir: Vector3, dmg: float) -> void:

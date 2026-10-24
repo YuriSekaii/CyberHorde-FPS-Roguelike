@@ -26,7 +26,7 @@ outer_radius = 0.68
 
 [node name="Spitter" type="CharacterBody3D"]
 collision_layer = 2
-collision_mask = 7
+collision_mask = 5
 script = ExtResource("1_spitter")
 enemy_name = "Plasma Spitter"
 max_health = 75.0

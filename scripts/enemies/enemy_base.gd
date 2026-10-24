@@ -17,15 +17,22 @@ var knockback_velocity: Vector3 = Vector3.ZERO
 var retarget_timer: float = 0.0
 var attack_speed_mult: float = 1.0
 var damage_reduction: float = 0.0
+var _is_flashing: bool = false
+static var _last_hit_sound_msec: int = 0
+static var all_enemies: Array[Node] = []
 
 @onready var mesh_root: Node3D = $MeshRoot
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
 func _ready() -> void:
+	all_enemies.append(self)
 	add_to_group("enemies")
 	_apply_wave_scaling()
 	_find_player()
+
+func _exit_tree() -> void:
+	all_enemies.erase(self)
 
 func _apply_wave_scaling() -> void:
 	var wave_num = GameManager.current_wave
@@ -109,7 +116,11 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 		amount *= (1.0 - damage_reduction)
 	
 	current_health -= amount
-	SoundManager.play( "crit_hit" if is_crit else "enemy_hit", 0.15)
+	
+	var now = Time.get_ticks_msec()
+	if now - _last_hit_sound_msec >= 45:
+		_last_hit_sound_msec = now
+		SoundManager.play("crit_hit" if is_crit else "enemy_hit", 0.15)
 	
 	# Spawn floating damage number (can be toggled in pause menu / F8)
 	if GameManager.show_damage_numbers:
@@ -134,11 +145,13 @@ func apply_slow(factor: float, duration: float) -> void:
 	slow_timer = duration
 
 func _flash_hit() -> void:
-	if not mesh_root:
+	if not mesh_root or _is_flashing:
 		return
+	_is_flashing = true
 	var tw = create_tween()
 	mesh_root.scale = Vector3(1.15, 0.85, 1.15)
-	tw.tween_property(mesh_root, "scale", Vector3.ONE, 0.15)
+	tw.tween_property(mesh_root, "scale", Vector3.ONE, 0.12)
+	tw.tween_callback(func(): _is_flashing = false)
 
 func die() -> void:
 	if is_dead:

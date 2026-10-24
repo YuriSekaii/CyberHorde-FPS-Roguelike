@@ -16,15 +16,24 @@ var crit_chance: float = 0.10
 # Dynamic bullet visual threshold tracking
 static var active_bullets: Array[Node] = []
 static var visible_bullets: Array[Node] = []
-static var active_beam_count: int = 0
+static var active_bullet_lights: int = 0
+const MAX_BULLET_LIGHTS: int = 8
+static var last_ricochet_sound_msec: int = 0
+
+# Static pooled lightning beam instances (Zero heap allocation during combat)
+static var beam_pool: Array[MeshInstance3D] = []
+static var shared_beam_mesh: CylinderMesh = null
+static var shared_beam_mat: StandardMaterial3D = null
+const MAX_BEAM_POOL: int = 24
 
 var is_visual: bool = true
+var has_light: bool = false
 var _has_registered: bool = false
 
 @onready var mesh_instance: MeshInstance3D = get_node_or_null("MeshInstance3D")
 @onready var omni_light: OmniLight3D = get_node_or_null("OmniLight3D")
 
-const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
+const ExplosionScript = preload("res://scripts/projectiles/explosion.gd")
 
 func _ready() -> void:
 	pierces_left = GameManager.pierce_count
@@ -64,6 +73,9 @@ func _register_bullet() -> void:
 func _unregister_bullet() -> void:
 	if _has_registered:
 		_has_registered = false
+		if has_light:
+			has_light = false
+			active_bullet_lights = maxi(0, active_bullet_lights - 1)
 		active_bullets.erase(self)
 		visible_bullets.erase(self)
 		
@@ -86,12 +98,18 @@ func set_visual(state: bool) -> void:
 		if m:
 			m.visible = is_visual
 	
-	if omni_light:
-		omni_light.visible = is_visual
-	else:
-		var l = get_node_or_null("OmniLight3D")
-		if l:
-			l.visible = is_visual
+	var light_target: OmniLight3D = omni_light if omni_light else get_node_or_null("OmniLight3D")
+	if light_target:
+		if is_visual and not has_light and active_bullet_lights < MAX_BULLET_LIGHTS:
+			active_bullet_lights += 1
+			has_light = true
+			light_target.visible = true
+		elif not is_visual and has_light:
+			has_light = false
+			active_bullet_lights = maxi(0, active_bullet_lights - 1)
+			light_target.visible = false
+		elif not is_visual:
+			light_target.visible = false
 
 func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10) -> void:
 	direction = dir.normalized()
@@ -208,14 +226,20 @@ func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) 
 	global_position = pos + surface_normal * 0.15
 	if direction != Vector3.ZERO:
 		look_at(global_position + direction, Vector3.UP)
-	SoundManager.play("hitmarker", 0.25, 4.0)
+	
+	# Audio throttling on ricochet
+	var now = Time.get_ticks_msec()
+	if now - last_ricochet_sound_msec >= 35:
+		last_ricochet_sound_msec = now
+		SoundManager.play("hitmarker", 0.25, 4.0)
 
 func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore_target: Node) -> Node3D:
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	# Direct access to static cache: 0 heap allocations, 0 SceneTree queries
+	var enemies = EnemyBase.all_enemies
 	var best_target: Node3D = null
 	var best_dist_sq: float = 28.0 * 28.0
 	for enemy in enemies:
-		if enemy is Node3D and is_instance_valid(enemy) and enemy != ignore_target and not enemy in already_hit:
+		if is_instance_valid(enemy) and not enemy.is_dead and enemy != ignore_target and not enemy in already_hit:
 			var epos = enemy.global_position
 			if absf(epos.x - from_pos.x) > 28.0 or absf(epos.z - from_pos.z) > 28.0:
 				continue
@@ -229,28 +253,25 @@ func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore
 
 func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 	if is_explosive:
-		var exp_inst = EXPLOSION_SCENE.instantiate()
-		get_parent().add_child(exp_inst)
-		exp_inst.global_position = pos
 		var rad = GameManager.explosion_radius
 		if is_plasma:
-			# Base Plasma AoE is 5.0m. If Explosive Payload perk is picked, get +100% more radius (10.0m)!
 			rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
-		# Explosive damage: Plasma deals 100% AoE (150 base direct, 150 base AoE), others deal 80% AoE
 		var aoe_dmg = initial_hit_dmg if is_plasma else (initial_hit_dmg * 0.8)
-		exp_inst.setup(aoe_dmg, rad)
+		var parent = get_parent()
+		if parent:
+			ExplosionScript.spawn_explosion(parent, pos, aoe_dmg, rad)
 
 func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct_enemy: Node, is_direct_crit: bool) -> void:
 	var explode_rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
 	var explode_rad_sq = explode_rad * explode_rad
 	var chain_base_dmg = impact_dmg * 0.5
 	
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	var enemies = EnemyBase.all_enemies
 	var primary_targets: Array[Dictionary] = []
 	var hit_count: int = 0
 	
 	for enemy in enemies:
-		if enemy is Node3D and is_instance_valid(enemy) and not enemy.get("is_dead"):
+		if is_instance_valid(enemy) and not enemy.is_dead:
 			var epos = enemy.global_position
 			if absf(epos.x - hit_pos.x) > explode_rad or absf(epos.z - hit_pos.z) > explode_rad:
 				continue
@@ -279,7 +300,7 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 		SoundManager.play("hitmarker", 0.15, 6.0)
 	
 	# Direct hit damage
-	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.get("is_dead"):
+	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.is_dead:
 		if direct_enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
 			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position)
 		elif direct_enemy.has_method("take_damage"):
@@ -307,7 +328,7 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 		var best_score: float = INF
 		
 		for enemy in enemies:
-			if enemy is Node3D and is_instance_valid(enemy) and not enemy.get("is_dead") and enemy.get("current_health") != null and enemy.get("current_health") > 0.0:
+			if is_instance_valid(enemy) and not enemy.is_dead and enemy.get("current_health") != null and enemy.get("current_health") > 0.0:
 				if enemy == src_enemy:
 					continue
 				var epos = enemy.global_position
@@ -343,11 +364,11 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 		SoundManager.play("hitmarker", 0.15, 6.0)
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	var enemies = EnemyBase.all_enemies
 	var hit_count = 0
 	var range_sq = 8.5 * 8.5
 	for enemy in enemies:
-		if enemy is Node3D and is_instance_valid(enemy) and enemy != ignore_enemy:
+		if is_instance_valid(enemy) and not enemy.is_dead and enemy != ignore_enemy:
 			var epos = enemy.global_position
 			if absf(epos.x - origin_pos.x) > 8.5 or absf(epos.z - origin_pos.z) > 8.5:
 				continue
@@ -371,21 +392,41 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, igno
 
 func _create_lightning_beam(start_pos: Vector3, end_pos: Vector3) -> void:
 	var dist = start_pos.distance_to(end_pos)
-	if dist < 0.2 or active_beam_count >= 14:
+	if dist < 0.2:
 		return
-	active_beam_count += 1
-	var beam = MeshInstance3D.new()
-	var cyl = CylinderMesh.new()
-	cyl.top_radius = 0.04
-	cyl.bottom_radius = 0.04
-	cyl.height = dist
-	var mat = StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(0.3, 0.88, 1.0)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	cyl.material = mat
-	beam.mesh = cyl
-	get_parent().add_child(beam)
+	
+	# Initialize shared static mesh & material once
+	if shared_beam_mesh == null:
+		shared_beam_mesh = CylinderMesh.new()
+		shared_beam_mesh.top_radius = 0.04
+		shared_beam_mesh.bottom_radius = 0.04
+		shared_beam_mesh.height = 1.0 # unit height, scaled dynamically
+		
+		shared_beam_mat = StandardMaterial3D.new()
+		shared_beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		shared_beam_mat.albedo_color = Color(0.3, 0.88, 1.0, 0.9)
+		shared_beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		shared_beam_mesh.material = shared_beam_mat
+	
+	# Find available pooled beam instance
+	var beam: MeshInstance3D = null
+	for b in beam_pool:
+		if is_instance_valid(b) and not b.visible:
+			beam = b
+			break
+	
+	if beam == null and beam_pool.size() < MAX_BEAM_POOL:
+		beam = MeshInstance3D.new()
+		beam.mesh = shared_beam_mesh
+		beam.visible = false
+		var root = get_tree().current_scene if get_tree() else get_parent()
+		if root:
+			root.add_child(beam)
+			beam_pool.append(beam)
+	
+	if beam == null or not is_instance_valid(beam):
+		return
+	
 	beam.global_position = (start_pos + end_pos) * 0.5
 	var up_vec = Vector3.UP
 	var dir = (end_pos - start_pos).normalized()
@@ -393,9 +434,11 @@ func _create_lightning_beam(start_pos: Vector3, end_pos: Vector3) -> void:
 		up_vec = Vector3.RIGHT
 	beam.look_at(end_pos, up_vec)
 	beam.rotate_object_local(Vector3.RIGHT, deg_to_rad(90.0))
-	var tw = beam.create_tween()
-	tw.tween_property(mat, "albedo_color:a", 0.0, 0.12)
-	tw.tween_callback(func():
-		active_beam_count = maxi(0, active_beam_count - 1)
-		beam.queue_free()
+	beam.scale = Vector3(1.0, dist, 1.0)
+	beam.visible = true
+	
+	# Auto-hide after 0.09s (recycled for next bolt)
+	get_tree().create_timer(0.09).timeout.connect(func():
+		if is_instance_valid(beam):
+			beam.visible = false
 	)

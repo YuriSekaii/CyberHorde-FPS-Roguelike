@@ -117,14 +117,24 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 * **100% Gameplay & DPS Integrity**: Non-visual bullets continue calculating high-speed raycasts, hits, damage calculations, piercing, ricochets, and status effects behind the scenes without dropping any damage.
 * **Fair Visual Allocation**: Newly fired shots have a fair random chance to take visual priority over older ricocheting bullets, ensuring the player always sees tracer fire exiting their weapon.
 
-### 2. Streamlined Explosion Calculations
-* **Instantaneous Single-Pass AoE**: Replaced redundant physics Area3D collision sweeps and overlapping body queries with an instant synchronous calculation pass.
+### 2. Streamlined Explosion & GPU Particle Pipeline
+* **GPU Particle Offloading**: Converted explosions to `GPUParticles3D` with `ParticleProcessMaterial` and GPU compute shaders, transferring particle simulation off the CPU directly to the graphics hardware.
+* **Static Explosion & Lightning Pooling**: Replaced runtime dynamic scene tree instantiations with a static pre-allocated pool (24 reusable explosions and 24 reusable beam meshes), eliminating heap allocation stalls and node garbage collection spikes during dense combat volleys.
+* **Instantaneous Single-Pass AoE**: Replaced redundant physics Area3D collision sweeps and overlapping body queries with an instant synchronous calculation pass using static spatial caches (`EnemyBase.all_enemies`).
 * **Rapid AABB Pre-Filtering**: Checks 2D horizontal bounding box distance (`absf(dx) > r or absf(dz) > r`) to instantly discard ~95% of non-applicable enemies before computing squared distance, completely eliminating expensive `sqrt()` operations.
 * **Disabled Physics Area Monitoring**: Explosions and Bullets set `monitoring = false` and `monitorable = false`, removing hundreds of broadphase collision pairs from Godot's PhysicsServer.
-* **Clustered Forward+ Light Capping**: Active explosion `OmniLight3D` instances are capped to a maximum of 4 concurrent lights, preventing multi-light overlap bottlenecks.
-* **Particle & Audio Throttling**: Particle count per explosion reduced to 14 with a snappy 0.25s lifetime, and sound playback is throttled (50ms cooldown) to prevent audio bus clipping.
+* **Clustered Forward+ Light Capping**: Active explosion `OmniLight3D` instances are capped to a maximum of 4 concurrent lights, and bullet lights are capped to 8, preventing multi-light overlap bottlenecks.
+* **Audio Throttling**: Sound playback for hits, explosions, and ricochets is throttled to prevent audio bus saturation.
 
-### 3. Damage Number Toggle & Concurrency Limiting
+### 3. Multi-Threaded Engine Architecture
+* **Separate Physics Thread**: Enabled `physics/3d/run_on_separate_thread = true` in `project.godot`, moving Jolt 3D physics (raycasting, collision sweeps, and movement solving) off the main thread onto a dedicated CPU core.
+* **Multi-Threaded Rendering Driver**: Configured `rendering/driver/threads/thread_model = 1` for separate render command processing.
+* **Threaded Spatial Indexing**: Configured multi-threaded culling (`threaded_cull_minimum_instances = 100`) to parallelize visibility queries across all available CPU worker threads.
+* **Static Entity Caching**: Replaced frequent `get_tree().get_nodes_in_group("enemies")` calls with `EnemyBase.all_enemies` static registry, saving hundreds of heap array allocations per second.
+* **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas (e.g. all 610 enemies in Wave 100).
+* **Frictionless Enemy Physics**: Set enemy `collision_mask = 5` (world + player), eliminating expensive pairwise enemy-on-enemy collision solving loops.
+
+### 4. Damage Number Toggle & Concurrency Limiting
 * **In-Game Toggle**: Toggle floating damage numbers on or off at any time via the **Pause Menu** (`💥 VISIBLE [ON]` / `🚫 HIDDEN [OFF]`) or the **`F8`** hotkey.
 * **Active Counter Throttling**: When damage numbers are enabled, a safety cap (max 35 active) suppresses non-critical spam numbers during mass AoE detonations, keeping label draw calls minimal.
 * **Persistent Setting**: Your preference is saved to `user://settings.cfg` across runs.

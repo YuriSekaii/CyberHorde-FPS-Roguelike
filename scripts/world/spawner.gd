@@ -12,6 +12,7 @@ const SPAWN_INDICATOR_SCENE = preload("res://scenes/world/spawn_indicator.tscn")
 
 const FINAL_WAVE: int = 100
 const SPAWN_DELAY: float = 3.0
+const MAX_CONCURRENT_ENEMIES: int = 40
 
 var is_spawner_active: bool = false
 var current_wave: int = 1
@@ -75,8 +76,10 @@ func _process(delta: float) -> void:
 		return
 	
 	if is_wave_active:
-		# Queue up new enemy telegraphs
-		if enemies_left_to_spawn > 0:
+		# Queue up new enemy telegraphs only if active count is within concurrent capacity
+		_clean_dead_enemies()
+		var current_active = active_enemies.size() + pending_spawns.size()
+		if enemies_left_to_spawn > 0 and current_active < MAX_CONCURRENT_ENEMIES:
 			spawn_timer -= delta
 			if spawn_timer <= 0.0:
 				spawn_timer = spawn_interval

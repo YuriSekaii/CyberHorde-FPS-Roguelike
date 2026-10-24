@@ -12,19 +12,33 @@ var magnet_speed: float = 12.0
 var bob_timer: float = 0.0
 var initial_y: float = 0.0
 
+static var active_pickups: Array[Node] = []
+const MAX_ACTIVE_PICKUPS: int = 40
+var retarget_timer: float = 0.0
+
 @onready var mesh_inst: MeshInstance3D = $MeshInstance3D
-@onready var light: OmniLight3D = $OmniLight3D
 
 func _ready() -> void:
+	# Auto-merge excess XP drops if active pickup pool is full
+	if active_pickups.size() >= MAX_ACTIVE_PICKUPS and type == PickupType.XP:
+		for p in active_pickups:
+			if is_instance_valid(p) and p.get("type") == PickupType.XP:
+				p.set("value", p.get("value") + value)
+				queue_free()
+				return
+	
+	active_pickups.append(self)
 	initial_y = global_position.y
 	bob_timer = randf() * TAU
-	# Small initial pop
 	velocity = Vector3(
 		randf_range(-2.0, 2.0),
 		randf_range(3.0, 5.0),
 		randf_range(-2.0, 2.0)
 	)
 	_apply_visuals()
+
+func _exit_tree() -> void:
+	active_pickups.erase(self)
 
 func setup(p_type: PickupType, p_val: int) -> void:
 	type = p_type
@@ -41,13 +55,10 @@ func _apply_visuals() -> void:
 	match type:
 		PickupType.XP:
 			mat.albedo_color = Color(0.1, 1.0, 0.6, 1.0)
-			if light: light.light_color = Color(0.1, 1.0, 0.6, 1.0)
 		PickupType.HEALTH:
 			mat.albedo_color = Color(1.0, 0.15, 0.2, 1.0)
-			if light: light.light_color = Color(1.0, 0.15, 0.2, 1.0)
 		PickupType.SCRAP:
 			mat.albedo_color = Color(1.0, 0.85, 0.1, 1.0)
-			if light: light.light_color = Color(1.0, 0.85, 0.1, 1.0)
 	
 	mesh_inst.material_override = mat
 
@@ -62,21 +73,25 @@ func _physics_process(delta: float) -> void:
 			global_position.y = initial_y
 			velocity = Vector3.ZERO
 	
-	# Find closest player
-	var players = get_tree().get_nodes_in_group("player")
-	var closest_p: Node3D = null
-	var min_d: float = INF
-	for p in players:
-		if is_instance_valid(p):
-			var d = global_position.distance_to(p.global_position)
-			if d < min_d:
-				min_d = d
-				closest_p = p
-	player = closest_p
+	# Retarget player periodically (not every single frame)
+	retarget_timer -= delta
+	if retarget_timer <= 0.0 or player == null or not is_instance_valid(player):
+		retarget_timer = 0.25
+		var players = get_tree().get_nodes_in_group("player")
+		var closest_p: Node3D = null
+		var min_d_sq: float = INF
+		for p in players:
+			if is_instance_valid(p):
+				var d_sq = global_position.distance_squared_to(p.global_position)
+				if d_sq < min_d_sq:
+					min_d_sq = d_sq
+					closest_p = p
+		player = closest_p
 	
 	if player != null and is_instance_valid(player):
-		var dist = global_position.distance_to(player.global_position)
-		if dist <= GameManager.magnet_radius:
+		var magnet_r_sq = GameManager.magnet_radius * GameManager.magnet_radius
+		var dist_sq = global_position.distance_squared_to(player.global_position)
+		if dist_sq <= magnet_r_sq:
 			is_magnetized = true
 		
 		if is_magnetized:
@@ -84,7 +99,7 @@ func _physics_process(delta: float) -> void:
 			magnet_speed += 25.0 * delta # Accelerates rapidly
 			global_position += dir * magnet_speed * delta
 			
-			if dist < 1.3:
+			if dist_sq < 1.69: # 1.3^2
 				_collect()
 				return
 	
