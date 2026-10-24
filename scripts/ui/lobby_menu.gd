@@ -18,6 +18,7 @@ signal mission_started()
 @onready var connect_btn: Button = $Panel/VBoxContainer/JoinContainer/ConnectBtn
 
 @onready var update_btn: Button = $Panel/VBoxContainer/MainButtons/UpdateBtn
+@onready var window_mode_btn: Button = $Panel/VBoxContainer/MainButtons/WindowModeBtn
 @onready var version_info_label: Label = $Panel/VBoxContainer/UpdateContainer/VersionInfoLabel
 @onready var update_status_label: Label = $Panel/VBoxContainer/UpdateContainer/UpdateStatusLabel
 @onready var changelog_box: PanelContainer = $Panel/VBoxContainer/UpdateContainer/ChangelogBox
@@ -41,10 +42,21 @@ func _ready() -> void:
 	UpdateManager.check_completed.connect(_on_update_check_completed)
 	UpdateManager.update_completed.connect(_on_update_completed)
 	
+	GameManager.window_mode_changed.connect(_on_window_mode_changed)
+	_update_window_mode_btn()
+	
 	_update_footer_version()
 	
 	# Run a quiet background update check at game launch
 	UpdateManager.check_for_updates()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event is InputEventKey and event.pressed and not event.echo:
+		var focus_owner = get_viewport().gui_get_focus_owner()
+		if not (focus_owner is LineEdit or focus_owner is TextEdit):
+			if event.keycode == KEY_M or event.physical_keycode == KEY_M:
+				_on_window_mode_pressed()
+				get_viewport().set_input_as_handled()
 
 func _update_footer_version() -> void:
 	if version_footer:
@@ -210,3 +222,17 @@ func _update_peer_list() -> void:
 	if NetworkManager.is_server:
 		start_squad_btn.disabled = false
 		start_squad_btn.text = "LAUNCH SQUAD MISSION (%d PLAYERS)" % peers.size()
+
+func _update_window_mode_btn() -> void:
+	if window_mode_btn:
+		if GameManager.is_fullscreen():
+			window_mode_btn.text = "🖥️  WINDOW MODE: FULLSCREEN (CLICK TO TOGGLE)"
+		else:
+			window_mode_btn.text = "🗗  WINDOW MODE: WINDOWED (CLICK TO TOGGLE)"
+
+func _on_window_mode_pressed() -> void:
+	SoundManager.play("upgrade_select", 0.05, 0.0)
+	GameManager.toggle_fullscreen()
+
+func _on_window_mode_changed(_is_fullscreen: bool) -> void:
+	_update_window_mode_btn()

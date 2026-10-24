@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var sfx_val_label: Label = $Panel/VBoxContainer/SfxVolContainer/SfxValLabel
 @onready var sensitivity_slider: HSlider = $Panel/VBoxContainer/SensContainer/HSlider
 @onready var sens_label: Label = $Panel/VBoxContainer/SensContainer/SensValueLabel
+@onready var window_mode_btn: Button = $Panel/VBoxContainer/DisplayContainer/WindowModeBtn
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,6 +26,9 @@ func _ready() -> void:
 		sensitivity_slider.value = 2.2
 		sens_label.text = "%.1f" % sensitivity_slider.value
 		sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
+	
+	_update_window_mode_ui()
+	GameManager.window_mode_changed.connect(_on_window_mode_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
@@ -32,9 +36,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			open_pause()
 		elif GameManager.state == GameManager.GameState.PAUSED:
 			resume()
+	elif visible and event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_M or event.physical_keycode == KEY_M:
+			_on_window_mode_pressed()
+			get_viewport().set_input_as_handled()
 
 func open_pause() -> void:
 	visible = true
+	_update_window_mode_ui()
 	GameManager.state = GameManager.GameState.PAUSED
 	if not NetworkManager.is_multiplayer:
 		get_tree().paused = true
@@ -77,3 +86,17 @@ func _on_restart_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	quit_game()
+
+func _update_window_mode_ui() -> void:
+	if window_mode_btn:
+		if GameManager.is_fullscreen():
+			window_mode_btn.text = "🔲 FULLSCREEN"
+		else:
+			window_mode_btn.text = "🗗 WINDOWED"
+
+func _on_window_mode_pressed() -> void:
+	SoundManager.play("upgrade_select", 0.05, 0.0)
+	GameManager.toggle_fullscreen()
+
+func _on_window_mode_changed(_is_fullscreen: bool) -> void:
+	_update_window_mode_ui()

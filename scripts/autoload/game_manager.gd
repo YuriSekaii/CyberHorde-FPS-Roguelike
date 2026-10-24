@@ -18,6 +18,9 @@ signal second_wind_recharged()
 signal hitmarker_triggered(is_crit: bool)
 signal enemy_killed(enemy_type: String)
 signal upgrade_requested()
+signal window_mode_changed(is_fullscreen: bool)
+
+const SETTINGS_PATH: String = "user://settings.cfg"
 
 enum GameState { PLAYING, PAUSED, UPGRADING, GAME_OVER }
 var state: GameState = GameState.PLAYING
@@ -261,6 +264,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_inputs()
 	wave_cleared.connect(_on_wave_cleared)
+	load_display_settings()
 
 func _on_wave_cleared(_wave_num: int) -> void:
 	if second_wind_unlocked and not second_wind_available:
@@ -270,6 +274,15 @@ func _on_wave_cleared(_wave_num: int) -> void:
 			second_wind_cooldown_waves = 0
 			SoundManager.play("level_up", 0.2, 1.8)
 			second_wind_recharged.emit()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_fullscreen"):
+		toggle_fullscreen()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if (event.keycode == KEY_ENTER or event.physical_keycode == KEY_ENTER) and event.alt_pressed:
+			toggle_fullscreen()
+			get_viewport().set_input_as_handled()
 
 func _process(delta: float) -> void:
 	if state == GameState.PLAYING:
@@ -299,6 +312,45 @@ func _setup_inputs() -> void:
 	_bind_key("weapon_2", KEY_2)
 	_bind_key("weapon_3", KEY_3)
 	_bind_key("pause", KEY_ESCAPE)
+	_bind_key("toggle_fullscreen", KEY_F11)
+
+var _is_fullscreen: bool = false
+
+func is_fullscreen() -> bool:
+	if DisplayServer.get_name() == "headless":
+		return _is_fullscreen
+	var mode = DisplayServer.window_get_mode()
+	return mode == DisplayServer.WINDOW_MODE_FULLSCREEN or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+
+func set_fullscreen(enable: bool) -> void:
+	_is_fullscreen = enable
+	if enable:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	save_display_settings()
+	window_mode_changed.emit(enable)
+
+func toggle_fullscreen() -> bool:
+	var target = not is_fullscreen()
+	set_fullscreen(target)
+	return target
+
+func save_display_settings() -> void:
+	var config = ConfigFile.new()
+	var _err = config.load(SETTINGS_PATH)
+	config.set_value("display", "fullscreen", is_fullscreen())
+	config.save(SETTINGS_PATH)
+
+func load_display_settings() -> void:
+	for arg in OS.get_cmdline_args():
+		if "resolution" in arg or "position" in arg:
+			return
+	var config = ConfigFile.new()
+	if config.load(SETTINGS_PATH) == OK:
+		var fs = config.get_value("display", "fullscreen", false)
+		if fs:
+			call_deferred("set_fullscreen", true)
 
 func _bind_key(action: String, keycode: Key) -> void:
 	if not InputMap.has_action(action):

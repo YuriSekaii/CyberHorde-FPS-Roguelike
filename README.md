@@ -74,7 +74,25 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
-| **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, or restart |
+| **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, or restart |
+| **Toggle Window / Fullscreen** | `F11`, `Alt + Enter`, `M` (in menus), or Menu Button | Instantly toggle between Windowed and Borderless Fullscreen display modes |
+
+---
+
+## 🖥️ Display & Window Mode System
+
+CyberHorde supports seamless switching between **Windowed** and **Fullscreen** modes:
+
+* **Main Lobby Menu**:
+  * Easily toggle display mode with the `🖥️ WINDOW MODE` button in the main menu before starting or joining a squad.
+* **In-Game Pause Menu**:
+  * Press `Escape` during gameplay to access settings and toggle window mode without quitting or interrupting your run.
+* **Global Keyboard Shortcuts**:
+  * **`F11`** or **`Alt + Enter`**: Universal PC toggle at any time during menus or active missions.
+  * **`M`**: Quick toggle hotkey when viewing the Lobby Menu or Pause Menu.
+* **Automatic Preference Saving**:
+  * Display choices are saved to `user://settings.cfg` and remembered across sessions.
+  * *Smart bypass*: If launching multi-instance co-op tests via `Test_Coop_2Players.bat`, command-line position and resolution arguments are preserved automatically.
 
 ---
 

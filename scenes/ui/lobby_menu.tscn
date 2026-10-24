@@ -88,16 +88,16 @@ grow_vertical = 2
 color = Color(0.02, 0.03, 0.05, 0.85)
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(520, 560)
+custom_minimum_size = Vector2(520, 620)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -260.0
-offset_top = -280.0
+offset_top = -310.0
 offset_right = 260.0
-offset_bottom = 280.0
+offset_bottom = 310.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -168,6 +168,14 @@ theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🔄  CHECK FOR UPDATES"
+
+[node name="WindowModeBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🖥️  WINDOW MODE: WINDOWED (CLICK TO TOGGLE)"
 
 [node name="HostContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
 visible = false
@@ -376,6 +384,7 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/HostBtn" to="." method="_on_host_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/JoinBtn" to="." method="_on_join_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/UpdateBtn" to="." method="_on_update_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/WindowModeBtn" to="." method="_on_window_mode_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/StartSquadBtn" to="." method="_on_start_squad_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/HostBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ConnectBtn" to="." method="_on_connect_pressed"]
