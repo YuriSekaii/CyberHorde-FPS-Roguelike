@@ -231,6 +231,8 @@ func _update_stats() -> void:
 	if max_health > old_max:
 		current_health += (max_health - old_max)
 	current_health = minf(current_health, max_health)
+	if current_shield < GameManager.current_shield:
+		current_shield = GameManager.current_shield
 	current_shield = minf(current_shield, GameManager.shield_max)
 	
 	for w in weapons:

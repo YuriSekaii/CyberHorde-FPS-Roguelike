@@ -119,7 +119,7 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Hardened Alloy** | `Rare` (Purple) | +10% Damage Reduction against all incoming damage (Max 5 stacks: 50% Reduction). |
 | **Hollow-Point Rounds** | `Rare` (Purple) | +0.5x Critical Hit Damage Multiplier (**Stacks Infinitely**). |
 | **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy (stacks up to 2x). |
-| **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
+| **Aegis Energy Shield** | `Rare` (Purple) | Grants +25 Regenerating Shield capacity (**Stacks Infinitely**). Proactively grants shield upon selection. |
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |

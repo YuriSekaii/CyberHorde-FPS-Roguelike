@@ -143,10 +143,10 @@ var upgrade_database: Dictionary = {
 	"energy_shield": {
 		"id": "energy_shield",
 		"name": "Aegis Energy Shield",
-		"desc": "Grants +50 Regenerating Shield capacity.",
+		"desc": "Grants +25 Regenerating Shield capacity (Stacks Infinitely).",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
-		"max_stacks": 3
+		"max_stacks": 9999
 	},
 	"vampiric_core": {
 		"id": "vampiric_core",
@@ -494,7 +494,7 @@ func apply_upgrade(upgrade_id: String) -> void:
 		"explosive_payload":
 			explosive_rounds = true
 		"energy_shield":
-			shield_max += 50.0
+			shield_max += 25.0
 			current_shield = shield_max
 		"vampiric_core":
 			vampiric_heal += 4.0
