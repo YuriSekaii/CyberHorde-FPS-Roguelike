@@ -52,11 +52,12 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 
 ## 🧬 Roguelike Upgrades System
 
-Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards** drawn randomly from common, rare, epic, and legendary pools:
+Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards**.
+Upgrade rarity tiers roll with authentic 1/5 drop rates: **Common** (~80.1%), **Rare** (~16.0%), **Epic** (~3.2%), and **Legendary** (~0.64%).
 
 | Upgrade | Rarity | Effect |
 | :--- | :--- | :--- |
-| **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (stacks up to 8x). |
+| **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (**Stacks Infinitely**). |
 | **Overclock Trigger** | `Common` (Cyan) | +25% Fire Rate for continuous suppression (stacks up to 6x). |
 | **Rapid Loader** | `Common` (Cyan) | +25% Reload Speed across all weapons (stacks up to 6x). |
 | **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
@@ -64,19 +65,21 @@ Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time free
 | **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
 | **Multi-Barrel Splitter** | `Rare` (Purple) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
 | **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy. |
-| **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact for AoE blast damage. |
+| **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (4.5m → 9.0m). |
 | **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
-| **Assault Drone Unit** | `Epic` (Orange) | Deploys an autonomous companion drone that orbits and lasers enemies. |
+| **Assault Drone Unit** | `Epic` (Orange) | Deploys companion drone using your Pulse Carbine (1/10 fire rate, no ammo, all weapon perks). +1 drone per pick. |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage once with 3 seconds of invulnerability. |
 
 ---
 
 ## 👾 Enemy Horde Types
+
+Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$ is the wave number).
 
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush you for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.

@@ -56,8 +56,9 @@ var fire_cooldown: float = 0.0
 var reload_timer: float = 0.0
 var is_reloading: bool = false
 
-# Drone Companion
-var drone_timer: float = 0.0
+# Drone Companions
+var active_drones: Array[Node3D] = []
+const DRONE_SCENE = preload("res://scenes/player/drone.tscn")
 
 # Node References
 @onready var head: Node3D = $Head
@@ -81,6 +82,14 @@ func _ready() -> void:
 	
 	GameManager.stats_updated.connect(_update_stats)
 	muzzle_flash_light.visible = false
+	if drone_companion:
+		drone_companion.visible = false
+
+func _exit_tree() -> void:
+	for d in active_drones:
+		if is_instance_valid(d):
+			d.queue_free()
+	active_drones.clear()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
@@ -158,7 +167,8 @@ func _update_stats() -> void:
 		w.reload_time = w.base_reload_time / GameManager.reload_speed_mult
 	
 	if drone_companion:
-		drone_companion.visible = (GameManager.drone_count > 0)
+		drone_companion.visible = false
+	_sync_drones()
 	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
@@ -320,7 +330,7 @@ func _fire_active_weapon() -> void:
 		var spread_y = randf_range(-spread_angle, spread_angle)
 		var bullet_dir = (base_dir + camera.global_transform.basis.x * spread_x + camera.global_transform.basis.y * spread_y).normalized()
 		
-		bullet.setup(bullet_dir, w.damage, w.is_explosive)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2)
 
 func _flash_muzzle() -> void:
 	muzzle_flash_light.visible = true
@@ -364,36 +374,31 @@ func _handle_shield_regen(delta: float) -> void:
 		GameManager.current_shield = current_shield
 		shield_changed.emit(current_shield, GameManager.shield_max)
 
-func _handle_drone(delta: float) -> void:
-	if GameManager.drone_count <= 0 or not drone_companion:
+func _sync_drones() -> void:
+	var target_count = GameManager.drone_count
+	var parent_node = get_parent()
+	if not parent_node:
 		return
-	
-	# Orbit drone
-	var t = Time.get_ticks_msec() / 1000.0 * 2.0
-	drone_companion.position = Vector3(cos(t) * 1.5, 1.8 + sin(t * 2.0) * 0.15, sin(t) * 1.5)
-	
-	drone_timer += delta
-	if drone_timer >= 1.2:
-		drone_timer = 0.0
-		# Search for nearest enemy
-		var enemies = get_tree().get_nodes_in_group("enemies")
-		var closest: Node3D = null
-		var min_dist: float = 16.0
-		for e in enemies:
-			if e is Node3D:
-				var d = drone_companion.global_position.distance_to(e.global_position)
-				if d < min_dist:
-					min_dist = d
-					closest = e
-		
-		if closest:
-			# Fire drone laser
-			var bullet = BULLET_SCENE.instantiate()
-			get_parent().add_child(bullet)
-			bullet.global_position = drone_companion.global_position
-			var dir = (closest.global_position + Vector3(0, 0.8, 0) - bullet.global_position).normalized()
-			bullet.setup(dir, 18.0 * GameManager.damage_mult, false)
-			SoundManager.play("shoot_rifle", 0.3, -4.0)
+	while active_drones.size() < target_count:
+		var d = DRONE_SCENE.instantiate()
+		d.drone_index = active_drones.size()
+		parent_node.add_child(d)
+		d.global_position = global_position + Vector3(0, 1.8, 0)
+		active_drones.append(d)
+	while active_drones.size() > target_count:
+		var d = active_drones.pop_back()
+		if is_instance_valid(d):
+			d.queue_free()
+	for i in range(active_drones.size()):
+		if is_instance_valid(active_drones[i]):
+			active_drones[i].drone_index = i
+
+func _handle_drone(delta: float) -> void:
+	if active_drones.is_empty():
+		return
+	for d in active_drones:
+		if is_instance_valid(d):
+			d.update_drone(delta, self, active_drones.size())
 
 func _handle_head_bob_and_shake(delta: float) -> void:
 	# ADS Aim Down Sights transition

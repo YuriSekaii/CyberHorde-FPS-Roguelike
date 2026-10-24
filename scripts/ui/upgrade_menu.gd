@@ -90,7 +90,10 @@ func _create_card_button(index: int, opt: Dictionary) -> Button:
 	
 	# Stacks
 	var stack_lbl = Label.new()
-	stack_lbl.text = "Rank: %d / %d" % [cur_stacks + 1, max_stacks]
+	if max_stacks >= 999:
+		stack_lbl.text = "Rank: %d / ∞" % [cur_stacks + 1]
+	else:
+		stack_lbl.text = "Rank: %d / %d" % [cur_stacks + 1, max_stacks]
 	stack_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stack_lbl.add_theme_font_size_override("font_size", 13)
 	stack_lbl.modulate = Color(0.8, 0.8, 0.8, 0.8)

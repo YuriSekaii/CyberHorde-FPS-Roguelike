@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/drone.gd" id="1_drone"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gunmetal"]
+albedo_color = Color(0.12, 0.14, 0.18, 1)
+metallic = 0.9
+roughness = 0.25
+
+[sub_resource type="SphereMesh" id="SphereMesh_drone"]
+material = SubResource("StandardMaterial3D_gunmetal")
+radius = 0.16
+height = 0.32
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_neon_cyan"]
+shading_mode = 0
+albedo_color = Color(0, 0.95, 1, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_drone_ring"]
+material = SubResource("StandardMaterial3D_neon_cyan")
+inner_radius = 0.20
+outer_radius = 0.24
+
+[node name="Drone" type="Node3D" groups=["player_drones"]]
+script = ExtResource("1_drone")
+
+[node name="DroneBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_drone")
+
+[node name="DroneRing" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_drone_ring")
+
+[node name="DroneLight" type="OmniLight3D" parent="."]
+light_color = Color(0, 0.95, 1, 1)
+light_energy = 1.5
+omni_range = 2.5

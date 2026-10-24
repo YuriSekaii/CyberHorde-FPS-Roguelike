@@ -61,10 +61,10 @@ var upgrade_database: Dictionary = {
 	"heavy_rounds": {
 		"id": "heavy_rounds",
 		"name": "Heavy Caliber",
-		"desc": "+25% Projectile Damage to all weapons.",
+		"desc": "+25% Projectile Damage to all weapons (Stacks Infinitely).",
 		"rarity": "Common",
 		"color": Color(0.4, 0.8, 1.0),
-		"max_stacks": 8
+		"max_stacks": 9999
 	},
 	"overclock": {
 		"id": "overclock",
@@ -125,7 +125,7 @@ var upgrade_database: Dictionary = {
 	"explosive_payload": {
 		"id": "explosive_payload",
 		"name": "Explosive Payload",
-		"desc": "Bullets detonate on impact for AoE blast damage.",
+		"desc": "Bullets explode on impact. Plasma Core gains +100% AoE radius!",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
 		"max_stacks": 1
@@ -173,10 +173,10 @@ var upgrade_database: Dictionary = {
 	"combat_drone": {
 		"id": "combat_drone",
 		"name": "Assault Drone Unit",
-		"desc": "Deploys an autonomous companion drone to fire lasers.",
+		"desc": "Deploys a companion drone using your Pulse Carbine (1/10 fire rate, no ammo, all weapon perks). +1 drone per pick.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 3
+		"max_stacks": 6
 	},
 	"second_wind": {
 		"id": "second_wind",
@@ -321,18 +321,67 @@ func prompt_upgrade_menu() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	upgrade_requested.emit()
 
+# Higher rarity tier is 1/5 probability of lower rarity tier:
+# Common = 125, Rare = 25 (1/5 of Common), Epic = 5 (1/5 of Rare), Legendary = 1 (1/5 of Epic)
+const RARITY_TIER_WEIGHTS: Dictionary = {
+	"Common": 125.0,
+	"Rare": 25.0,
+	"Epic": 5.0,
+	"Legendary": 1.0
+}
+
 func get_upgrade_options(count: int = 3) -> Array[Dictionary]:
-	var available: Array[Dictionary] = []
+	# Group available items by rarity
+	var by_rarity: Dictionary = {
+		"Common": [],
+		"Rare": [],
+		"Epic": [],
+		"Legendary": []
+	}
 	for id in upgrade_database:
 		var item = upgrade_database[id]
 		var cur = active_upgrades.get(id, 0)
 		if cur < item["max_stacks"]:
-			available.append(item)
+			var r = item.get("rarity", "Common")
+			if not by_rarity.has(r):
+				by_rarity[r] = []
+			by_rarity[r].append(item)
 	
-	available.shuffle()
 	var result: Array[Dictionary] = []
-	for i in range(mini(count, available.size())):
-		result.append(available[i])
+	var max_available = 0
+	for r in by_rarity:
+		max_available += by_rarity[r].size()
+	var needed = mini(count, max_available)
+	
+	while result.size() < needed:
+		# Calculate total weight of rarities that currently have available items
+		var total_weight: float = 0.0
+		var active_rarities: Array[String] = []
+		for r in ["Common", "Rare", "Epic", "Legendary"]:
+			if by_rarity.has(r) and by_rarity[r].size() > 0:
+				total_weight += RARITY_TIER_WEIGHTS[r]
+				active_rarities.append(r)
+		
+		if active_rarities.is_empty():
+			break
+		
+		var roll = randf() * total_weight
+		var cumulative: float = 0.0
+		var chosen_rarity = active_rarities[0]
+		for r in active_rarities:
+			cumulative += RARITY_TIER_WEIGHTS[r]
+			if roll <= cumulative:
+				chosen_rarity = r
+				break
+		
+		# Pick a random item from the chosen rarity pool
+		var items_in_tier: Array = by_rarity[chosen_rarity]
+		var rand_idx = randi() % items_in_tier.size()
+		var chosen_item = items_in_tier[rand_idx]
+		
+		result.append(chosen_item)
+		items_in_tier.remove_at(rand_idx)
+	
 	return result
 
 func apply_upgrade(upgrade_id: String) -> void:

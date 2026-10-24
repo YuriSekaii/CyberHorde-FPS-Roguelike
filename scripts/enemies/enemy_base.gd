@@ -21,8 +21,8 @@ const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
 func _ready() -> void:
 	add_to_group("enemies")
-	# Wave scaling
-	var wave_factor = 1.0 + (GameManager.current_wave - 1) * 0.15
+	# Wave scaling: 5% compounding more health per wave (1.05 ^ n)
+	var wave_factor = pow(1.05, float(GameManager.current_wave))
 	current_health = max_health * wave_factor
 	max_health = current_health
 	

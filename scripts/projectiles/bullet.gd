@@ -19,10 +19,11 @@ func _ready() -> void:
 	if GameManager.bouncing_bullets:
 		bounces_left = GameManager.bounce_count
 
-func setup(dir: Vector3, dmg: float, explosive: bool = false) -> void:
+func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false) -> void:
 	direction = dir.normalized()
 	base_damage = dmg
 	is_explosive = explosive or GameManager.explosive_rounds
+	is_plasma = from_plasma
 	if direction != Vector3.ZERO:
 		look_at(global_position + direction, Vector3.UP)
 
@@ -141,7 +142,11 @@ func _trigger_impact_effects(pos: Vector3) -> void:
 		var exp_inst = EXPLOSION_SCENE.instantiate()
 		get_parent().add_child(exp_inst)
 		exp_inst.global_position = pos
-		exp_inst.setup(base_damage * 0.8 * GameManager.damage_mult, GameManager.explosion_radius)
+		var rad = GameManager.explosion_radius
+		if is_plasma:
+			# Base Plasma AoE is 4.5. If denote perk (explosive_rounds) is picked, get +100% more radius (9.0m)!
+			rad = 4.5 * (2.0 if GameManager.explosive_rounds else 1.0)
+		exp_inst.setup(base_damage * 0.8 * GameManager.damage_mult, rad)
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
