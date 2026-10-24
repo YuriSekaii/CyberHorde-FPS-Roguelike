@@ -1,127 +1,137 @@
 # ⚡ CyberHorde: Rogue Protocol
 
-A 3D First-Person Horde Roguelike Upgrade Looter built in **Godot 4.7**.
+[![Engine](https://img.shields.io/badge/Engine-Godot%204.7-478cbf?logo=godotengine&logoColor=white)](https://godotengine.org)
+[![Renderer](https://img.shields.io/badge/Renderer-Vulkan%20Forward%2B-red)](https://vulkan.org)
+[![Repository](https://img.shields.io/badge/GitHub-YuriSekaii%2FCyberHorde--FPS--Roguelike-181717?logo=github)](https://github.com/YuriSekaii/CyberHorde-FPS-Roguelike)
 
-Survive escalating cybernetic hordes, harvest nanite XP and scrap, crack open holographic loot caches, and craft overpowered character builds through dynamic roguelike upgrades.
+A fast-paced 3D First-Person Horde Roguelike Upgrade Looter built in **Godot 4.7**.
+
+Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and scrap, crack open holographic loot caches, and craft overpowered character builds through dynamic roguelike upgrades.
 
 ---
 
 ## 🎮 How to Play
 
-### Instant 1-Click Launch:
-- Double-click **`Play_Game.bat`** in the game folder to launch and play immediately!
-- Double-click **`Open_In_Godot_Editor.bat`** to open and edit the project inside the Godot Engine Editor.
+### 1-Click Launchers:
+* **`Play_Game.bat`**: Launches the game window immediately using Godot's console runtime with full error-reporting safeguards.
+* **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
+* **`Push_To_GitHub.bat`**: Automatically stages, commits, and pushes any local modifications to your remote GitHub repository (`main` branch).
 
 ---
 
 ## 🕹️ Controls
 
-| Action | Key / Input |
-| :--- | :--- |
-| **Move** | `W`, `A`, `S`, `D` |
-| **Look / Aim** | `Mouse` |
-| **Jump** | `Spacebar` (supports Coyote time & jump buffering) |
-| **Sprint** | `Shift` (hold) |
-| **Primary Fire** | `Left Mouse Button` |
-| **Reload** | `R` (or automatic when empty) |
-| **Switch Weapons** | `1`, `2`, `3` or `Mouse Wheel` |
-| **Interact / Open Cache** | `E` |
-| **Select Upgrade Card** | `1`, `2`, `3` or `Click` on card |
-| **Pause Menu** | `Escape` |
+| Action | Key / Input | Notes |
+| :--- | :--- | :--- |
+| **Move** | `W`, `A`, `S`, `D` | Smooth acceleration & deceleration |
+| **Look / Aim** | `Mouse` | First-person camera with pitch clamping and weapon sway |
+| **Jump** | `Spacebar` | Includes Coyote time (150ms) & jump buffering |
+| **Sprint** | `Shift` (hold) | 1.4× movement speed boost |
+| **Primary Fire** | `Left Mouse Button` | Recoil kickback, screen shake, and muzzle flash |
+| **Reload** | `R` | Manual reload (or automatic when empty) |
+| **Switch Weapons** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
+| **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
+| **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
+| **Pause Menu** | `Escape` | Pause mission, adjust mouse sensitivity slider, or restart |
 
 ---
 
 ## 🔫 Weapons Arsenal
 
 1. **Pulse Carbine (`Key 1`)**:
-   - High-velocity kinetic automatic rifle with tight spread and high rate-of-fire.
+   - High-velocity kinetic automatic assault rifle.
+   - 32-round magazine, 0.12s fire rate (8.3 shots/sec), crisp suppressive fire.
 2. **Scatter Cannon (`Key 2`)**:
-   - Devastating close-range shotgun firing 7 pellets simultaneously with heavy stopping power and screen recoil.
+   - Heavy close-quarters shotgun blasting 7 pellets simultaneously with punchy recoil and screen kick.
+   - 8-round magazine, 0.65s fire rate.
 3. **Plasma Core (`Key 3`)**:
-   - Fires concentrated explosive plasma orbs that detonate on impact for massive area-of-effect damage.
+   - High-yield energy launcher firing concentrated plasma orbs.
+   - Detonates on impact in an Area-of-Effect blast (65 base damage).
 
 ---
 
 ## 🧬 Roguelike Upgrades System
 
-Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards** drawn from common, rare, epic, and legendary pools:
+Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards** drawn randomly from common, rare, epic, and legendary pools:
 
-* **Heavy Caliber** *(Common)*: +25% Projectile Damage.
-* **Overclock Trigger** *(Common)*: +25% Fire Rate.
-* **Kinetic Thrusters** *(Common)*: +18% Move Speed & +15% Jump Power.
-* **Nanite Magnet** *(Common)*: +60% XP & Loot attraction distance.
-* **Multi-Barrel Splitter** *(Rare)*: +1 extra projectile per shot with spread.
-* **Hyper-Penetrator** *(Rare)*: Shots pierce through +1 enemy.
-* **Explosive Payload** *(Rare)*: Bullets explode on impact for AoE blast.
-* **Aegis Energy Shield** *(Rare)*: Regenerating 50 HP energy shield.
-* **Vampiric Siphon** *(Rare)*: Restores +4 HP on every enemy kill.
-* **Cryo Rounds** *(Rare)*: Shots slow enemies by 40%.
-* **Tesla Arc Emitter** *(Epic)*: Bullet hits arc lightning to 2 nearby enemies.
-* **Smart Bouncing Core** *(Epic)*: Bullets ricochet off walls toward targets.
-* **Assault Drone Unit** *(Epic)*: Deploys an autonomous companion drone that flies beside you and lasers enemies.
-* **Emergency Defibrillator** *(Legendary)*: Survive fatal damage once with 3s of invulnerability.
-* **Nanite Scavenger** *(Rare)*: +40% XP and Scrap drops.
+| Upgrade | Rarity | Effect |
+| :--- | :--- | :--- |
+| **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (stacks up to 8x). |
+| **Overclock Trigger** | `Common` (Cyan) | +25% Fire Rate for continuous suppression (stacks up to 6x). |
+| **Kinetic Thrusters** | `Common` (Cyan) | +18% Movement Speed and +15% Jump Power. |
+| **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
+| **Multi-Barrel Splitter** | `Rare` (Purple) | +1 additional projectile per shot with spread. |
+| **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy. |
+| **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact for AoE blast damage. |
+| **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
+| **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
+| **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
+| **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
+| **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
+| **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet off walls/floors toward targets. |
+| **Assault Drone Unit** | `Epic` (Orange) | Deploys an autonomous companion drone that orbits and lasers enemies. |
+| **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage once with 3 seconds of invulnerability. |
 
 ---
 
 ## 👾 Enemy Horde Types
 
-1. **Cyber Swarmers**:
-   - Fast neon-red crawler bugs that swarm in packs and rush you for melee bites.
-2. **Plasma Spitters**:
-   - Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**:
-   - Giant high-HP armored cyber crushers that charge in and slam the ground creating shockwaves!
+1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush you for melee bites.
+2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
+3. **Armored Goliaths (Brutes)**: Giant high-HP armored cyber crushers that charge in and slam the ground creating shockwaves and knockback!
 
 ---
 
-## 💎 Loot & Economy
+## 💎 Loot & Arena Mechanics
 
-* **Nanite XP Crystals** *(Green/Cyan)*: Magnetize to you and grant XP to level up.
-* **Medical Stims** *(Red)*: Restores 25 Health.
+* **Nanite XP Crystals** *(Green/Cyan)*: Magnetize to the player and fill the Level Up bar.
+* **Medical Stims** *(Red)*: Instantly restores 25 Health (drops more often when HP is low).
 * **Scrap Currency** *(Gold)*: Collect currency to build your high score.
-* **Loot Caches (Chests)**: Dropped every 2 waves with a beacon light beam pointing to the sky. Press `E` to open for bonus loot and a **free upgrade choice**!
-* **Jump Pads**: 4 glowing launch pads around the arena that blast you high into the air for aerial combat!
+* **Loot Caches (Chests)**: Dropped every 2 waves with an aerial beacon light beam. Press `E` to open for bonus loot and a **free upgrade pick**!
+* **4 Aerial Jump Pads**: Step on any glowing pad to launch high above the arena for aerial combat.
+* **Floating 3D Damage Numbers**: Billboarding damage indicators popping up above hit enemies with yellow/red styling for critical hits.
+* **Procedural Sound Engine**: 100% self-contained 16-bit PCM audio synthesizer generated in GDScript at startup with zero external audio assets required.
 
 ---
 
-## 📂 Project Architecture (For Beginners)
-
-If you're curious how games are structured in Godot, here is the tour:
+## 📂 Project Architecture
 
 ```
 Game/
-├── project.godot                     # Core Godot project configuration
-├── Play_Game.bat                     # 1-click game launcher
+├── project.godot                     # Core Godot 4.7 project configuration
+├── Play_Game.bat                     # 1-click game launcher with error protection
 ├── Open_In_Godot_Editor.bat          # 1-click editor launcher
+├── Push_To_GitHub.bat                # 1-click GitHub sync launcher
+├── README.md                         # Comprehensive documentation
+├── icon.svg                          # Vector cyber reticle icon
 ├── scripts/
 │   ├── autoload/
-│   │   ├── game_manager.gd           # Stats, upgrades pool, wave director, XP
-│   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM sound engine
+│   │   ├── game_manager.gd           # Stats, upgrades catalog, wave director, XP
+│   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
-│   │   └── player.gd                 # First-person controller, viewmodels, weapons
+│   │   └── player.gd                 # FPS controller, recoil, viewmodels, weapons, drone
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (health, damage numbers, loot)
 │   │   ├── swarmer.gd                # Fast swarm insect AI
 │   │   ├── spitter.gd                # Ranged hovering drone AI
 │   │   └── brute.gd                  # Ground-slamming heavy golem AI
 │   ├── projectiles/
-│   │   ├── bullet.gd                 # Bullets with ricochet, pierce, lightning, AOE
+│   │   ├── bullet.gd                 # Projectiles with ricochet, pierce, lightning, AOE
 │   │   ├── enemy_projectile.gd       # Spitter plasma orb
-│   │   └── explosion.gd              # Area-of-effect blast & particles
+│   │   └── explosion.gd              # Area-of-effect blast & particle emitter
 │   ├── loot/
-│   │   ├── loot_pickup.gd            # Magnetized XP, Health, Scrap items
-│   │   └── chest.gd                  # Interactive Loot Cache
+│   │   ├── loot_pickup.gd            # Magnetized XP, Health, and Scrap items
+│   │   └── chest.gd                  # Interactive Loot Cache with beacon
 │   ├── ui/
-│   │   ├── hud.gd                    # Reticle, hitmarker, health, ammo, wave info
+│   │   ├── hud.gd                    # Reticle, hitmarker, health, shield, ammo, waves
 │   │   ├── upgrade_menu.gd           # 3-card holographic roguelike selector
-│   │   ├── pause_menu.gd             # Pause screen with sensitivity settings
+│   │   ├── pause_menu.gd             # Pause screen with sensitivity slider
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
 │       ├── spawner.gd                # Wave director & horde scaling
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/
-    ├── main.tscn                     # Main game scene combining everything
+    ├── main.tscn                     # Main game scene combining arena, player, HUD
     ├── player/player.tscn
     ├── enemies/                      # Swarmer, Spitter, Brute scenes
     ├── projectiles/                  # Bullet, Plasma, Explosion scenes
@@ -132,12 +142,12 @@ Game/
 
 ---
 
-## 🛠️ Fun Tweaks to Try in Godot
+## 🛠️ Beginner Tweaks to Try in Godot
 
-Once you open `Open_In_Godot_Editor.bat`:
-1. **Change Weapon Fire Rate or Damage**:
-   - Open `scripts/player/player.gd` and adjust `rifle.fire_rate` or `shotgun.pellets` in `_setup_weapons()`.
-2. **Tweak Enemy Health & Speed**:
-   - Open `scenes/enemies/swarmer.tscn` or `scenes/enemies/brute.tscn` and edit the `@export` numbers in the Inspector.
-3. **Change Arena Lighting / Glow**:
-   - Open `scenes/world/arena.tscn` -> select `WorldEnvironment` -> adjust `Glow Intensity` and `Bloom`!
+Double-click `Open_In_Godot_Editor.bat` to modify the game:
+1. **Change Weapon Stats**:
+   - Open `scripts/player/player.gd` and adjust `rifle.fire_rate`, `shotgun.pellets`, or `plasma.damage` inside `_setup_weapons()`.
+2. **Tweak Enemy Scaling**:
+   - Open `scripts/world/spawner.gd` and change `total_enemies_in_wave` or `spawn_interval`.
+3. **Change Arena Lighting & Bloom**:
+   - Open `scenes/world/arena.tscn` -> select `WorldEnvironment` -> adjust `Glow Intensity` and `Bloom` in the Inspector!
