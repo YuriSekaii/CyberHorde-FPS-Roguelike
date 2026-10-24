@@ -239,7 +239,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~55.6% |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% |
 | **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Reduced by 20%) |
-| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 78.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
+| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
@@ -258,15 +258,15 @@ Hordes scale progressively to challenge late-game builds:
 * **Stage 2 (66% – 33% HP) — Aerial Bombardier & Hyper Dive**:
   * **Transformation**: The armor shifts and unfolds into massive mechanical wings with glowing amber energy blades; thrusters ignite as the boss ascends into the sky (Y ≈ 14m).
   * **Aerial Bombardment**: Hovers stationary in the air, firing slow-moving plasma bomb projectiles that detonate upon hitting the ground or player, causing medium AoE explosive damage (`attack_damage × 0.85`).
-  * **Energy Charge & Red Aura Lock-On**: After several shots, halts and charges energy as its core flares. Upon full charge, **flashes a brilliant Red Aura** and locks onto your exact position, dropping a holographic red impact zone warning beacon. Players must sprint and evacuate the zone immediately!
+  * **Energy Charge & Red Aura Lock-On**: After several shots, halts and charges energy as its core flares. Upon full charge, **flashes a brilliant Red Aura** and locks onto your exact position (0.7s telegraph), dropping a holographic red impact zone warning beacon. Players must sprint and evacuate the zone immediately!
   * **Extreme Speed Dive**: Plunges from the sky at extreme speed (60 m/s) straight into the locked position, causing a massive 10.5m **AoE Shockwave** (`attack_damage × 2.2` massive damage + knockup).
   * **Loop**: Recovers on the ground, rockets back into the sky, and repeats the pattern until 33% HP.
-* **Stage 3 (< 33% HP) — True Form Meltdown & Rapid Blitz**:
-  * **Transformation**: Detonates its entire outer armor shell, completely ejecting it to reveal its terrifying **True Form**—a sleek, dark endoskeleton with an exposed, blazing cosmic violet meltdown core!
-  * **High-Speed Aerial Machine Gun**: Flies at extreme speed (19 m/s) in sweeping aerial arcs around the arena while spraying rapid machine gun plasma rounds (small damage, `attack_damage × 0.28`).
-  * **Cataclysmic Mega Projectile**: Halts and channels catastrophic power into its core, launching a giant, slow-moving mega sphere that causes a gargantuan 12m explosion on impact with massive damage (`attack_damage × 2.8`).
+* **Stage 3 (< 33% HP) — Evil Incarnation (Slim True Form & Aerial Blitz)**:
+  * **Transformation**: Detonates its entire outer armor shell, completely ejecting all bulky mech parts to reveal a terrifying **Evil Incarnation with a slim, menacing silhouette**—featuring elongated demonic horns, razor claws, spiked pauldrons, floating shadow wing blades, and a blazing exposed void core!
+  * **High-Speed Aerial Machine Gun**: Flies at blistering speed (32 m/s) in aggressive weaving arcs across the sky while spraying a sustained 6.0s rapid needle machine gun stream (65 m/s projectile speed, ~22 shots/sec, `attack_damage × 0.18` small damage).
+  * **Cataclysmic Mega Projectile**: Halts and channels catastrophic power into its exposed heart, launching a giant, slow-moving mega sphere that causes a gargantuan 12m explosion on impact with massive damage (`attack_damage × 2.8`).
   * **Exhaustion Cooldown**: The boss visibly weakens and sags in the sky as its core dims and flickers, entering an exhaustion cooldown for 3 seconds—providing a prime vulnerability window for players to lay down massive DPS!
-  * **Post-Exhaustion Hyper Dive**: Surges back to life, flashes its crimson red aura, locks your position with a fast-reaction warning, and dives with hyper speed (78 m/s—even faster than Stage 2) into the ground, causing an 11.5m shockwave (`attack_damage × 2.5` massive damage).
+  * **Post-Exhaustion Supersonic Dive**: Surges back to life, flashes its crimson red aura, locks your position with the exact same 0.70s warning window as Stage 2, and dives with supersonic hyper speed (105 m/s) into the ground, causing an 11.5m shockwave (`attack_damage × 2.5` massive damage).
   * **Loop**: Rockets back into the sky and loops the Stage 3 pattern until defeated.
 * **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
 * **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 99? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 100 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.

@@ -3,8 +3,8 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Apex Overlord - Wave 100 Final Boss
 ## Multi-Stage Climactic Battle:
 ## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg) & occasional long-range cannon fire (low dmg).
-## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg), then charges energy, flashes red aura, locks player position, and dives at extreme speed causing massive shockwave (massive dmg).
-## Stage 3: Removes all armor revealing True Form. High-speed aerial strafing with rapid machine gun fire (small dmg), ends with giant slow mega orb (massive dmg), enters exhaustion cooldown, then flashes red aura and charges in hyper-speed dive (massive dmg). Loops until death.
+## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg).
+## Stage 3: Detonates outer armor, revealing an evil incarnation with a slim silhouette, horned head, razor claws, and floating shadow blades. Flies aggressively fast across the sky (32 m/s), spraying a sustained 6s rapid-fire needle machine gun barrage (65 m/s, 22 shots/sec). Ends with a giant slow-moving mega orb, enters 3s exhaustion cooldown, then flashes red aura, locks player position (0.7s - same as Stage 2), and charges in a blistering supersonic dive (105 m/s). Loops until death.
 
 enum BossStage {
 	STAGE_1,
@@ -61,9 +61,9 @@ var has_summoned_phase2: bool = false
 var has_summoned_phase3: bool = false
 
 # Node references
-@onready var core_mesh: MeshInstance3D = $MeshRoot/ReactorCore
+@onready var core_mesh: MeshInstance3D = $MeshRoot/ArmorRoot/ReactorCore
 @onready var core_light: OmniLight3D = $MeshRoot/CoreLight
-@onready var visor_mesh: MeshInstance3D = $MeshRoot/Visor
+@onready var visor_mesh: MeshInstance3D = $MeshRoot/ArmorRoot/Visor
 @onready var slam_light: OmniLight3D = $MeshRoot/SlamLight
 @onready var aura_light: OmniLight3D = $MeshRoot/AuraLight
 @onready var aura_shell: MeshInstance3D = $MeshRoot/AuraShell
@@ -71,8 +71,12 @@ var has_summoned_phase3: bool = false
 @onready var true_form_root: Node3D = $MeshRoot/TrueFormRoot
 @onready var left_wing_root: Node3D = $MeshRoot/ArmorRoot/LeftWingRoot
 @onready var right_wing_root: Node3D = $MeshRoot/ArmorRoot/RightWingRoot
-@onready var left_muzzle: Node3D = $MeshRoot/LeftArm/LeftMuzzle
-@onready var right_muzzle: Node3D = $MeshRoot/RightArm/RightMuzzle
+@onready var left_muzzle: Node3D = $MeshRoot/ArmorRoot/LeftArm/LeftMuzzle
+@onready var right_muzzle: Node3D = $MeshRoot/ArmorRoot/RightArm/RightMuzzle
+@onready var slim_left_muzzle: Node3D = $MeshRoot/TrueFormRoot/SlimLeftArm/SlimLeftMuzzle
+@onready var slim_right_muzzle: Node3D = $MeshRoot/TrueFormRoot/SlimRightArm/SlimRightMuzzle
+@onready var true_core: MeshInstance3D = $MeshRoot/TrueFormRoot/TrueCore
+@onready var evil_visor: MeshInstance3D = $MeshRoot/TrueFormRoot/EvilHead/EvilVisor
 
 const PROJECTILE_SCENE = preload("res://scenes/projectiles/enemy_projectile.tscn")
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
@@ -215,26 +219,31 @@ func _start_stage_3_transition() -> void:
 		aura_shell.visible = false
 	
 	# Stage 3: Detonation jettisons all outer armor, exposing sleek True Form!
-	SoundManager.play("explosion", 0.25, 0.5)
+	SoundManager.play("explosion", 0.35, 0.2)
 	
 	var exp_inst = EXPLOSION_SCENE.instantiate()
 	get_parent().add_child(exp_inst)
 	exp_inst.global_position = global_position
-	exp_inst.setup(0.0, 7.0)
+	exp_inst.setup(0.0, 9.0)
 	
 	if armor_root:
 		armor_root.visible = false
 	if true_form_root:
 		true_form_root.visible = true
 	
-	# Meltdown core: Blazing cosmic violet
-	if core_material:
-		core_material.albedo_color = Color(0.95, 0.15, 0.95)
-	if visor_material:
-		visor_material.albedo_color = Color(0.95, 0.15, 0.95)
+	# True evil incarnation glowing materials
+	var evil_core_mat = StandardMaterial3D.new()
+	evil_core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	evil_core_mat.albedo_color = Color(1.0, 0.08, 0.35)
+	if true_core:
+		true_core.material_override = evil_core_mat
+	if evil_visor:
+		evil_visor.material_override = evil_core_mat
+	
 	if core_light:
-		core_light.light_color = Color(0.95, 0.15, 0.95)
-		core_light.light_energy = 9.0
+		core_light.light_color = Color(1.0, 0.08, 0.35)
+		core_light.light_energy = 10.0
+		core_light.omni_range = 16.0
 	
 	var lift_tw = create_tween()
 	lift_tw.tween_property(self, "global_position:y", FLIGHT_ALTITUDE, 0.8)
@@ -430,7 +439,7 @@ func _process_stage_2(delta: float) -> void:
 				SoundManager.play("jump_pad", 0.1, -1.0)
 		
 		Stage2SubState.DIVE:
-			# Extreme speed charge straight at locked impact position
+			# Extreme speed charge straight at locked impact position (60.0 m/s)
 			var dive_vec = locked_impact_pos - global_position
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
@@ -524,7 +533,7 @@ func _execute_dive_impact(blast_radius: float, dmg_multiplier: float) -> void:
 	exp_inst.global_position = global_position + Vector3(0, 0.2, 0)
 	exp_inst.setup(0.0, blast_radius)
 
-# ----------------- STAGE 3: TRUE FORM MELTDOWN & RAPID BLITZ -----------------
+# ----------------- STAGE 3: EVIL INCARNATION (SLIM BODY & AERIAL BLITZ) -----------------
 
 func _process_stage_3(delta: float) -> void:
 	state_timer += delta
@@ -534,24 +543,25 @@ func _process_stage_3(delta: float) -> void:
 	var flat_to_player = Vector3(to_player.x, 0.0, to_player.z)
 	if flat_to_player.length() > 0.1:
 		var target_rot = atan2(-flat_to_player.x, -flat_to_player.z)
-		rotation.y = lerp_angle(rotation.y, target_rot, 6.0 * delta)
+		rotation.y = lerp_angle(rotation.y, target_rot, 7.5 * delta)
 	
 	match s3_state:
 		Stage3SubState.FLIGHT_BARRAGE:
-			# Fast high-speed flight around the sky
-			flight_orbit_angle += delta * 1.6
-			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 19.0, FLIGHT_ALTITUDE, sin(flight_orbit_angle) * 19.0)
+			# Fly faster across the sky: 32.0 m/s with aggressive 3D weaving
+			flight_orbit_angle += delta * 2.8
+			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 20.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 20.0)
 			var flight_dir = (target_flight_pos - global_position).normalized()
-			velocity = flight_dir * 19.0
+			velocity = flight_dir * 32.0
 			move_and_slide()
 			
-			# Rapid machine-gun projectile stream (small dmg)
+			# Faster fire rate (0.045s), faster projectiles (65 m/s), more bullets sprayed
 			if attack_timer <= 0.0:
-				attack_timer = 0.11
+				attack_timer = 0.045
 				_fire_stage3_machine_gun()
 				s3_machine_shots += 1
 			
-			if state_timer >= 3.2:
+			# Longer sustained machine gun barrage: 6.0 seconds
+			if state_timer >= 6.0:
 				velocity = Vector3.ZERO
 				s3_state = Stage3SubState.MEGA_PROJECTILE_CHARGE
 				state_timer = 0.0
@@ -560,7 +570,7 @@ func _process_stage_3(delta: float) -> void:
 		Stage3SubState.MEGA_PROJECTILE_CHARGE:
 			velocity = Vector3.ZERO
 			if core_light:
-				core_light.light_energy = 8.0 + (state_timer / 1.1) * 6.0
+				core_light.light_energy = 8.0 + (state_timer / 1.1) * 8.0
 			
 			if state_timer >= 1.1:
 				_fire_stage3_mega_projectile()
@@ -570,8 +580,8 @@ func _process_stage_3(delta: float) -> void:
 		Stage3SubState.EXHAUSTION:
 			# Boss is visibly exhausted in the sky waiting for cooldown
 			velocity = Vector3.ZERO
-			var exhaust_y = FLIGHT_ALTITUDE - 2.0 + sin(Time.get_ticks_msec() * 0.002) * 0.2
-			global_position.y = lerpf(global_position.y, exhaust_y, 2.0 * delta)
+			var exhaust_y = FLIGHT_ALTITUDE - 2.5 + sin(Time.get_ticks_msec() * 0.002) * 0.25
+			global_position.y = lerpf(global_position.y, exhaust_y, 2.5 * delta)
 			
 			# Core light dims and flickers weakly
 			if core_light:
@@ -584,25 +594,25 @@ func _process_stage_3(delta: float) -> void:
 		
 		Stage3SubState.POST_EXHAUST_LOCK_ON:
 			velocity = Vector3.ZERO
-			# Red aura flashing telegraph: 0.45s rapid warning!
+			# Red aura flashing telegraph: 0.70s window (exact same lock-on time as Stage 2!)
 			if aura_light:
-				aura_light.light_energy = 12.0 + sin(Time.get_ticks_msec() * 0.04) * 8.0
+				aura_light.light_energy = 14.0 + sin(Time.get_ticks_msec() * 0.04) * 8.0
 			
-			if state_timer >= 0.45:
+			if state_timer >= 0.70:
 				s3_state = Stage3SubState.POST_EXHAUST_DIVE
 				state_timer = 0.0
 				SoundManager.play("jump_pad", 0.1, 0.5)
 		
 		Stage3SubState.POST_EXHAUST_DIVE:
-			# Extreme speed charge (78.0 m/s - slightly faster than Stage 2)
+			# Supersonic hyper dive: 105.0 m/s (significantly faster than Stage 2's 60.0 m/s)
 			var dive_vec = locked_impact_pos - global_position
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
 			
-			velocity = dive_dir * 78.0
+			velocity = dive_dir * 105.0
 			move_and_slide()
 			
-			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 2.5 or is_on_floor():
+			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 3.0 or is_on_floor():
 				_execute_dive_impact(11.5, 2.5)
 				s3_state = Stage3SubState.IMPACT_RECOVERY
 				state_timer = 0.0
@@ -614,7 +624,7 @@ func _process_stage_3(delta: float) -> void:
 				state_timer = 0.0
 		
 		Stage3SubState.ASCEND:
-			velocity = Vector3(0.0, 22.0, 0.0)
+			velocity = Vector3(0.0, 26.0, 0.0)
 			move_and_slide()
 			if global_position.y >= FLIGHT_ALTITUDE:
 				global_position.y = FLIGHT_ALTITUDE
@@ -625,21 +635,21 @@ func _process_stage_3(delta: float) -> void:
 				attack_timer = 0.4
 
 func _fire_stage3_machine_gun() -> void:
-	var muzzle = left_muzzle if fire_left_next else right_muzzle
+	var muzzle = slim_left_muzzle if fire_left_next else slim_right_muzzle
 	fire_left_next = not fire_left_next
-	var muzzle_pos = muzzle.global_position if muzzle else (global_position + Vector3(0, 1.5, 0))
-	var aim_target = target_player.global_position + Vector3(randf_range(-0.5, 0.5), 0.8, randf_range(-0.5, 0.5))
+	var muzzle_pos = muzzle.global_position if muzzle else (global_position + Vector3(0, 1.2, 0))
+	var aim_target = target_player.global_position + Vector3(randf_range(-0.7, 0.7), randf_range(0.3, 1.2), randf_range(-0.7, 0.7))
 	var dir = (aim_target - muzzle_pos).normalized()
 	
 	var proj = PROJECTILE_SCENE.instantiate()
 	get_parent().add_child(proj)
 	proj.global_position = muzzle_pos
-	proj.setup(dir, attack_damage * 0.28, 40.0, false)
-	proj.set_projectile_visual(Color(1.0, 0.9, 0.2), Vector3(0.5, 0.5, 0.5))
-	SoundManager.play("shoot_rifle", 0.15, -1.0)
+	proj.setup(dir, attack_damage * 0.18, 65.0, false)
+	proj.set_projectile_visual(Color(1.0, 0.15, 0.35), Vector3(0.4, 0.4, 0.4))
+	SoundManager.play("shoot_rifle", 0.18, 0.2)
 
 func _fire_stage3_mega_projectile() -> void:
-	var muzzle_pos = global_position + Vector3(0, 1.2, -1.5).rotated(Vector3.UP, rotation.y)
+	var muzzle_pos = global_position + Vector3(0, 0.4, -1.2).rotated(Vector3.UP, rotation.y)
 	var aim_target = target_player.global_position + Vector3(0, 0.5, 0)
 	var dir = (aim_target - muzzle_pos).normalized()
 	
@@ -669,7 +679,7 @@ func _trigger_stage3_lock_on() -> void:
 	active_indicator = LOCK_INDICATOR_SCENE.instantiate()
 	get_parent().add_child(active_indicator)
 	active_indicator.global_position = locked_impact_pos
-	active_indicator.setup(11.5, 0.9)
+	active_indicator.setup(11.5, 1.2)
 
 # ----------------- DEATH SEQUENCE -----------------
 
