@@ -94,6 +94,15 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 
 ## 🧬 Roguelike Upgrades System
 
+> [!IMPORTANT]
+> ### 📍 Where to Add or Modify Perks
+> * **Perk Catalog & Definitions**: [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) — Edit the `upgrade_database` dictionary to change names, descriptions, max stacks, rarities, or add new perk entries.
+> * **Perk Application & Stats**: [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) — Handle stat increases and unlock flags inside `apply_upgrade()` and `reset_game()`.
+> * **Defensive & Player Perks**: [`scripts/player/player.gd`](scripts/player/player.gd) — Implements health, shields, invulnerability, and defensive cooldowns (e.g. *Null Barrier*, *Reactive Phase-Shield*, *Emergency Defibrillator*).
+> * **Projectile & Weapon Perks**: [`scripts/projectiles/bullet.gd`](scripts/projectiles/bullet.gd) — Implements bullet modifications (e.g. *Explosive Payload*, *Ricochet*, *Tesla Arc Emitter*, *Hyper-Penetrator*, *Cryo Rounds*).
+> * **Loot & Economy Perks**: [`scripts/loot/loot_pickup.gd`](scripts/loot/loot_pickup.gd) — Implements pickup mechanics (e.g. *Nanite Magnet* radius, *Nanite Scavenger* drops).
+> * See the [Perk Developer Guide](#2-how-to-add-or-modify-perks-upgrades) below for step-by-step instructions.
+
 Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, you are offered **3 holographic upgrade cards**.
 Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **Rare** (~18.8%), **Epic** (~4.7%), and **Legendary** (~1.2%), giving a **57.3% chance** of offering at least one Rare or higher card on every level-up.
 
@@ -181,12 +190,12 @@ Game/
 ├── icon.svg                          # Vector cyber reticle icon
 ├── scripts/
 │   ├── autoload/
+│   │   ├── game_manager.gd           # ★ PRIMARY PERK CATALOG: `upgrade_database`, stat variables, apply_upgrade()
 │   │   ├── network_manager.gd        # ENet high-level multiplayer squad manager
-│   │   ├── game_manager.gd           # Stats, upgrades catalog, wave director, XP
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
-│   │   ├── player.gd                 # FPS controller, co-op sync, 3D armor, revives
-│   │   └── drone.gd                  # Companion drone AI and carbine firing
+│   │   ├── player.gd                 # ★ DEFENSIVE & COMBAT PERKS: Null Barrier, Shields, Invulnerability, HP
+│   │   └── drone.gd                  # Companion drone perk AI
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (health, multi-target, damage)
 │   │   ├── swarmer.gd                # Fast swarm insect AI
@@ -194,16 +203,16 @@ Game/
 │   │   ├── brute.gd                  # Ground-slamming heavy golem AI
 │   │   └── boss.gd                   # Wave 100 Apex Overlord multi-phase boss AI
 │   ├── projectiles/
-│   │   ├── bullet.gd                 # Projectiles with ricochet, pierce, lightning, AOE
+│   │   ├── bullet.gd                 # ★ PROJECTILE PERKS: Explosions, pierce, ricochet, chain lightning, cryo
 │   │   ├── enemy_projectile.gd       # Spitter plasma orb
 │   │   └── explosion.gd              # Area-of-effect blast & particle emitter
 │   ├── loot/
-│   │   ├── loot_pickup.gd            # Magnetized XP, Health, and Scrap items
+│   │   ├── loot_pickup.gd            # ★ LOOT PERKS: Nanite Magnet collection radius, magnetized pickups
 │   │   └── chest.gd                  # Interactive Loot Cache with beacon
 │   ├── ui/
+│   │   ├── upgrade_menu.gd           # ★ UPGRADE CARD UI: Generates 3 cards dynamically from `upgrade_database`
+│   │   ├── hud.gd                    # HUD: Reticle, hitmarker, health, shield, Null Barrier status, waves
 │   │   ├── lobby_menu.gd             # Cyberpunk multiplayer Host & Join lobby
-│   │   ├── hud.gd                    # Reticle, hitmarker, health, shield, ammo, waves
-│   │   ├── upgrade_menu.gd           # 3-card holographic roguelike selector
 │   │   ├── pause_menu.gd             # Pause screen with sensitivity & audio sliders
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
@@ -249,27 +258,63 @@ If you are continuing development on **CyberHorde**, this section gives you the 
 
 ---
 
-### 2. How to Add a New Roguelike Upgrade
+### 2. How to Add or Modify Perks (Upgrades)
+
+All perks are driven by a centralized data structure in [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) and executed across specific gameplay scripts.
+
+#### 📍 Which Files to Modify
+
+| Perk Category | Primary File(s) to Modify | What to Implement |
+| :--- | :--- | :--- |
+| **All Perks (Registration & Stats)** | [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) | Add/modify entries in `upgrade_database`, declare stat variables, reset in `reset_game()`, and apply values in `apply_upgrade()`. |
+| **Defensive & Player Perks** (Shields, Invulnerability, Nullify, HP, Speed, Jumps) | [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd) | Check stats inside `take_damage()`, `_physics_process()`, `_handle_movement()`, or `_update_stats()`. |
+| **Weapon & Projectile Perks** (Explosions, Ricochet, Piercing, Chain Lightning, Cryo) | [`scripts/projectiles/bullet.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/projectiles/bullet.gd) | Check stats during collisions (`_on_body_entered()`, `_handle_ricochet()`, `_handle_pierce()`, `_handle_lightning()`). |
+| **Loot & Economy Perks** (Pickup Radius, Extra Scrap/XP) | [`scripts/loot/loot_pickup.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/loot/loot_pickup.gd) & [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) | `GameManager.magnet_radius` in `loot_pickup.gd`, and `GameManager.greed_mult` in `add_xp()` / `add_scrap()`. |
+| **Card Selector UI** | [`scripts/ui/upgrade_menu.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/ui/upgrade_menu.gd) | *Automatic*: Reads directly from `GameManager.upgrade_database` and handles stack counts automatically. |
+| **HUD Status Display** | [`scripts/ui/hud.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/ui/hud.gd) | Add HUD widgets for perks that need real-time feedback (like Shield Bar or Null Barrier cooldown). |
+
+---
+
+#### ✏️ How to Modify an Existing Perk
 1. Open [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd).
-2. Add your upgrade dictionary to `UPGRADE_CATALOG`:
+2. Locate the perk entry in `upgrade_database`:
+   - Change `max_stacks` to adjust the maximum rank (e.g. `max_stacks: 2`).
+   - Change `desc` to update the description shown on the holographic upgrade card.
+   - Change `rarity` (`"Common"`, `"Rare"`, `"Epic"`, or `"Legendary"`) and `color` (`Color(0.4, 0.8, 1.0)` for Common, `Color(0.8, 0.3, 1.0)` for Rare, `Color(1.0, 0.6, 0.1)` for Epic, `Color(1.0, 0.9, 0.2)` for Legendary).
+3. Update the perk's bonus values in `apply_upgrade()` (e.g., adjust stat multipliers or flat bonuses).
+4. Synchronize the perk table in [`README.md`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/README.md) to match.
+
+---
+
+#### ➕ Step-by-Step: How to Add a New Perk
+1. **Define in `upgrade_database`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
    ```gdscript
-   "laser_sights": {
-       "id": "laser_sights",
-       "name": "Precision Optics",
-       "desc": "+30% Critical Hit Chance and +50% Crit Damage.",
+   "plasma_shield": {
+       "id": "plasma_shield",
+       "name": "Plasma Ward",
+       "desc": "Grants +25 Overcharge Shield capacity.",
        "rarity": "Rare",
        "color": Color(0.8, 0.3, 1.0),
        "max_stacks": 3
    },
    ```
-3. Add any necessary stat tracking variable in `GameManager` (e.g. `var crit_chance: float = 0.15`).
-4. In `apply_upgrade(id: String)`, handle the stat increase:
+2. **Add tracking variable & reset in `reset_game()`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
    ```gdscript
-   "laser_sights":
-       crit_chance += 0.30
-       crit_damage += 0.50
+   var plasma_shield_bonus: float = 0.0
+   
+   func reset_game() -> void:
+       ...
+       plasma_shield_bonus = 0.0
    ```
-5. `stats_updated.emit()` automatically triggers updates in player weapons and HUD.
+3. **Handle in `apply_upgrade(upgrade_id: String)`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
+   ```gdscript
+   "plasma_shield":
+       plasma_shield_bonus += 25.0
+   ```
+4. **Hook up the gameplay effect** in the target script:
+   - For player stats: read `GameManager.plasma_shield_bonus` in [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd) inside `_update_stats()`.
+   - For projectile effects: read `GameManager` flags in [`scripts/projectiles/bullet.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/projectiles/bullet.gd).
+5. **Update documentation & push**: Update the [Roguelike Upgrades Catalog](#-roguelike-upgrades-system) in `README.md` and push changes to GitHub.
 
 ---
 
