@@ -156,9 +156,10 @@ func _spawn_one_enemy() -> void:
 	else:
 		if current_wave >= 6:
 			var r = randf()
-			if r < 0.18:
+			# Brute spawn chance reduced by 20% (from 18% to 14.4%)
+			if r < 0.144:
 				type_id = 2
-			elif r < 0.48:
+			elif r < 0.444:
 				type_id = 1
 		elif current_wave >= 3:
 			if randf() < 0.35:

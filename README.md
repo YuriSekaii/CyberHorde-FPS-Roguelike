@@ -188,13 +188,22 @@ Hordes scale progressively to challenge late-game builds:
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
 * **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **90%** max reduction). Floating damage indicators accurately reflect reduced damage values.
 
+### Enemy Catalog & Base Stats
+
+| Enemy Type | Base Health | Move Speed | Base Damage | Attack Rate / Cooldown | Attack Type & Range | Spawn Weight (Wave 6+) |
+| :--- | :---: | :---: | :---: | :---: | :--- | :---: |
+| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~55.6% |
+| **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% |
+| **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Reduced by 20%) |
+| **Apex Overlord (Final Boss)** | **10,000.0** (Base) → ~1.6M (Wave 100) | 4.2 – 7.8 m/s | 40.0 → 180.0 (Cap) | 1.3s – 2.2s (Cannons)<br>4.5s – 7.5s (Stomp) | Heavy Plasma Barrage + 10.0m Tremor Stomp | Wave 100 Exclusive |
+
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers that charge in and slam the ground creating shockwaves and knockback!
+3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing mini-boss style threats that charge in and slam the ground creating shockwaves and knockback!
 
 ### 👑 Wave 100 Final Boss: Apex Overlord
-**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord**:
+**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **10,000 Base HP**, scaling to ~1.6M HP on Wave 100):
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
 * **Phase 1 (100% – 60% HP)**: Alternates dual heavy plasma cannon volleys with massive 10m-radius **Tremor Stomps** that launch players into the air.
 * **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons escort reinforcements.
