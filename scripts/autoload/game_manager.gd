@@ -186,7 +186,7 @@ var upgrade_database: Dictionary = {
 	"combat_drone": {
 		"id": "combat_drone",
 		"name": "Assault Drone Unit",
-		"desc": "Deploys a companion drone using your Pulse Carbine (1/10 fire rate, no ammo, all weapon perks). +1 drone per pick.",
+		"desc": "Deploys an autonomous companion drone mirroring your weapon (1/4 fire rate, same mag & reload speed, all weapon perks). +1 drone per pick.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 6

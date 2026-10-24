@@ -2,9 +2,14 @@ extends Node3D
 
 @export var drone_index: int = 0
 var fire_cooldown: float = 0.0
-# Pulse Carbine base fire rate is 0.12s. 1/10 fire rate is 1.2s per shot.
-var base_fire_interval: float = 1.2
 var target_enemy: Node3D = null
+
+# Weapon mirroring, magazine & reload state
+var weapon_ammo: Dictionary = {} # weapon_index -> current_ammo
+var current_weapon_idx: int = 0
+var is_reloading: bool = false
+var reload_timer: float = 0.0
+var idle_timer: float = 0.0
 
 @onready var light: OmniLight3D = $DroneLight
 @onready var ring: MeshInstance3D = $DroneRing
@@ -13,11 +18,29 @@ const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
 
 func _ready() -> void:
 	# Stagger initial shot timing based on drone index so multiple drones create rhythmic volley
-	fire_cooldown = float(drone_index) * 0.35
+	fire_cooldown = float(drone_index) * 0.25
 
 func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
-	if not is_instance_valid(player_ref):
+	if not is_instance_valid(player_ref) or player_ref.weapons.is_empty():
 		return
+	
+	var active_idx = player_ref.active_weapon_idx
+	if active_idx < 0 or active_idx >= player_ref.weapons.size():
+		active_idx = 0
+	var cur_weapon = player_ref.weapons[active_idx]
+	
+	# Detect weapon switch
+	if active_idx != current_weapon_idx:
+		current_weapon_idx = active_idx
+		if not weapon_ammo.has(current_weapon_idx):
+			weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
+		is_reloading = false
+		reload_timer = 0.0
+	
+	if not weapon_ammo.has(current_weapon_idx):
+		weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
+	else:
+		weapon_ammo[current_weapon_idx] = mini(weapon_ammo[current_weapon_idx], cur_weapon.max_ammo)
 	
 	# Smooth orbital flight formation around player
 	var t = Time.get_ticks_msec() / 1000.0
@@ -32,9 +55,28 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	
 	global_position = global_position.lerp(target_pos, clampf(14.0 * delta, 0.0, 1.0))
 	
-	# Rotate cyan stabilizer ring
+	# Stabilizer ring rotation (spins faster while reloading)
 	if ring:
-		ring.rotate_y(3.5 * delta)
+		ring.rotate_y((7.0 if is_reloading else 3.5) * delta)
+	
+	# Handle reload countdown
+	if is_reloading:
+		reload_timer -= delta
+		if light:
+			light.light_energy = 1.0 + sin(Time.get_ticks_msec() * 0.015) * 0.8
+		if reload_timer <= 0.0:
+			is_reloading = false
+			reload_timer = 0.0
+			weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
+			if light:
+				light.light_energy = 1.5
+	
+	# Trigger reload if empty or if player reloads their weapon
+	if not is_reloading:
+		if weapon_ammo[current_weapon_idx] <= 0:
+			_start_reload(cur_weapon)
+		elif player_ref.is_reloading and weapon_ammo[current_weapon_idx] < cur_weapon.max_ammo:
+			_start_reload(cur_weapon)
 	
 	# Update fire cooldown
 	fire_cooldown -= delta
@@ -43,19 +85,40 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	_find_target()
 	
 	if is_instance_valid(target_enemy):
+		idle_timer = 0.0
 		var enemy_aim_pos = target_enemy.global_position + Vector3(0, 0.7, 0)
 		look_at(enemy_aim_pos, Vector3.UP)
 		
-		# Fires at 1/10 fire rate of Pulse Carbine, scaled by player's Overclock Trigger upgrades!
-		var effective_cooldown = base_fire_interval / GameManager.fire_rate_mult
-		if fire_cooldown <= 0.0:
-			fire_cooldown = effective_cooldown
-			_fire_pulse_carbine(enemy_aim_pos)
+		# Fires at 1/4 fire rate of your actual weapon, scaled by Overclock Trigger (GameManager.fire_rate_mult)
+		var effective_cooldown = (cur_weapon.fire_rate * 4.0) / GameManager.fire_rate_mult
+		if fire_cooldown <= 0.0 and not is_reloading:
+			if weapon_ammo[current_weapon_idx] > 0:
+				fire_cooldown = effective_cooldown
+				_fire_weapon(enemy_aim_pos, cur_weapon, current_weapon_idx == 2)
+			else:
+				_start_reload(cur_weapon)
 	else:
+		# Idle reload after 3s out of combat if magazine is not full
+		if not is_reloading and weapon_ammo[current_weapon_idx] < cur_weapon.max_ammo:
+			idle_timer += delta
+			if idle_timer >= 3.0:
+				idle_timer = 0.0
+				_start_reload(cur_weapon)
+		else:
+			idle_timer = 0.0
+		
 		# Idle aim forward along orbit tangential velocity
 		var forward_dir = Vector3(-sin(orbit_angle), 0, cos(orbit_angle))
 		if forward_dir.length_squared() > 0.01:
 			look_at(global_position + forward_dir, Vector3.UP)
+
+func _start_reload(w) -> void:
+	if is_reloading:
+		return
+	is_reloading = true
+	# Matches your actual weapon's reload speed, scaled by Rapid Loader upgrades
+	reload_timer = w.reload_time
+	SoundManager.play("reload", 0.08, -4.0)
 
 func _find_target() -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -69,13 +132,18 @@ func _find_target() -> void:
 				best = e
 	target_enemy = best
 
-func _fire_pulse_carbine(target_pos: Vector3) -> void:
+func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 	var aim_dir = (target_pos - global_position).normalized()
 	
-	# Inherits Multi-Barrel Splitter (+100% projectiles)
-	var total_bullets = int(round(1.0 * (1.0 + GameManager.extra_projectile_mult)))
+	# Consume magazine ammo
+	var cur_ammo = weapon_ammo.get(current_weapon_idx, w.max_ammo)
+	cur_ammo -= 1
+	weapon_ammo[current_weapon_idx] = cur_ammo
 	
-	SoundManager.play("shoot_rifle", 0.08, 2.4 + randf_range(-0.3, 0.3))
+	# Inherits weapon base pellets and Multi-Barrel Splitter (+100% projectiles per stack)
+	var total_bullets = int(round(float(w.pellets) * (1.0 + GameManager.extra_projectile_mult)))
+	
+	SoundManager.play(w.sound_name, 0.08, -2.0)
 	
 	# Flash drone light
 	if light:
@@ -92,22 +160,30 @@ func _fire_pulse_carbine(target_pos: Vector3) -> void:
 		scene_root.add_child(bullet)
 		bullet.global_position = global_position + aim_dir * 0.4
 		
-		# Direction with slight spread if multishot
-		var spread_angle = 0.02
+		# Direction with spread matching weapon spread
+		var spread_angle = w.spread
 		if total_bullets > 1:
-			spread_angle = 0.045
+			spread_angle = maxf(spread_angle, 0.045)
+		if total_bullets > 7:
+			spread_angle *= 1.2
 		
 		var spread_x = randf_range(-spread_angle, spread_angle)
 		var spread_y = randf_range(-spread_angle, spread_angle)
 		var bullet_dir = (aim_dir + transform.basis.x * spread_x + transform.basis.y * spread_y).normalized()
 		
-		# Pulse Carbine base stats: 22.0 base damage, kinetic
-		# Inherits ALL player weapon perks automatically:
+		# Matches your actual weapon base stats (damage, explosive, plasma),
+		# and inherits ALL player weapon perks automatically:
 		# - Heavy Caliber (+25% damage per stack, infinite stacks)
 		# - Hyper-Penetrator (piercing)
 		# - Explosive Payload (detonates on hit)
 		# - Tesla Arc Emitter (chain lightning)
 		# - Smart Bouncing Core (ricochets with on-bounce explosion and lightning)
 		# - Cryo Rounds (slows enemies)
-		# - Critical hits
-		bullet.setup(bullet_dir, 22.0, false, false)
+		# - Precision Optics & Hollow-Point Rounds (critical hits)
+		# - Multi-Barrel Splitter (extra projectiles)
+		# - Extended Mag (same magazine capacity)
+		# - Rapid Loader (same reload speed)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma)
+	
+	if cur_ammo <= 0:
+		_start_reload(w)
