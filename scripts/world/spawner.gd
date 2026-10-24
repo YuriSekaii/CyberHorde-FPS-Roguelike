@@ -40,6 +40,11 @@ func start_spawner() -> void:
 	pending_spawns.clear()
 	boss_spawned_for_wave = false
 	_clean_all_indicators()
+	if GameManager.is_boss_battle_mode:
+		current_wave = 100
+		GameManager.current_wave = 100
+	else:
+		current_wave = 1
 	# In multiplayer, only server controls wave timers
 	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
 		start_intermission(3.0)

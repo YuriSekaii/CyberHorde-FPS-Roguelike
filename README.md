@@ -14,11 +14,21 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 ## 🎮 How to Play
 
 ### 1-Click Launchers:
-* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, `Join Co-op`, or `Check for Updates`).
+* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, `Join Co-op`, `Boss Battle`, or `Check for Updates`).
 * **`Update_Game.bat`**: 1-click update script to automatically run `git pull` from Windows Explorer.
 * **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side on your desktop so you can test 2-player co-op locally with zero setup!
 * **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
 * **`Push_To_GitHub.bat`**: Automatically stages, commits, and pushes any local modifications to your remote GitHub repository (`main` branch).
+
+### 🕹️ Game Modes:
+* **Single Player (Solo)**: Classic solo horde survival starting at Wave 1. Build your loadout card-by-card.
+* **Host Co-op Mission (Server)**: Host an online squad co-op lobby using ENet networking (default port: `7777`).
+* **Join Co-op Mission (Client)**: Connect to a teammate's host using their local or public IP address.
+* **⚔️ Boss Battle (Wave 100 Test Protocol)**:
+  * Direct testing mode to immediately fight the **Wave 100 Apex Overlord** without grinding through earlier waves.
+  * **Authorization Key**: Requires entering `HereComeTheChallenger` to authorize deployment.
+  * **Fully Stacked Perk Arsenal**: You are automatically outfitted with every single perk in the game fully maxed out (infinite-stacking perks—*Heavy Caliber*, *Aegis Energy Shield*, *Vital Plating*, and *Hollow-Point Rounds*—are granted **10 stacks** each).
+  * **Deployment Flexibility**: Playable either **Solo** or **Hosted as a Co-op Squad** session.
 
 ---
 
@@ -212,6 +222,7 @@ Hordes scale progressively to challenge late-game builds:
 * **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons immediate escort rings.
 * **Phase 3 (< 30% HP - Meltdown)**: Blazing violet reactor berserk state with increased movement speed, continuous 5-way barrages, and frequent tremor stomps!
 * **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
+* **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 99? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 100 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.
 
 ---
 
@@ -240,7 +251,7 @@ Game/
 ├── icon.svg                          # Vector cyber reticle icon
 ├── scripts/
 │   ├── autoload/
-│   │   ├── game_manager.gd           # ★ PRIMARY PERK CATALOG: `upgrade_database`, stat variables, apply_upgrade()
+│   │   ├── game_manager.gd           # ★ PRIMARY PERK CATALOG: `upgrade_database`, stats, apply_upgrade(), Boss Battle mode setup
 │   │   ├── network_manager.gd        # ENet high-level multiplayer squad manager
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
@@ -261,12 +272,12 @@ Game/
 │   │   └── chest.gd                  # Interactive Loot Cache with beacon
 │   ├── ui/
 │   │   ├── upgrade_menu.gd           # ★ UPGRADE CARD UI: Generates 3 cards dynamically from `upgrade_database`
-│   │   ├── hud.gd                    # HUD: Reticle, hitmarker, health, shield, Null Barrier status, waves
-│   │   ├── lobby_menu.gd             # Cyberpunk multiplayer Host & Join lobby
+│   │   ├── hud.gd                    # HUD: Reticle, hitmarker, health, shield, Null Barrier status, waves, boss health bar
+│   │   ├── lobby_menu.gd             # Main Lobby: Solo, Host, Join, Boss Battle (key auth), Updates
 │   │   ├── pause_menu.gd             # Pause screen with sensitivity & audio sliders
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
-│       ├── spawner.gd                # Wave director & horde scaling
+│       ├── spawner.gd                # Wave director, Wave 100 Boss Battle spawning & horde scaling
 │       ├── spawn_indicator.gd        # 3D holographic telegraph rings & emergence
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/

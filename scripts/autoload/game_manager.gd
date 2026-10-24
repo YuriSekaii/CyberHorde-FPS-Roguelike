@@ -34,6 +34,7 @@ var current_wave: int = 1
 var enemies_killed: int = 0
 var total_damage_dealt: float = 0.0
 var run_time: float = 0.0
+var is_boss_battle_mode: bool = false
 
 # Roguelike Stats
 var damage_mult: float = 1.0
@@ -373,6 +374,7 @@ func _bind_mouse(action: String, button: MouseButton) -> void:
 	InputMap.action_add_event(action, ev)
 
 func reset_game() -> void:
+	is_boss_battle_mode = false
 	state = GameState.PLAYING
 	player_level = 1
 	player_xp = 0
@@ -519,7 +521,30 @@ func get_upgrade_options(count: int = 3) -> Array[Dictionary]:
 	
 	return result
 
+func setup_boss_battle_mode() -> void:
+	reset_game()
+	is_boss_battle_mode = true
+	current_wave = 100
+	player_level = 100
+	grant_boss_battle_loadout()
+
+func grant_boss_battle_loadout() -> void:
+	for id in upgrade_database:
+		var item = upgrade_database[id]
+		var max_s: int = int(item.get("max_stacks", 1))
+		var target_stacks: int = 10 if max_s >= 100 else max_s
+		for i in range(target_stacks):
+			_apply_upgrade_internal(id)
+	current_shield = shield_max
+	stats_updated.emit()
+
 func apply_upgrade(upgrade_id: String) -> void:
+	_apply_upgrade_internal(upgrade_id)
+	stats_updated.emit()
+	SoundManager.play("upgrade_select")
+	resume_game()
+
+func _apply_upgrade_internal(upgrade_id: String) -> void:
 	if not upgrade_database.has(upgrade_id):
 		return
 	var cur_count = active_upgrades.get(upgrade_id, 0) + 1
@@ -577,10 +602,6 @@ func apply_upgrade(upgrade_id: String) -> void:
 			crit_chance += 0.10
 		"hollow_point":
 			crit_damage += 0.5
-	
-	stats_updated.emit()
-	SoundManager.play("upgrade_select")
-	resume_game()
 
 func trigger_second_wind() -> void:
 	second_wind_available = false

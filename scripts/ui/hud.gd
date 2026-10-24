@@ -55,6 +55,16 @@ func connect_player(player: Node) -> void:
 		player.weapon_changed.connect(_on_weapon_changed)
 	if player.has_signal("charge_changed"):
 		player.charge_changed.connect(_on_charge_changed)
+	
+	if "current_health" in player and "max_health" in player:
+		_on_health_changed(player.current_health, player.max_health)
+	if "current_shield" in player:
+		_on_shield_changed(player.current_shield, GameManager.shield_max)
+	if "weapons" in player and "active_weapon_idx" in player:
+		if player.weapons.size() > player.active_weapon_idx:
+			var cur_w = player.weapons[player.active_weapon_idx]
+			_on_weapon_changed(player.active_weapon_idx, cur_w.name)
+			_on_ammo_changed(cur_w.current_ammo, cur_w.max_ammo, player.is_reloading)
 
 func connect_spawner(spawner: Node) -> void:
 	if spawner.has_signal("wave_progress"):
@@ -157,7 +167,12 @@ func _on_wave_progress(alive_count: int, _total: int) -> void:
 
 func _on_intermission_tick(sec_left: int) -> void:
 	intermission_label.visible = true
-	intermission_label.text = "NEXT WAVE IN: %ds" % sec_left
+	if GameManager.is_boss_battle_mode:
+		intermission_label.text = "BOSS ENGAGEMENT IN: %ds" % sec_left
+		intermission_label.modulate = Color(1.0, 0.3, 0.3)
+	else:
+		intermission_label.text = "NEXT WAVE IN: %ds" % sec_left
+		intermission_label.modulate = Color.WHITE
 
 func _on_xp_changed(cur_xp: int, needed_xp: int) -> void:
 	_update_xp_display(cur_xp, needed_xp)

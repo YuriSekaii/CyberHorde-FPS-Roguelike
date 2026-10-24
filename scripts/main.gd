@@ -21,12 +21,14 @@ func _on_lobby_mission_started() -> void:
 	if NetworkManager.is_multiplayer:
 		if NetworkManager.is_server:
 			# Server tells all peers to start the mission together
-			rpc_start_mission.rpc(NetworkManager.connected_peers)
+			rpc_start_mission.rpc(NetworkManager.connected_peers, GameManager.is_boss_battle_mode)
 	else:
 		_start_mission_local([1])
 
 @rpc("call_local", "reliable")
-func rpc_start_mission(peer_ids: Array) -> void:
+func rpc_start_mission(peer_ids: Array, is_boss_mode: bool = false) -> void:
+	if is_boss_mode:
+		GameManager.setup_boss_battle_mode()
 	_start_mission_local(peer_ids)
 
 func _start_mission_local(peer_ids: Array) -> void:

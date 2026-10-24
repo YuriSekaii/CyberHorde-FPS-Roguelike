@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
 
@@ -62,6 +62,30 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_boss"]
+bg_color = Color(0.24, 0.08, 0.12, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.28, 0.38, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_boss_hover"]
+bg_color = Color(0.38, 0.12, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.45, 0.55, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
 bg_color = Color(0.03, 0.05, 0.09, 0.9)
 border_width_left = 1
@@ -88,16 +112,16 @@ grow_vertical = 2
 color = Color(0.02, 0.03, 0.05, 0.85)
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(520, 620)
+custom_minimum_size = Vector2(520, 660)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -260.0
-offset_top = -310.0
+offset_top = -330.0
 offset_right = 260.0
-offset_bottom = 310.0
+offset_bottom = 330.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -160,6 +184,14 @@ theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🔗  JOIN CO-OP MISSION (CLIENT)"
+
+[node name="BossBattleBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_boss")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_boss_hover")
+text = "⚔️  BOSS BATTLE (WAVE 100)"
 
 [node name="UpdateBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -363,6 +395,74 @@ theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
 theme_override_font_sizes/font_size = 13
 text = "← BACK TO MAIN MENU"
 
+[node name="BossContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BossHeader" type="Label" parent="Panel/VBoxContainer/BossContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚔️  BOSS BATTLE PROTOCOL (WAVE 100)"
+horizontal_alignment = 1
+
+[node name="BossDesc" type="Label" parent="Panel/VBoxContainer/BossContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Deploy directly to Wave 100 to challenge the Apex Overlord!
+Equipped with all perks fully stacked (10 stacks for infinite perks).
+Enter the Authorization Key below to engage:"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="KeyContainer" type="HBoxContainer" parent="Panel/VBoxContainer/BossContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="KeyLabel" type="Label" parent="Panel/VBoxContainer/BossContainer/KeyContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "Access Key: "
+
+[node name="BossKeyInput" type="LineEdit" parent="Panel/VBoxContainer/BossContainer/KeyContainer"]
+custom_minimum_size = Vector2(250, 36)
+layout_mode = 2
+placeholder_text = "Enter Access Key..."
+alignment = 1
+
+[node name="KeyStatusLabel" type="Label" parent="Panel/VBoxContainer/BossContainer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DeployBossSoloBtn" type="Button" parent="Panel/VBoxContainer/BossContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_boss")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_boss_hover")
+text = "🔥  DEPLOY TO FINAL BOSS (SOLO)"
+
+[node name="DeployBossHostBtn" type="Button" parent="Panel/VBoxContainer/BossContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🌐  HOST CO-OP BOSS BATTLE (SERVER)"
+
+[node name="BossBackBtn" type="Button" parent="Panel/VBoxContainer/BossContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
 [node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -393,3 +493,8 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/RestartBtn" to="." method="_on_restart_game_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/CheckAgainBtn" to="." method="_on_check_again_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/UpdateBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/BossBattleBtn" to="." method="_on_boss_menu_pressed"]
+[connection signal="text_submitted" from="Panel/VBoxContainer/BossContainer/KeyContainer/BossKeyInput" to="." method="_on_boss_key_submitted"]
+[connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossSoloBtn" to="." method="_on_deploy_boss_solo_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossHostBtn" to="." method="_on_deploy_boss_host_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BossContainer/BossBackBtn" to="." method="_on_back_pressed"]

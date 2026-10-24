@@ -6,6 +6,7 @@ signal mission_started()
 @onready var host_container: VBoxContainer = $Panel/VBoxContainer/HostContainer
 @onready var join_container: VBoxContainer = $Panel/VBoxContainer/JoinContainer
 @onready var update_container: VBoxContainer = $Panel/VBoxContainer/UpdateContainer
+@onready var boss_container: VBoxContainer = $Panel/VBoxContainer/BossContainer
 
 @onready var status_label: Label = $Panel/VBoxContainer/StatusLabel
 @onready var host_ip_label: Label = $Panel/VBoxContainer/HostContainer/HostIPLabel
@@ -16,6 +17,11 @@ signal mission_started()
 @onready var join_ip_input: LineEdit = $Panel/VBoxContainer/JoinContainer/IPContainer/JoinIPInput
 @onready var join_port_input: LineEdit = $Panel/VBoxContainer/JoinContainer/PortContainer/JoinPortInput
 @onready var connect_btn: Button = $Panel/VBoxContainer/JoinContainer/ConnectBtn
+
+@onready var boss_key_input: LineEdit = $Panel/VBoxContainer/BossContainer/KeyContainer/BossKeyInput
+@onready var boss_status_label: Label = $Panel/VBoxContainer/BossContainer/KeyStatusLabel
+
+const BOSS_BATTLE_KEY: String = "HereComeTheChallenger"
 
 @onready var update_btn: Button = $Panel/VBoxContainer/MainButtons/UpdateBtn
 @onready var window_mode_btn: Button = $Panel/VBoxContainer/MainButtons/WindowModeBtn
@@ -67,19 +73,25 @@ func _show_main_view() -> void:
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
 	status_label.text = "Select deployment mode."
 	_update_footer_version()
 
 func _on_solo_pressed() -> void:
+	GameManager.reset_game()
 	NetworkManager.start_singleplayer()
 	visible = false
 	mission_started.emit()
 
 func _on_host_menu_pressed() -> void:
+	GameManager.reset_game()
 	main_buttons.visible = false
 	host_container.visible = true
 	join_container.visible = false
 	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
 	
 	var local_ip = NetworkManager.get_local_ip()
 	host_ip_label.text = "YOUR LOCAL IP: %s" % local_ip
@@ -88,10 +100,13 @@ func _on_host_menu_pressed() -> void:
 	_update_peer_list()
 
 func _on_join_menu_pressed() -> void:
+	GameManager.reset_game()
 	main_buttons.visible = false
 	host_container.visible = false
 	join_container.visible = true
 	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
 	status_label.text = "Enter Host IP and Port, then click Connect."
 
 func _on_connect_pressed() -> void:
@@ -201,7 +216,63 @@ func _on_check_again_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	NetworkManager.cleanup_network()
+	GameManager.reset_game()
 	_show_main_view()
+
+func _on_boss_menu_pressed() -> void:
+	main_buttons.visible = false
+	host_container.visible = false
+	join_container.visible = false
+	update_container.visible = false
+	boss_container.visible = true
+	boss_key_input.text = ""
+	boss_status_label.text = ""
+	status_label.text = "Enter Authorization Key to access Boss Battle mode."
+	boss_key_input.grab_focus()
+
+func _validate_boss_key() -> bool:
+	var entered = boss_key_input.text.strip_edges()
+	return entered == BOSS_BATTLE_KEY or entered.nocasecmp_to(BOSS_BATTLE_KEY) == 0
+
+func _on_boss_key_submitted(_new_text: String) -> void:
+	_on_deploy_boss_solo_pressed()
+
+func _on_deploy_boss_solo_pressed() -> void:
+	if _validate_boss_key():
+		boss_status_label.set("theme_override_colors/font_color", Color(0.2, 1.0, 0.5))
+		boss_status_label.text = "✓ ACCESS GRANTED! PREPARING APEX OVERLORD BATTLE..."
+		SoundManager.play("level_up", 0.2, 0.0)
+		GameManager.setup_boss_battle_mode()
+		NetworkManager.start_singleplayer()
+		visible = false
+		mission_started.emit()
+	else:
+		boss_status_label.set("theme_override_colors/font_color", Color(1.0, 0.3, 0.3))
+		boss_status_label.text = "❌ ACCESS DENIED: INVALID AUTHORIZATION KEY"
+		SoundManager.play("hitmarker", 0.3, -3.0)
+		boss_key_input.grab_focus()
+
+func _on_deploy_boss_host_pressed() -> void:
+	if _validate_boss_key():
+		boss_status_label.set("theme_override_colors/font_color", Color(0.2, 1.0, 0.5))
+		boss_status_label.text = "✓ ACCESS GRANTED! SETTING UP CO-OP BOSS BATTLE..."
+		SoundManager.play("level_up", 0.2, 0.0)
+		GameManager.setup_boss_battle_mode()
+		
+		main_buttons.visible = false
+		boss_container.visible = false
+		host_container.visible = true
+		
+		var local_ip = NetworkManager.get_local_ip()
+		host_ip_label.text = "YOUR LOCAL IP: %s (BOSS BATTLE HOST)" % local_ip
+		var port = int(host_port_input.text) if host_port_input.text.is_valid_int() else 7777
+		NetworkManager.start_host(port)
+		_update_peer_list()
+	else:
+		boss_status_label.set("theme_override_colors/font_color", Color(1.0, 0.3, 0.3))
+		boss_status_label.text = "❌ ACCESS DENIED: INVALID AUTHORIZATION KEY"
+		SoundManager.play("hitmarker", 0.3, -3.0)
+		boss_key_input.grab_focus()
 
 func _on_status_changed(text: String) -> void:
 	status_label.text = text
