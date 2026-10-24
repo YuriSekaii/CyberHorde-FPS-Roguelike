@@ -1,0 +1,66 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/brute.gd" id="1_brute"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_brute"]
+size = Vector3(1.6, 2.2, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_armor"]
+albedo_color = Color(0.25, 0.18, 0.12, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+material = SubResource("StandardMaterial3D_armor")
+size = Vector3(1.4, 1.2, 1.0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = SubResource("StandardMaterial3D_armor")
+size = Vector3(0.4, 1.4, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
+shading_mode = 0
+albedo_color = Color(1, 0.3, 0.05, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_visor"]
+material = SubResource("StandardMaterial3D_visor")
+size = Vector3(0.8, 0.2, 0.1)
+
+[node name="Brute" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_brute")
+enemy_name = "Armored Goliath"
+max_health = 260.0
+speed = 3.6
+attack_damage = 35.0
+xp_reward = 120
+scrap_reward = 60
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_brute")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="Torso" type="MeshInstance3D" parent="MeshRoot"]
+mesh = SubResource("BoxMesh_torso")
+
+[node name="ArmLeft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, -0.2, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="ArmRight" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, -0.2, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="Visor" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.52)
+mesh = SubResource("BoxMesh_visor")
+
+[node name="SlamLight" type="OmniLight3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -0.8)
+light_color = Color(1, 0.3, 0.05, 1)
+light_energy = 4.0
+omni_range = 5.0

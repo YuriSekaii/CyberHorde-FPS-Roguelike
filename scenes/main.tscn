@@ -1,0 +1,29 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/world/arena.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/world/spawner.gd" id="4_spawner"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/upgrade_menu.tscn" id="6_upg"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over.tscn" id="8_gover"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Arena" parent="." instance=ExtResource("2_arena")]
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+
+[node name="Spawner" type="Node3D" parent="."]
+script = ExtResource("4_spawner")
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="UpgradeMenu" parent="." instance=ExtResource("6_upg")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
+
+[node name="GameOver" parent="." instance=ExtResource("8_gover")]

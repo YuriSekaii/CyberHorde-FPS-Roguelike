@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/projectiles/explosion.gd" id="1_exp"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1"]
+radius = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p"]
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.6, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_p"]
+material = SubResource("StandardMaterial3D_p")
+size = Vector3(0.18, 0.18, 0.18)
+
+[node name="Explosion" type="Area3D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_exp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_1")
+
+[node name="CPUParticles3D" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 40
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("BoxMesh_p")
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -6, 0)
+initial_velocity_min = 8.0
+initial_velocity_max = 15.0
+color = Color(1, 0.4, 0.05, 1)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.5, 0.1, 1)
+light_energy = 5.0
+omni_range = 8.0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

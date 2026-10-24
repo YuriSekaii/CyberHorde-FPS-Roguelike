@@ -1,0 +1,65 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/swarmer.gd" id="1_swarmer"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_chitin"]
+albedo_color = Color(0.15, 0.05, 0.05, 1)
+metallic = 0.6
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_chitin")
+size = Vector3(0.7, 0.45, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye"]
+shading_mode = 0
+albedo_color = Color(1, 0.08, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_eye"]
+material = SubResource("StandardMaterial3D_eye")
+radius = 0.12
+height = 0.24
+
+[sub_resource type="PrismMesh" id="PrismMesh_claw"]
+material = SubResource("StandardMaterial3D_chitin")
+size = Vector3(0.2, 0.4, 0.15)
+
+[node name="Swarmer" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_swarmer")
+enemy_name = "Cyber Swarmer"
+max_health = 35.0
+speed = 7.0
+attack_damage = 10.0
+xp_reward = 15
+scrap_reward = 10
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+
+[node name="Body" type="MeshInstance3D" parent="MeshRoot"]
+mesh = SubResource("BoxMesh_body")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.12, -0.42)
+mesh = SubResource("SphereMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.12, -0.42)
+mesh = SubResource("SphereMesh_eye")
+
+[node name="ClawLeft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -0.4, -0.05, -0.35)
+mesh = SubResource("PrismMesh_claw")
+
+[node name="ClawRight" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 0.4, -0.05, -0.35)
+mesh = SubResource("PrismMesh_claw")

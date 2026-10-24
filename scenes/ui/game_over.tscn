@@ -1,0 +1,151 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1_gover"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.04, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.2, 0.25, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="GameOver" type="CanvasLayer"]
+process_mode = 3
+layer = 10
+script = ExtResource("1_gover")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(480, 480)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -240.0
+offset_right = 240.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 32.0
+offset_right = -36.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "SIGNAL LOST"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 14
+text = "OPERATIVE TERMINATED IN ACTION"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatsGrid" type="GridContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="WavesLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Wave Reached:"
+
+[node name="WavesVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.85, 1, 1)
+text = "1"
+
+[node name="KillsLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Enemies Eliminated:"
+
+[node name="KillsVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "0"
+
+[node name="DmgLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Damage Dealt:"
+
+[node name="DmgVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+text = "0"
+
+[node name="ScrapLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Scrap Collected:"
+
+[node name="ScrapVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+text = "0"
+
+[node name="LevelLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Level Achieved:"
+
+[node name="LevelVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 1, 0.6, 1)
+text = "1"
+
+[node name="TimeLbl" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "Survival Time:"
+
+[node name="TimeVal" type="Label" parent="Panel/VBoxContainer/StatsGrid"]
+layout_mode = 2
+text = "00:00"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="RestartBtn" type="Button" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "DEPLOY AGAIN"
+
+[node name="QuitBtn" type="Button" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "QUIT TO DESKTOP"
+
+[connection signal="pressed" from="Panel/VBoxContainer/RestartBtn" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/QuitBtn" to="." method="_on_quit_pressed"]

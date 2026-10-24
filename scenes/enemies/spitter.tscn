@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/spitter.gd" id="1_spitter"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_drone"]
+radius = 0.65
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hull"]
+albedo_color = Color(0.12, 0.1, 0.18, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_hull"]
+material = SubResource("StandardMaterial3D_hull")
+radius = 0.5
+height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_core"]
+shading_mode = 0
+albedo_color = Color(0.9, 0.1, 1, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_ring"]
+material = SubResource("StandardMaterial3D_core")
+inner_radius = 0.55
+outer_radius = 0.68
+
+[node name="Spitter" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_spitter")
+enemy_name = "Plasma Spitter"
+max_health = 75.0
+speed = 4.5
+attack_damage = 18.0
+xp_reward = 35
+scrap_reward = 25
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_drone")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Hull" type="MeshInstance3D" parent="MeshRoot"]
+mesh = SubResource("SphereMesh_hull")
+
+[node name="Ring" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0)
+mesh = SubResource("TorusMesh_ring")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="MeshRoot"]
+light_color = Color(0.9, 0.1, 1, 1)
+light_energy = 2.0
+omni_range = 3.5

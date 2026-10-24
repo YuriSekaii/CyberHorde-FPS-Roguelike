@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/projectiles/enemy_projectile.gd" id="1_eproj"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1"]
+radius = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_purple"]
+shading_mode = 0
+albedo_color = Color(1, 0.2, 0.8, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_orb"]
+material = SubResource("StandardMaterial3D_purple")
+radius = 0.35
+height = 0.7
+
+[node name="EnemyProjectile" type="Area3D"]
+collision_layer = 0
+collision_mask = 5
+script = ExtResource("1_eproj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_orb")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.2, 0.8, 1)
+light_energy = 2.0
+omni_range = 4.0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
