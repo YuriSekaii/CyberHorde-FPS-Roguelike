@@ -28,14 +28,17 @@ var last_sent_tick: int = -1
 
 var active_enemies: Array[Node] = []
 var pending_spawns: Array[Dictionary] = []
+var boss_spawned_for_wave: bool = false
 
 func _ready() -> void:
 	GameManager.enemy_killed.connect(_on_enemy_killed)
+	GameManager.boss_defeated.connect(_on_boss_defeated)
 
 func start_spawner() -> void:
 	is_spawner_active = true
 	last_sent_tick = -1
 	pending_spawns.clear()
+	boss_spawned_for_wave = false
 	_clean_all_indicators()
 	# In multiplayer, only server controls wave timers
 	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
@@ -107,17 +110,12 @@ func _start_wave(wave_num: int) -> void:
 	current_wave = wave_num
 	GameManager.current_wave = wave_num
 	is_wave_active = true
+	boss_spawned_for_wave = false
 	
-	if wave_num >= FINAL_WAVE:
-		total_enemies_in_wave = 1
-		enemies_left_to_spawn = 1
-		spawn_interval = 1.0
-		spawn_timer = 0.5
-	else:
-		total_enemies_in_wave = 10 + wave_num * 4
-		enemies_left_to_spawn = total_enemies_in_wave
-		spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
-		spawn_timer = 0.5
+	total_enemies_in_wave = 10 + wave_num * 6
+	enemies_left_to_spawn = total_enemies_in_wave
+	spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
+	spawn_timer = 0.5
 	
 	pending_spawns.clear()
 	_clean_all_indicators()
@@ -149,7 +147,8 @@ func _spawn_one_enemy() -> void:
 	var spawn_pos: Vector3
 	var delay: float = SPAWN_DELAY
 	
-	if current_wave >= FINAL_WAVE:
+	if current_wave >= FINAL_WAVE and not boss_spawned_for_wave:
+		boss_spawned_for_wave = true
 		type_id = 3
 		spawn_pos = Vector3(0.0, 0.5, -12.0)
 		delay = 4.0
@@ -290,6 +289,23 @@ func _on_enemy_killed(_type: String) -> void:
 		rpc_wave_progress.rpc(alive_count, total_enemies_in_wave)
 	else:
 		wave_progress.emit(alive_count, total_enemies_in_wave)
+
+func _on_boss_defeated() -> void:
+	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
+		return
+	if current_wave >= FINAL_WAVE and is_wave_active:
+		# Overlord reactor meltdown clears remaining horde units & completes final wave
+		enemies_left_to_spawn = 0
+		pending_spawns.clear()
+		_clean_all_indicators()
+		for e in active_enemies:
+			if is_instance_valid(e) and not e.is_queued_for_deletion():
+				if e.has_method("die"):
+					e.die()
+				else:
+					e.queue_free()
+		active_enemies.clear()
+		_complete_wave()
 
 func _complete_wave() -> void:
 	is_wave_active = false

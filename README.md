@@ -184,6 +184,8 @@ When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk act
 
 ### Wave Progression & Scaling
 Hordes scale progressively to challenge late-game builds:
+* **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies, Wave 100 = 610 enemies).
+* **Spawn Interval Acceleration**: Time between enemy spawns accelerates from 1.9s down to a rapid 0.4s cap ($\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$).
 * **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
 * **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **90%** max reduction). Floating damage indicators accurately reflect reduced damage values.
@@ -202,13 +204,14 @@ Hordes scale progressively to challenge late-game builds:
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
 3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing mini-boss style threats that charge in and slam the ground creating shockwaves and knockback!
 
-### 👑 Wave 100 Final Boss: Apex Overlord
-**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **10,000 Base HP**, scaling to ~1.6M HP on Wave 100):
+### 👑 Wave 100 Final Boss: Apex Overlord & Escalation Horde
+**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **10,000 Base HP**, scaling to ~1.6M HP on Wave 100)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths in the arena:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
+* **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's devastating artillery and shockwaves.
 * **Phase 1 (100% – 60% HP)**: Alternates dual heavy plasma cannon volleys with massive 10m-radius **Tremor Stomps** that launch players into the air.
-* **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons escort reinforcements.
+* **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons immediate escort rings.
 * **Phase 3 (< 30% HP - Meltdown)**: Blazing violet reactor berserk state with increased movement speed, continuous 5-way barrages, and frequent tremor stomps!
-* **Victory Protocol**: Defeating the Apex Overlord clears Wave 100 and achieves **MISSION ACCOMPLISHED** victory!
+* **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
 
 ---
 
