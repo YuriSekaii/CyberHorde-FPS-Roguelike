@@ -126,10 +126,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 * **Clustered Forward+ Light Capping**: Active explosion `OmniLight3D` instances are capped to a maximum of 4 concurrent lights, and bullet lights are capped to 8, preventing multi-light overlap bottlenecks.
 * **Audio Throttling**: Sound playback for hits, explosions, and ricochets is throttled to prevent audio bus saturation.
 
-### 3. Multi-Threaded Engine Architecture
-* **Separate Physics Thread**: Enabled `physics/3d/run_on_separate_thread = true` in `project.godot`, moving Jolt 3D physics (raycasting, collision sweeps, and movement solving) off the main thread onto a dedicated CPU core.
-* **Multi-Threaded Rendering Driver**: Configured `rendering/driver/threads/thread_model = 1` for separate render command processing.
-* **Threaded Spatial Indexing**: Configured multi-threaded culling (`threaded_cull_minimum_instances = 100`) to parallelize visibility queries across all available CPU worker threads.
+### 3. Scalable Engine Optimization
 * **Static Entity Caching**: Replaced frequent `get_tree().get_nodes_in_group("enemies")` calls with `EnemyBase.all_enemies` static registry, saving hundreds of heap array allocations per second.
 * **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas (e.g. all 610 enemies in Wave 100).
 * **Frictionless Enemy Physics**: Set enemy `collision_mask = 5` (world + player), eliminating expensive pairwise enemy-on-enemy collision solving loops.

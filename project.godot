@@ -30,14 +30,8 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[physics]
-
-3d/run_on_separate_thread=true
-
 [rendering]
 
-driver/threads/thread_model=1
-limits/spatial_indexer/threaded_cull_minimum_instances=100
 lights_and_shadows/directional_shadow/size=2048
 anti_aliasing/quality/msaa_3d=1
 anti_aliasing/quality/screen_space_aa=1
