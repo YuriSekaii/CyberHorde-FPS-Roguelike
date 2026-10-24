@@ -119,9 +119,8 @@ func _ready() -> void:
 func _apply_wave_scaling() -> void:
 	var wave_num = GameManager.current_wave
 	
-	# Final Boss Base HP: 44,444 HP (44.444k)
-	var hp_scale = pow(1.052, float(maxi(0, wave_num - 1)))
-	max_health = 44444.0 * hp_scale
+	# Final Boss Fixed HP: exactly 4,444,444 HP (no wave scaling)
+	max_health = 4444444.0
 	current_health = max_health
 	
 	# Attack damage scaling
