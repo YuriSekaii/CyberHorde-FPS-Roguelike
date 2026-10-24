@@ -74,8 +74,8 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if GameManager.cryo_slow and collider.has_method("apply_slow"):
 			collider.apply_slow(0.4, 3.0)
 		
-		# Explosion on hit
-		_trigger_impact_effects(hit_pos)
+		# Explosion on hit (purely based on initial hit damage)
+		_trigger_impact_effects(hit_pos, final_dmg)
 		
 		if pierces_left > 0:
 			pierces_left -= 1
@@ -91,19 +91,19 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			return
 	else:
 		# Hit environment / wall / floor
+		var wall_hit_dmg = base_damage * GameManager.damage_mult
 		if bounces_left > 0 and hit_normal != Vector3.ZERO:
 			bounces_left -= 1
-			var bounce_dmg = base_damage * GameManager.damage_mult
 			
 			# Trigger all on-hit effects for each bounce!
-			_trigger_impact_effects(hit_pos)
+			_trigger_impact_effects(hit_pos, wall_hit_dmg)
 			if GameManager.chain_lightning:
-				_trigger_chain_lightning_at_pos(hit_pos, bounce_dmg * 0.5, null)
+				_trigger_chain_lightning_at_pos(hit_pos, wall_hit_dmg * 0.5, null)
 			
 			_ricochet_from(hit_pos, hit_normal, null)
 			return
 		
-		_trigger_impact_effects(hit_pos)
+		_trigger_impact_effects(hit_pos, wall_hit_dmg)
 		queue_free()
 
 func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) -> void:
@@ -139,7 +139,7 @@ func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore
 					best_target = enemy
 	return best_target
 
-func _trigger_impact_effects(pos: Vector3) -> void:
+func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 	if is_explosive:
 		var exp_inst = EXPLOSION_SCENE.instantiate()
 		get_parent().add_child(exp_inst)
@@ -148,7 +148,8 @@ func _trigger_impact_effects(pos: Vector3) -> void:
 		if is_plasma:
 			# Base Plasma AoE is 4.5. If denote perk (explosive_rounds) is picked, get +100% more radius (9.0m)!
 			rad = 4.5 * (2.0 if GameManager.explosive_rounds else 1.0)
-		exp_inst.setup(base_damage * 0.8 * GameManager.damage_mult, rad)
+		# Explosive damage is purely based on the initial hit damage
+		exp_inst.setup(initial_hit_dmg * 0.8, rad)
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

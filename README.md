@@ -100,32 +100,58 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | Upgrade | Rarity | Effect |
 | :--- | :--- | :--- |
 | **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (**Stacks Infinitely**). |
+| **Vital Plating** | `Common` (Cyan) | +25 Maximum Health (**Stacks Infinitely**). Proactively heals upon selection. |
+| **Precision Optics** | `Common` (Cyan) | +10% Critical Strike Chance (stacks up to 4x). |
 | **Overclock Trigger** | `Common` (Cyan) | +25% Fire Rate for continuous suppression (stacks up to 6x). |
 | **Rapid Loader** | `Common` (Cyan) | +25% Reload Speed across all weapons (stacks up to 6x). |
 | **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
 | **Kinetic Thrusters** | `Common` (Cyan) | +18% Movement Speed and +15% Jump Power. |
 | **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
+| **Hardened Alloy** | `Rare` (Purple) | +10% Damage Reduction against all incoming damage (Max 5 stacks: 50% Reduction). |
+| **Hollow-Point Rounds** | `Rare` (Purple) | +0.5x Critical Hit Damage Multiplier (**Stacks Infinitely**). |
 | **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy (stacks up to 2x). |
 | **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (4.5m → 9.0m). |
 | **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
+| **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys companion drone using your Pulse Carbine (1/10 fire rate, no ammo, all weapon perks). +1 drone per pick. |
-| **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage once with 3 seconds of invulnerability. |
+| **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage, gaining **5s of invulnerability**. Automatically **recharges after surviving 10 waves**! |
 
 ---
 
-## 👾 Enemy Horde Types
+## 🎯 Critical Hit & Explosive Mechanics
 
-Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$ is the wave number).
+* **Direct Hit Crits**: Every projectile rolls against your **Critical Strike Chance** (base 10%, boosted by *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
+* **Explosive Damage**: Explosive damage is **purely calculated from the initial hit damage** (80% of hit damage).
+* **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
 
+---
+
+## 👾 Enemy Horde Scaling & Final Boss
+
+### Wave Progression & Scaling
+Hordes scale progressively to challenge late-game builds:
+* **Every Wave**: Enemies gain **+10% Compounding Health and Damage** ($\text{Base} \times 1.10^{\text{Wave} - 1}$).
+* **Every 5 Waves**: Enemies gain **+10% Movement Speed and +10% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
+* **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **90%** max reduction). Floating damage indicators accurately reflect reduced damage values.
+
+### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**: Giant high-HP armored cyber crushers that charge in and slam the ground creating shockwaves and knockback!
+3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers that charge in and slam the ground creating shockwaves and knockback!
+
+### 👑 Wave 100 Final Boss: Apex Overlord
+**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord**:
+* **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
+* **Phase 1 (100% – 60% HP)**: Alternates dual heavy plasma cannon volleys with massive 10m-radius **Tremor Stomps** that launch players into the air.
+* **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons escort reinforcements.
+* **Phase 3 (< 30% HP - Meltdown)**: Blazing violet reactor berserk state with increased movement speed, continuous 5-way barrages, and frequent tremor stomps!
+* **Victory Protocol**: Defeating the Apex Overlord clears Wave 100 and achieves **MISSION ACCOMPLISHED** victory!
 
 ---
 
@@ -164,7 +190,8 @@ Game/
 │   │   ├── enemy_base.gd             # Base enemy class (health, multi-target, damage)
 │   │   ├── swarmer.gd                # Fast swarm insect AI
 │   │   ├── spitter.gd                # Ranged hovering drone AI
-│   │   └── brute.gd                  # Ground-slamming heavy golem AI
+│   │   ├── brute.gd                  # Ground-slamming heavy golem AI
+│   │   └── boss.gd                   # Wave 100 Apex Overlord multi-phase boss AI
 │   ├── projectiles/
 │   │   ├── bullet.gd                 # Projectiles with ricochet, pierce, lightning, AOE
 │   │   ├── enemy_projectile.gd       # Spitter plasma orb
@@ -180,15 +207,16 @@ Game/
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
 │       ├── spawner.gd                # Wave director & horde scaling
+│       ├── spawn_indicator.gd        # 3D holographic telegraph rings & emergence
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/
     ├── main.tscn                     # Main game scene combining arena, squad, HUD
     ├── player/player.tscn            # Player scene with 1st-person & 3rd-person armor
-    ├── enemies/                      # Swarmer, Spitter, Brute scenes
+    ├── enemies/                      # Swarmer, Spitter, Brute, Boss scenes
     ├── projectiles/                  # Bullet, Plasma, Explosion scenes
     ├── loot/                         # Pickup & Chest scenes
     ├── ui/                           # Lobby, HUD, Upgrade, Pause, GameOver scenes
-    └── world/                        # Arena & JumpPad scenes
+    └── world/                        # Arena, JumpPad, SpawnIndicator scenes
 ```
 
 ---

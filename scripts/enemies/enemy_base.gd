@@ -41,9 +41,9 @@ func _apply_wave_scaling() -> void:
 	speed *= speed_mult
 	attack_speed_mult = speed_mult
 	
-	# 3. Every 10 waves: 10% dmg reduction (capped at 80%)
+	# 3. Every 10 waves: 10% dmg reduction (capped at 90%)
 	var reduction_tier: int = int(wave_num / 10)
-	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.80)
+	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.90)
 
 func _find_player() -> void:
 	var players = get_tree().get_nodes_in_group("player")

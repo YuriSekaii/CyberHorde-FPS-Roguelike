@@ -238,10 +238,10 @@ var upgrade_database: Dictionary = {
 	"hollow_point": {
 		"id": "hollow_point",
 		"name": "Hollow-Point Rounds",
-		"desc": "+0.5x Critical Hit Damage Multiplier.",
+		"desc": "+0.5x Critical Hit Damage Multiplier (Stacks Infinitely).",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
-		"max_stacks": 4
+		"max_stacks": 9999
 	}
 }
 

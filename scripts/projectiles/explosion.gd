@@ -38,13 +38,13 @@ func _on_body_entered(body: Node3D) -> void:
 func _damage_enemy(enemy: Node) -> void:
 	if damage <= 0.0:
 		return
-	var is_crit = randf() < GameManager.crit_chance
-	var final_dmg = damage * (GameManager.crit_damage if is_crit else 1.0)
+	# Explosive damage is purely based on initial hit damage; no double-dip crit roll
+	var final_dmg = damage
 	if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-		enemy.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
+		enemy.rpc_take_damage.rpc(final_dmg, false, global_position)
 	elif enemy.has_method("take_damage"):
-		enemy.take_damage(final_dmg, is_crit, global_position)
-	GameManager.record_damage(final_dmg, is_crit)
+		enemy.take_damage(final_dmg, false, global_position)
+	GameManager.record_damage(final_dmg, false)
 
 func _process(delta: float) -> void:
 	timer += delta

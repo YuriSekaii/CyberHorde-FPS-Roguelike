@@ -78,9 +78,9 @@ func _apply_wave_scaling() -> void:
 	speed = 4.2 * speed_factor
 	attack_speed_mult = 1.0 + (float(speed_tier) * 0.10)
 	
-	# Damage reduction (every 10 waves: +10%, capped at 75%)
+	# Damage reduction (every 10 waves: +10%, capped at 90%)
 	var reduction_tier: int = int(wave_num / 10)
-	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.75)
+	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.90)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	super.take_damage(amount, is_crit, from_pos)
