@@ -27,8 +27,8 @@ start "CyberHorde Player 2" "%GODOT_EXE%" --resolution 960x540 --position 1050,1
 echo.
 echo ===================================================
 echo  Both instances launched!
-echo  1. In Window 1: Click "HOST CO-OP MISSION"
-echo  2. In Window 2: Click "JOIN CO-OP MISSION" -> "CONNECT"
-echo  3. In Window 1: Click "LAUNCH SQUAD MISSION"
+echo  1. In Window 1: Click "HOST CO-OP MISSION (SERVER)"
+echo  2. In Window 2: Click "JOIN CO-OP MISSION (CLIENT)" -> "CONNECT TO SQUAD"
+echo  3. In Window 1: Click "LAUNCH SQUAD MISSION (2 PLAYERS)"
 echo ===================================================
 timeout /t 5

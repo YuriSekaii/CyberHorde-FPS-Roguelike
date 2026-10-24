@@ -19,6 +19,7 @@ var enemies_left_to_spawn: int = 0
 var spawn_timer: float = 0.0
 var spawn_interval: float = 1.2
 var enemy_counter: int = 0
+var last_sent_tick: int = -1
 
 var active_enemies: Array[Node] = []
 
@@ -27,6 +28,7 @@ func _ready() -> void:
 
 func start_spawner() -> void:
 	is_spawner_active = true
+	last_sent_tick = -1
 	# In multiplayer, only server controls wave timers
 	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
 		start_intermission(3.0)
@@ -44,10 +46,12 @@ func _process(delta: float) -> void:
 	if is_intermission:
 		intermission_timer -= delta
 		var tick_sec = int(ceil(intermission_timer))
-		if NetworkManager.is_multiplayer:
-			rpc_intermission_tick.rpc(tick_sec)
-		else:
-			intermission_tick.emit(tick_sec)
+		if tick_sec != last_sent_tick:
+			last_sent_tick = tick_sec
+			if NetworkManager.is_multiplayer:
+				rpc_intermission_tick.rpc(tick_sec)
+			else:
+				intermission_tick.emit(tick_sec)
 			
 		if intermission_timer <= 0.0:
 			is_intermission = false

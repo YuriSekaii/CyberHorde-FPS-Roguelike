@@ -121,10 +121,18 @@ func setup_peer(id: int) -> void:
 	peer_id = id
 	set_multiplayer_authority(id)
 	target_net_pos = global_position
+	target_net_rot_y = rotation.y
 	
-	if not NetworkManager.is_multiplayer or id == multiplayer.get_unique_id():
+	var is_me = false
+	if not NetworkManager.is_multiplayer:
+		is_me = true
+	elif id == multiplayer.get_unique_id():
+		is_me = true
+	
+	if is_me:
 		is_local_player = true
 		camera.current = true
+		camera.make_current()
 		weapon_rig.visible = true
 		third_person_model.visible = false
 		overhead_ui.visible = false
@@ -660,7 +668,7 @@ func die() -> void:
 # NETWORK RPCS
 # ==============================================================================
 
-@rpc("unreliable_ordered")
+@rpc("any_peer", "unreliable_ordered")
 func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3, wep_idx: int) -> void:
 	if is_local_player:
 		return
@@ -672,11 +680,10 @@ func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3,
 		active_weapon_idx = wep_idx
 		_update_third_person_weapon(wep_idx)
 
-@rpc("call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 	if is_local_player:
 		return
-	# Visual tracer and audio for remote player
 	var w = weapons[wep_idx] if wep_idx < weapons.size() else null
 	if w:
 		SoundManager.play(w.sound_name, 0.1, -2.0)
@@ -685,7 +692,7 @@ func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 		bullet.global_position = origin
 		bullet.setup(dir, w.damage, w.is_explosive, wep_idx == 2)
 
-@rpc("call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func rpc_set_downed(downed: bool) -> void:
 	is_downed = downed
 	bleedout_timer = 30.0
@@ -714,7 +721,7 @@ func rpc_set_downed(downed: bool) -> void:
 		if revive_prompt:
 			revive_prompt.visible = false
 
-@rpc("call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func rpc_revive() -> void:
 	rpc_set_downed(false)
 	is_invulnerable = true

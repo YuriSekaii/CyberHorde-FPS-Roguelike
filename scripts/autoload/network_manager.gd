@@ -125,7 +125,7 @@ func _on_connected_to_server() -> void:
 	if not connected_peers.has(local_peer_id):
 		connected_peers.append(local_peer_id)
 	
-	connection_status_changed.emit("Connected to Host! Ready to deploy.")
+	connection_status_changed.emit("Connected to Host! Waiting for Host to launch mission...")
 
 func _on_connection_failed() -> void:
 	cleanup_network()

@@ -25,7 +25,6 @@ func _ready() -> void:
 	NetworkManager.connection_status_changed.connect(_on_status_changed)
 	NetworkManager.peer_connected_signal.connect(_on_peers_updated)
 	NetworkManager.peer_disconnected_signal.connect(_on_peers_updated)
-	NetworkManager.game_started.connect(_on_game_started)
 
 func _show_main_view() -> void:
 	main_buttons.visible = true
@@ -35,7 +34,8 @@ func _show_main_view() -> void:
 
 func _on_solo_pressed() -> void:
 	NetworkManager.start_singleplayer()
-	_launch_mission()
+	visible = false
+	mission_started.emit()
 
 func _on_host_menu_pressed() -> void:
 	main_buttons.visible = false
@@ -63,7 +63,7 @@ func _on_connect_pressed() -> void:
 
 func _on_start_squad_pressed() -> void:
 	if NetworkManager.is_server:
-		NetworkManager.rpc_start_game.rpc()
+		mission_started.emit()
 
 func _on_back_pressed() -> void:
 	NetworkManager.cleanup_network()
@@ -88,11 +88,3 @@ func _update_peer_list() -> void:
 	if NetworkManager.is_server:
 		start_squad_btn.disabled = false
 		start_squad_btn.text = "LAUNCH SQUAD MISSION (%d PLAYERS)" % peers.size()
-
-func _on_game_started() -> void:
-	_launch_mission()
-
-func _launch_mission() -> void:
-	visible = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	mission_started.emit()
