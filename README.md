@@ -32,7 +32,7 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 | **Switch Weapons** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
-| **Pause Menu** | `Escape` | Pause mission, adjust mouse sensitivity slider, or restart |
+| **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, or restart |
 
 ---
 
@@ -53,7 +53,7 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 ## 🧬 Roguelike Upgrades System
 
 Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards**.
-Upgrade rarity tiers roll with authentic 1/5 drop rates: **Common** (~80.1%), **Rare** (~16.0%), **Epic** (~3.2%), and **Legendary** (~0.64%).
+Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **Rare** (~18.8%), **Epic** (~4.7%), and **Legendary** (~1.2%), giving a **57.3% chance** of offering at least one Rare or higher card on every level-up.
 
 | Upgrade | Rarity | Effect |
 | :--- | :--- | :--- |

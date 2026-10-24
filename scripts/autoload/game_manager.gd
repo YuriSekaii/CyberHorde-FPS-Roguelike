@@ -321,12 +321,12 @@ func prompt_upgrade_menu() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	upgrade_requested.emit()
 
-# Higher rarity tier is 1/5 probability of lower rarity tier:
-# Common = 125, Rare = 25 (1/5 of Common), Epic = 5 (1/5 of Rare), Legendary = 1 (1/5 of Epic)
+# Higher rarity tier is 1/4 probability of lower rarity tier:
+# Common = 64, Rare = 16 (1/4 of Common), Epic = 4 (1/4 of Rare), Legendary = 1 (1/4 of Epic)
 const RARITY_TIER_WEIGHTS: Dictionary = {
-	"Common": 125.0,
-	"Rare": 25.0,
-	"Epic": 5.0,
+	"Common": 64.0,
+	"Rare": 16.0,
+	"Epic": 4.0,
 	"Legendary": 1.0
 }
 
