@@ -4,7 +4,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Multi-Stage Climactic Battle:
 ## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg) & occasional long-range cannon fire (low dmg).
 ## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg).
-## Stage 3: Detonates outer armor, revealing an evil incarnation with a slim silhouette, horned head, razor claws, and floating shadow blades. Flies aggressively fast across the sky (32 m/s), spraying a sustained 6s rapid-fire needle machine gun barrage (65 m/s, 22 shots/sec). Ends with a giant slow-moving mega orb, enters 3s exhaustion cooldown, then flashes red aura, locks player position (0.7s - same as Stage 2), and charges in a blistering supersonic dive (105 m/s). Loops until death.
+## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a massive bullet-hell barrage from both hands and both wings simultaneously with wide spread (65 m/s, 6 projectiles/volley). Ends with a giant slow mega orb, enters 3s exhaustion cooldown, then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s). Loops until death.
 
 enum BossStage {
 	STAGE_1,
@@ -60,7 +60,7 @@ var fire_left_next: bool = true
 var has_summoned_phase2: bool = false
 var has_summoned_phase3: bool = false
 
-# Node references
+# Node references - Stage 1 & 2
 @onready var core_mesh: MeshInstance3D = $MeshRoot/ArmorRoot/ReactorCore
 @onready var core_light: OmniLight3D = $MeshRoot/CoreLight
 @onready var visor_mesh: MeshInstance3D = $MeshRoot/ArmorRoot/Visor
@@ -73,10 +73,17 @@ var has_summoned_phase3: bool = false
 @onready var right_wing_root: Node3D = $MeshRoot/ArmorRoot/RightWingRoot
 @onready var left_muzzle: Node3D = $MeshRoot/ArmorRoot/LeftArm/LeftMuzzle
 @onready var right_muzzle: Node3D = $MeshRoot/ArmorRoot/RightArm/RightMuzzle
-@onready var slim_left_muzzle: Node3D = $MeshRoot/TrueFormRoot/SlimLeftArm/SlimLeftMuzzle
-@onready var slim_right_muzzle: Node3D = $MeshRoot/TrueFormRoot/SlimRightArm/SlimRightMuzzle
-@onready var true_core: MeshInstance3D = $MeshRoot/TrueFormRoot/TrueCore
-@onready var evil_visor: MeshInstance3D = $MeshRoot/TrueFormRoot/EvilHead/EvilVisor
+
+# Node references - Stage 3 Solid Metal Fallen Angel
+@onready var angel_core: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelCore
+@onready var angel_visor: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelHead/AngelVisor
+@onready var dark_halo: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelHead/DarkHalo
+@onready var left_hand_muzzle: Node3D = $MeshRoot/TrueFormRoot/LeftArm/LeftHandMuzzle
+@onready var right_hand_muzzle: Node3D = $MeshRoot/TrueFormRoot/RightArm/RightHandMuzzle
+@onready var left_wing_muzzle1: Node3D = $MeshRoot/TrueFormRoot/LeftAngelWing/WingMuzzle1
+@onready var left_wing_muzzle2: Node3D = $MeshRoot/TrueFormRoot/LeftAngelWing/WingMuzzle2
+@onready var right_wing_muzzle1: Node3D = $MeshRoot/TrueFormRoot/RightAngelWing/WingMuzzle1
+@onready var right_wing_muzzle2: Node3D = $MeshRoot/TrueFormRoot/RightAngelWing/WingMuzzle2
 
 const PROJECTILE_SCENE = preload("res://scenes/projectiles/enemy_projectile.tscn")
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
@@ -218,7 +225,7 @@ func _start_stage_3_transition() -> void:
 	if aura_shell:
 		aura_shell.visible = false
 	
-	# Stage 3: Detonation jettisons all outer armor, exposing sleek True Form!
+	# Stage 3: Detonation jettisons all outer armor, exposing Solid Metal Fallen Angel!
 	SoundManager.play("explosion", 0.35, 0.2)
 	
 	var exp_inst = EXPLOSION_SCENE.instantiate()
@@ -231,19 +238,21 @@ func _start_stage_3_transition() -> void:
 	if true_form_root:
 		true_form_root.visible = true
 	
-	# True evil incarnation glowing materials
-	var evil_core_mat = StandardMaterial3D.new()
-	evil_core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	evil_core_mat.albedo_color = Color(1.0, 0.08, 0.35)
-	if true_core:
-		true_core.material_override = evil_core_mat
-	if evil_visor:
-		evil_visor.material_override = evil_core_mat
+	# Solid Metal Fallen Angel glowing core and visor
+	var angel_glow_mat = StandardMaterial3D.new()
+	angel_glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	angel_glow_mat.albedo_color = Color(1.0, 0.12, 0.3)
+	if angel_core:
+		angel_core.material_override = angel_glow_mat
+	if angel_visor:
+		angel_visor.material_override = angel_glow_mat
+	if dark_halo:
+		dark_halo.material_override = angel_glow_mat
 	
 	if core_light:
-		core_light.light_color = Color(1.0, 0.08, 0.35)
+		core_light.light_color = Color(1.0, 0.12, 0.3)
 		core_light.light_energy = 10.0
-		core_light.omni_range = 16.0
+		core_light.omni_range = 18.0
 	
 	var lift_tw = create_tween()
 	lift_tw.tween_property(self, "global_position:y", FLIGHT_ALTITUDE, 0.8)
@@ -533,7 +542,7 @@ func _execute_dive_impact(blast_radius: float, dmg_multiplier: float) -> void:
 	exp_inst.global_position = global_position + Vector3(0, 0.2, 0)
 	exp_inst.setup(0.0, blast_radius)
 
-# ----------------- STAGE 3: EVIL INCARNATION (SLIM BODY & AERIAL BLITZ) -----------------
+# ----------------- STAGE 3: SOLID METAL FALLEN ANGEL (MASSIVE WINGS & BULLET HELL) -----------------
 
 func _process_stage_3(delta: float) -> void:
 	state_timer += delta
@@ -547,20 +556,20 @@ func _process_stage_3(delta: float) -> void:
 	
 	match s3_state:
 		Stage3SubState.FLIGHT_BARRAGE:
-			# Fly faster across the sky: 32.0 m/s with aggressive 3D weaving
+			# Fast aerial flight weaving around the sky (32.0 m/s)
 			flight_orbit_angle += delta * 2.8
 			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 20.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 20.0)
 			var flight_dir = (target_flight_pos - global_position).normalized()
 			velocity = flight_dir * 32.0
 			move_and_slide()
 			
-			# Faster fire rate (0.045s), faster projectiles (65 m/s), more bullets sprayed
+			# Bullet hell barrage from both hands and both wings simultaneously
 			if attack_timer <= 0.0:
-				attack_timer = 0.045
+				attack_timer = 0.065
 				_fire_stage3_machine_gun()
 				s3_machine_shots += 1
 			
-			# Longer sustained machine gun barrage: 6.0 seconds
+			# Sustained machine gun barrage: 6.0 seconds
 			if state_timer >= 6.0:
 				velocity = Vector3.ZERO
 				s3_state = Stage3SubState.MEGA_PROJECTILE_CHARGE
@@ -594,7 +603,7 @@ func _process_stage_3(delta: float) -> void:
 		
 		Stage3SubState.POST_EXHAUST_LOCK_ON:
 			velocity = Vector3.ZERO
-			# Red aura flashing telegraph: 0.70s window (exact same lock-on time as Stage 2!)
+			# Red aura flashing telegraph: 0.70s window (exact same lock-on time as Stage 2)
 			if aura_light:
 				aura_light.light_energy = 14.0 + sin(Time.get_ticks_msec() * 0.04) * 8.0
 			
@@ -635,22 +644,40 @@ func _process_stage_3(delta: float) -> void:
 				attack_timer = 0.4
 
 func _fire_stage3_machine_gun() -> void:
-	var muzzle = slim_left_muzzle if fire_left_next else slim_right_muzzle
-	fire_left_next = not fire_left_next
-	var muzzle_pos = muzzle.global_position if muzzle else (global_position + Vector3(0, 1.2, 0))
-	var aim_target = target_player.global_position + Vector3(randf_range(-0.7, 0.7), randf_range(0.3, 1.2), randf_range(-0.7, 0.7))
-	var dir = (aim_target - muzzle_pos).normalized()
+	var target_center = target_player.global_position + Vector3(0.0, 0.85, 0.0)
 	
-	var proj = PROJECTILE_SCENE.instantiate()
-	get_parent().add_child(proj)
-	proj.global_position = muzzle_pos
-	proj.setup(dir, attack_damage * 0.18, 65.0, false)
-	proj.set_projectile_visual(Color(1.0, 0.15, 0.35), Vector3(0.4, 0.4, 0.4))
+	# Fires from both hands and both massive wings simultaneously with wide spread
+	var muzzles = [
+		{"node": left_hand_muzzle, "h_spread": randf_range(-0.14, 0.04), "v_spread": randf_range(-0.06, 0.06)},
+		{"node": right_hand_muzzle, "h_spread": randf_range(-0.04, 0.14), "v_spread": randf_range(-0.06, 0.06)},
+		{"node": left_wing_muzzle1, "h_spread": randf_range(-0.46, -0.16), "v_spread": randf_range(-0.10, 0.10)},
+		{"node": left_wing_muzzle2, "h_spread": randf_range(-0.28, -0.06), "v_spread": randf_range(-0.08, 0.08)},
+		{"node": right_wing_muzzle1, "h_spread": randf_range(0.16, 0.46), "v_spread": randf_range(-0.10, 0.10)},
+		{"node": right_wing_muzzle2, "h_spread": randf_range(0.06, 0.28), "v_spread": randf_range(-0.08, 0.08)}
+	]
+	
+	for m_data in muzzles:
+		var m_node: Node3D = m_data["node"]
+		var spawn_pos = m_node.global_position if m_node else (global_position + Vector3(0.0, 1.2, 0.0))
+		var base_dir = (target_center - spawn_pos).normalized()
+		
+		var right_axis = base_dir.cross(Vector3.UP).normalized()
+		if right_axis.length_squared() < 0.01:
+			right_axis = Vector3.RIGHT
+		
+		var spread_dir = base_dir.rotated(Vector3.UP, m_data["h_spread"]).rotated(right_axis, m_data["v_spread"]).normalized()
+		
+		var proj = PROJECTILE_SCENE.instantiate()
+		get_parent().add_child(proj)
+		proj.global_position = spawn_pos
+		proj.setup(spread_dir, attack_damage * 0.09, 65.0, false)
+		proj.set_projectile_visual(Color(1.0, 0.15, 0.35), Vector3(0.42, 0.42, 0.42))
+	
 	SoundManager.play("shoot_rifle", 0.18, 0.2)
 
 func _fire_stage3_mega_projectile() -> void:
-	var muzzle_pos = global_position + Vector3(0, 0.4, -1.2).rotated(Vector3.UP, rotation.y)
-	var aim_target = target_player.global_position + Vector3(0, 0.5, 0)
+	var muzzle_pos = global_position + Vector3(0.0, 0.4, -1.2).rotated(Vector3.UP, rotation.y)
+	var aim_target = target_player.global_position + Vector3(0.0, 0.5, 0.0)
 	var dir = (aim_target - muzzle_pos).normalized()
 	
 	var proj = PROJECTILE_SCENE.instantiate()
@@ -702,7 +729,7 @@ func die() -> void:
 	# Cascading catastrophic death explosions
 	var death_exp = EXPLOSION_SCENE.instantiate()
 	get_parent().add_child(death_exp)
-	death_exp.global_position = global_position + Vector3(0, 1.5, 0)
+	death_exp.global_position = global_position + Vector3(0.0, 1.5, 0.0)
 	death_exp.setup(0.0, 10.0)
 	
 	# Generous rewards

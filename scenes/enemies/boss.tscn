@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/boss.gd" id="1_boss"]
 
@@ -59,59 +59,68 @@ albedo_color = Color(1, 0.45, 0.1, 1)
 material = SubResource("StandardMaterial3D_energy_blade")
 size = Vector3(2.8, 0.1, 0.18)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_evil"]
-albedo_color = Color(0.04, 0.04, 0.07, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fallen_metal"]
+albedo_color = Color(0.16, 0.18, 0.22, 1)
 metallic = 0.95
-roughness = 0.15
+roughness = 0.2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_evil_glow"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fallen_glow"]
 shading_mode = 0
-albedo_color = Color(0.95, 0.08, 0.35, 1)
+albedo_color = Color(1, 0.12, 0.3, 1)
 
-[sub_resource type="BoxMesh" id="BoxMesh_slim_torso"]
-material = SubResource("StandardMaterial3D_evil")
-size = Vector3(0.9, 2.4, 0.7)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_torso"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+size = Vector3(0.9, 2.3, 0.7)
 
-[sub_resource type="BoxMesh" id="BoxMesh_slim_waist"]
-material = SubResource("StandardMaterial3D_evil")
-size = Vector3(0.55, 1, 0.5)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_waist"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+size = Vector3(0.65, 0.8, 0.5)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_tail"]
-material = SubResource("StandardMaterial3D_evil")
-top_radius = 0.45
-bottom_radius = 0.05
-height = 1.6
+[sub_resource type="CylinderMesh" id="CylinderMesh_angel_leg"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+top_radius = 0.2
+bottom_radius = 0.12
+height = 2.2
 
-[sub_resource type="BoxMesh" id="BoxMesh_evil_head"]
-material = SubResource("StandardMaterial3D_evil")
-size = Vector3(0.6, 0.7, 0.65)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_head"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+size = Vector3(0.55, 0.65, 0.6)
 
-[sub_resource type="BoxMesh" id="BoxMesh_evil_visor"]
-material = SubResource("StandardMaterial3D_evil_glow")
-size = Vector3(0.55, 0.12, 0.1)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_visor"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+size = Vector3(0.5, 0.12, 0.1)
 
-[sub_resource type="PrismMesh" id="PrismMesh_horn"]
-material = SubResource("StandardMaterial3D_evil_glow")
-size = Vector3(0.2, 0.9, 0.25)
+[sub_resource type="TorusMesh" id="TorusMesh_halo"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+inner_radius = 0.5
+outer_radius = 0.6
 
-[sub_resource type="PrismMesh" id="PrismMesh_pauldron"]
-material = SubResource("StandardMaterial3D_evil")
-size = Vector3(0.35, 0.9, 0.4)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_arm"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+size = Vector3(0.24, 1.8, 0.28)
 
-[sub_resource type="BoxMesh" id="BoxMesh_slim_arm"]
-material = SubResource("StandardMaterial3D_evil")
-size = Vector3(0.25, 1.9, 0.3)
+[sub_resource type="BoxMesh" id="BoxMesh_angel_hand"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+size = Vector3(0.22, 0.35, 0.3)
 
-[sub_resource type="PrismMesh" id="PrismMesh_claw"]
-material = SubResource("StandardMaterial3D_evil_glow")
-size = Vector3(0.18, 0.8, 0.18)
+[sub_resource type="BoxMesh" id="BoxMesh_wing_spar"]
+material = SubResource("StandardMaterial3D_fallen_metal")
+size = Vector3(4.5, 0.25, 0.35)
 
-[sub_resource type="BoxMesh" id="BoxMesh_shadow_blade"]
-material = SubResource("StandardMaterial3D_evil_glow")
-size = Vector3(0.15, 2.2, 0.45)
+[sub_resource type="BoxMesh" id="BoxMesh_feather_long"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+size = Vector3(3.8, 0.12, 0.45)
 
-[sub_resource type="SphereMesh" id="SphereMesh_true_core"]
-material = SubResource("StandardMaterial3D_evil_glow")
+[sub_resource type="BoxMesh" id="BoxMesh_feather_mid"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+size = Vector3(2.8, 0.12, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_feather_short"]
+material = SubResource("StandardMaterial3D_fallen_glow")
+size = Vector3(2.0, 0.12, 0.35)
+
+[sub_resource type="SphereMesh" id="SphereMesh_angel_core"]
+material = SubResource("StandardMaterial3D_fallen_glow")
 radius = 0.45
 height = 0.9
 
@@ -122,8 +131,8 @@ albedo_color = Color(1, 0.05, 0.05, 0.35)
 
 [sub_resource type="SphereMesh" id="SphereMesh_aura"]
 material = SubResource("StandardMaterial3D_aura_shell")
-radius = 2.7
-height = 5.4
+radius = 3.2
+height = 6.4
 
 [node name="Boss" type="CharacterBody3D"]
 collision_layer = 2
@@ -215,94 +224,120 @@ mesh = SubResource("CylinderMesh_thruster")
 [node name="TrueFormRoot" type="Node3D" parent="MeshRoot"]
 visible = false
 
-[node name="SlimTorso" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+[node name="AngelTorso" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
-mesh = SubResource("BoxMesh_slim_torso")
+mesh = SubResource("BoxMesh_angel_torso")
 
-[node name="SlimWaist" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
-mesh = SubResource("BoxMesh_slim_waist")
+[node name="AngelWaist" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.1, 0)
+mesh = SubResource("BoxMesh_angel_waist")
 
-[node name="TaperedTail" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -1.9, 0)
-mesh = SubResource("CylinderMesh_tail")
+[node name="LeftLeg" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.996195, 0, -0.0871557, 0, 1, 0, 0.0871557, 0, 0.996195, -0.35, -2.4, 0.1)
+mesh = SubResource("CylinderMesh_angel_leg")
 
-[node name="EvilHead" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.1)
-mesh = SubResource("BoxMesh_evil_head")
+[node name="RightLeg" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.996195, 0, 0.0871557, 0, 1, 0, -0.0871557, 0, 0.996195, 0.35, -2.4, 0.1)
+mesh = SubResource("CylinderMesh_angel_leg")
 
-[node name="EvilVisor" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/EvilHead"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.35)
-mesh = SubResource("BoxMesh_evil_visor")
+[node name="AngelHead" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.05)
+mesh = SubResource("BoxMesh_angel_head")
 
-[node name="LeftHorn" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/EvilHead"]
-transform = Transform3D(0.939693, -0.34202, 0, 0.321394, 0.883022, -0.34202, 0.116978, 0.321394, 0.939693, -0.38, 0.55, 0.1)
-mesh = SubResource("PrismMesh_horn")
+[node name="AngelVisor" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/AngelHead"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.32)
+mesh = SubResource("BoxMesh_angel_visor")
 
-[node name="RightHorn" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/EvilHead"]
-transform = Transform3D(0.939693, 0.34202, 0, -0.321394, 0.883022, -0.34202, -0.116978, 0.321394, 0.939693, 0.38, 0.55, 0.1)
-mesh = SubResource("PrismMesh_horn")
+[node name="DarkHalo" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/AngelHead"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, -0.422618, 0, 0.422618, 0.906308, 0, 0.75, 0.25)
+mesh = SubResource("TorusMesh_halo")
 
-[node name="LeftPauldron" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, -0.85, 1.25, 0)
-mesh = SubResource("PrismMesh_pauldron")
+[node name="AngelCore" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -0.38)
+mesh = SubResource("SphereMesh_angel_core")
 
-[node name="RightPauldron" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, 0.85, 1.25, 0)
-mesh = SubResource("PrismMesh_pauldron")
+[node name="LeftArm" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.939693, 0.17101, -0.296198, -0.17101, 0.984808, 0.025166, 0.296198, 0.027494, 0.954724, -0.85, 0.2, -0.3)
+mesh = SubResource("BoxMesh_angel_arm")
 
-[node name="SlimLeftArm" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.984808, -0.173648, 0, 0.168757, 0.957019, 0.235905, -0.0409647, -0.232321, 0.971775, -0.85, 0.1, -0.15)
-mesh = SubResource("BoxMesh_slim_arm")
+[node name="LeftHand" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0, -0.1)
+mesh = SubResource("BoxMesh_angel_hand")
 
-[node name="LeftClaw" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/SlimLeftArm"]
-transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -1.1, -0.15)
-mesh = SubResource("PrismMesh_claw")
+[node name="LeftHandMuzzle" type="Node3D" parent="MeshRoot/TrueFormRoot/LeftArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, -0.25)
 
-[node name="SlimLeftMuzzle" type="Node3D" parent="MeshRoot/TrueFormRoot/SlimLeftArm"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, -0.3)
+[node name="RightArm" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.939693, -0.17101, 0.296198, 0.17101, 0.984808, 0.025166, -0.296198, 0.027494, 0.954724, 0.85, 0.2, -0.3)
+mesh = SubResource("BoxMesh_angel_arm")
 
-[node name="SlimRightArm" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.984808, 0.173648, 0, -0.168757, 0.957019, 0.235905, 0.0409647, -0.232321, 0.971775, 0.85, 0.1, -0.15)
-mesh = SubResource("BoxMesh_slim_arm")
+[node name="RightHand" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0, -0.1)
+mesh = SubResource("BoxMesh_angel_hand")
 
-[node name="RightClaw" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/SlimRightArm"]
-transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, -1.1, -0.15)
-mesh = SubResource("PrismMesh_claw")
+[node name="RightHandMuzzle" type="Node3D" parent="MeshRoot/TrueFormRoot/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, -0.25)
 
-[node name="SlimRightMuzzle" type="Node3D" parent="MeshRoot/TrueFormRoot/SlimRightArm"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, -0.3)
+[node name="LeftAngelWing" type="Node3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.819152, -0.496732, -0.286788, 0.537946, 0.835154, 0.114708, 0.182559, -0.237255, 0.954157, -0.6, 0.8, 0.35)
 
-[node name="ShadowBladeL1" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.707107, -0.707107, 0, 0.683013, 0.683013, -0.258819, 0.183013, 0.183013, 0.965926, -0.9, 0.8, 0.45)
-mesh = SubResource("BoxMesh_shadow_blade")
+[node name="MainSpar" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 0, 0)
+mesh = SubResource("BoxMesh_wing_spar")
 
-[node name="ShadowBladeL2" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.422618, -0.906308, 0, 0.875426, 0.408248, -0.258819, 0.23457, 0.109382, 0.965926, -1.4, 0.2, 0.45)
-mesh = SubResource("BoxMesh_shadow_blade")
+[node name="Feather1" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, -2.8, 0.5, 0.1)
+mesh = SubResource("BoxMesh_feather_long")
 
-[node name="ShadowBladeR1" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.707107, 0.707107, 0, -0.683013, 0.683013, -0.258819, -0.183013, 0.183013, 0.965926, 0.9, 0.8, 0.45)
-mesh = SubResource("BoxMesh_shadow_blade")
+[node name="Feather2" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(0.906308, -0.422618, 0, 0.422618, 0.906308, 0, 0, 0, 1, -2.4, -0.4, 0.1)
+mesh = SubResource("BoxMesh_feather_mid")
 
-[node name="ShadowBladeR2" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(0.422618, 0.906308, 0, -0.875426, 0.408248, -0.258819, -0.23457, 0.109382, 0.965926, 1.4, 0.2, 0.45)
-mesh = SubResource("BoxMesh_shadow_blade")
+[node name="Feather3" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, -1.8, -1.1, 0.1)
+mesh = SubResource("BoxMesh_feather_short")
 
-[node name="TrueCore" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.38)
-mesh = SubResource("SphereMesh_true_core")
+[node name="WingMuzzle1" type="Node3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.8, -0.2)
+
+[node name="WingMuzzle2" type="Node3D" parent="MeshRoot/TrueFormRoot/LeftAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, -0.5, -0.2)
+
+[node name="RightAngelWing" type="Node3D" parent="MeshRoot/TrueFormRoot"]
+transform = Transform3D(0.819152, 0.496732, 0.286788, -0.537946, 0.835154, 0.114708, -0.182559, -0.237255, 0.954157, 0.6, 0.8, 0.35)
+
+[node name="MainSpar" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0, 0)
+mesh = SubResource("BoxMesh_wing_spar")
+
+[node name="Feather1" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, 2.8, 0.5, 0.1)
+mesh = SubResource("BoxMesh_feather_long")
+
+[node name="Feather2" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 0, 0, 1, 2.4, -0.4, 0.1)
+mesh = SubResource("BoxMesh_feather_mid")
+
+[node name="Feather3" type="MeshInstance3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, 1.8, -1.1, 0.1)
+mesh = SubResource("BoxMesh_feather_short")
+
+[node name="WingMuzzle1" type="Node3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.8, -0.2)
+
+[node name="WingMuzzle2" type="Node3D" parent="MeshRoot/TrueFormRoot/RightAngelWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -0.5, -0.2)
 
 [node name="CoreLight" type="OmniLight3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -1.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -0.8)
 light_color = Color(1, 0.2, 0.2, 1)
-light_energy = 4.0
-omni_range = 14.0
+light_energy = 5.0
+omni_range = 16.0
 
 [node name="AuraLight" type="OmniLight3D" parent="MeshRoot"]
 light_color = Color(1, 0.05, 0.05, 1)
 light_energy = 0.0
-omni_range = 18.0
+omni_range = 20.0
 
 [node name="AuraShell" type="MeshInstance3D" parent="MeshRoot"]
 visible = false
