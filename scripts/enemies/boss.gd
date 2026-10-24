@@ -68,15 +68,15 @@ func _apply_wave_scaling() -> void:
 	max_health = 3500.0 * hp_scale
 	current_health = max_health
 	
-	# Damage scaling (10% per wave, clamped to avoid instant-death spikes)
-	var dmg_scale = pow(1.10, float(maxi(0, wave_num - 1)))
+	# Damage scaling (5% per wave, clamped to avoid instant-death spikes)
+	var dmg_scale = pow(1.05, float(maxi(0, wave_num - 1)))
 	attack_damage = clampf(40.0 * dmg_scale, 40.0, 180.0)
 	
-	# Movement & Attack Speed (every 5 waves: +10%)
-	var speed_tier: int = int(wave_num / 5)
+	# Movement & Attack Speed (every 10 waves: +5%)
+	var speed_tier: int = int(wave_num / 10)
 	var speed_factor: float = 1.0 + (float(speed_tier) * 0.05)
 	speed = 4.2 * speed_factor
-	attack_speed_mult = 1.0 + (float(speed_tier) * 0.10)
+	attack_speed_mult = speed_factor
 	
 	# Damage reduction (every 10 waves: +10%, capped at 90%)
 	var reduction_tier: int = int(wave_num / 10)

@@ -29,15 +29,16 @@ func _ready() -> void:
 
 func _apply_wave_scaling() -> void:
 	var wave_num = GameManager.current_wave
-	# 1. Every wave: 10% more HP and DMG compounding
-	var wave_factor = pow(1.10, float(maxi(0, wave_num - 1)))
-	current_health = max_health * wave_factor
+	# 1. Every wave: 10% more HP and 5% more DMG compounding
+	var hp_factor = pow(1.10, float(maxi(0, wave_num - 1)))
+	var dmg_factor = pow(1.05, float(maxi(0, wave_num - 1)))
+	current_health = max_health * hp_factor
 	max_health = current_health
-	attack_damage = attack_damage * wave_factor
+	attack_damage = attack_damage * dmg_factor
 	
-	# 2. Every 5 waves: 10% more Attack SPD and Movement SPD
-	var speed_tier: int = int(wave_num / 5)
-	var speed_mult: float = 1.0 + (float(speed_tier) * 0.10)
+	# 2. Every 10 waves: 5% more Attack SPD and Movement SPD
+	var speed_tier: int = int(wave_num / 10)
+	var speed_mult: float = 1.0 + (float(speed_tier) * 0.05)
 	speed *= speed_mult
 	attack_speed_mult = speed_mult
 	

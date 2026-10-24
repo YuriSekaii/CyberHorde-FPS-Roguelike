@@ -146,8 +146,8 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 
 ### Wave Progression & Scaling
 Hordes scale progressively to challenge late-game builds:
-* **Every Wave**: Enemies gain **+10% Compounding Health and Damage** ($\text{Base} \times 1.10^{\text{Wave} - 1}$).
-* **Every 5 Waves**: Enemies gain **+10% Movement Speed and +10% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
+* **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
+* **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
 * **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **90%** max reduction). Floating damage indicators accurately reflect reduced damage values.
 
 ### Enemy Types
