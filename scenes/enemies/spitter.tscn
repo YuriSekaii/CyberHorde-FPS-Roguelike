@@ -6,9 +6,9 @@
 radius = 0.65
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hull"]
-albedo_color = Color(0.12, 0.1, 0.18, 1)
-metallic = 0.8
-roughness = 0.2
+albedo_color = Color(0.1, 0.55, 0.95, 1)
+metallic = 0.5
+roughness = 0.25
 
 [sub_resource type="SphereMesh" id="SphereMesh_hull"]
 material = SubResource("StandardMaterial3D_hull")
@@ -17,7 +17,7 @@ height = 1.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_core"]
 shading_mode = 0
-albedo_color = Color(0.9, 0.1, 1, 1)
+albedo_color = Color(1, 0.15, 0.85, 1)
 
 [sub_resource type="TorusMesh" id="TorusMesh_ring"]
 material = SubResource("StandardMaterial3D_core")
