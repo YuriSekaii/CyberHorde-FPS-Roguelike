@@ -239,20 +239,35 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~55.6% |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% |
 | **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Reduced by 20%) |
-| **Apex Overlord (Final Boss)** | **10,000.0** (Base) → ~1.6M (Wave 100) | 4.2 – 7.8 m/s | 40.0 → 180.0 (Cap) | 1.3s – 2.2s (Cannons)<br>4.5s – 7.5s (Stomp) | Heavy Plasma Barrage + 10.0m Tremor Stomp | Wave 100 Exclusive |
+| **Apex Overlord (Final Boss)** | **100,000.0** (Base) → ~16M (Wave 100) | 3.2 – 78.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
 3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing mini-boss style threats that charge in and slam the ground creating shockwaves and knockback!
 
-### 👑 Wave 100 Final Boss: Apex Overlord & Escalation Horde
-**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **10,000 Base HP**, scaling to ~1.6M HP on Wave 100)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths in the arena:
+### 👑 Wave 100 Final Boss: Apex Overlord & Multi-Stage Escalation
+**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **100,000 Base HP**, scaling to ~16M HP on Wave 100)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
-* **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's devastating artillery and shockwaves.
-* **Phase 1 (100% – 60% HP)**: Alternates dual heavy plasma cannon volleys with massive 10m-radius **Tremor Stomps** that launch players into the air.
-* **Phase 2 (60% – 30% HP)**: Enters **Overcharge** with a radiant orange core; fires 3-way spread plasma bursts and summons immediate escort rings.
-* **Phase 3 (< 30% HP - Meltdown)**: Blazing violet reactor berserk state with increased movement speed, continuous 5-way barrages, and frequent tremor stomps!
+* **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's evolving aerial and ground attacks.
+* **Stage 1 (100% – 66% HP) — Armored Ground Juggernaut**:
+  * **Movement**: Heavy, lumbering ground pursuit.
+  * **Near Attack (Close Range ≤ 8.5m)**: Winds up and executes a devastating **Slam AoE** that hits nearby players with high damage (`attack_damage × 1.6`) and launches them skyward with vertical knockup!
+  * **Far Attack (Long Range > 8.5m)**: Alternates firing dual plasma cannons for low damage (`attack_damage × 0.45`) to pressure players from afar.
+  * Patterns loop continuously until the boss drops below 66% HP.
+* **Stage 2 (66% – 33% HP) — Aerial Bombardier & Hyper Dive**:
+  * **Transformation**: The armor shifts and unfolds into massive mechanical wings with glowing amber energy blades; thrusters ignite as the boss ascends into the sky (Y ≈ 14m).
+  * **Aerial Bombardment**: Hovers stationary in the air, firing slow-moving plasma bomb projectiles that detonate upon hitting the ground or player, causing medium AoE explosive damage (`attack_damage × 0.85`).
+  * **Energy Charge & Red Aura Lock-On**: After several shots, halts and charges energy as its core flares. Upon full charge, **flashes a brilliant Red Aura** and locks onto your exact position, dropping a holographic red impact zone warning beacon. Players must sprint and evacuate the zone immediately!
+  * **Extreme Speed Dive**: Plunges from the sky at extreme speed (60 m/s) straight into the locked position, causing a massive 10.5m **AoE Shockwave** (`attack_damage × 2.2` massive damage + knockup).
+  * **Loop**: Recovers on the ground, rockets back into the sky, and repeats the pattern until 33% HP.
+* **Stage 3 (< 33% HP) — True Form Meltdown & Rapid Blitz**:
+  * **Transformation**: Detonates its entire outer armor shell, completely ejecting it to reveal its terrifying **True Form**—a sleek, dark endoskeleton with an exposed, blazing cosmic violet meltdown core!
+  * **High-Speed Aerial Machine Gun**: Flies at extreme speed (19 m/s) in sweeping aerial arcs around the arena while spraying rapid machine gun plasma rounds (small damage, `attack_damage × 0.28`).
+  * **Cataclysmic Mega Projectile**: Halts and channels catastrophic power into its core, launching a giant, slow-moving mega sphere that causes a gargantuan 12m explosion on impact with massive damage (`attack_damage × 2.8`).
+  * **Exhaustion Cooldown**: The boss visibly weakens and sags in the sky as its core dims and flickers, entering an exhaustion cooldown for 3 seconds—providing a prime vulnerability window for players to lay down massive DPS!
+  * **Post-Exhaustion Hyper Dive**: Surges back to life, flashes its crimson red aura, locks your position with a fast-reaction warning, and dives with hyper speed (78 m/s—even faster than Stage 2) into the ground, causing an 11.5m shockwave (`attack_damage × 2.5` massive damage).
+  * **Loop**: Rockets back into the sky and loops the Stage 3 pattern until defeated.
 * **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
 * **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 99? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 100 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.
 

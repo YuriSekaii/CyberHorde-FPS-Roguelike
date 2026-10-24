@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/boss_lock_indicator.gd" id="1_lock"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_ring"]
+inner_radius = 0.92
+outer_radius = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pillar"]
+top_radius = 0.3
+bottom_radius = 0.8
+height = 30.0
+
+[node name="BossLockIndicator" type="Node3D"]
+script = ExtResource("1_lock")
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("TorusMesh_ring")
+
+[node name="Pillar" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, 0)
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="WarningLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+light_color = Color(1, 0.1, 0.1, 1)
+light_energy = 6.0
+omni_range = 14.0
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+billboard = 1
+text = "⚠ TARGET LOCKED ⚠
+[EVACUATE IMMEDIATELY!]"
+font_size = 46
+outline_size = 10
+modulate = Color(1, 0.15, 0.15, 1)
+outline_modulate = Color(0, 0, 0, 1)

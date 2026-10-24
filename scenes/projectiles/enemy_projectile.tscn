@@ -25,4 +25,9 @@ shape = SubResource("SphereShape3D_1")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_orb")
 
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.2, 0.8, 1)
+light_energy = 2.5
+omni_range = 5.0
+
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
