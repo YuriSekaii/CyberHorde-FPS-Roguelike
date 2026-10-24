@@ -1,15 +1,17 @@
 extends Node3D
 
 @export var drone_index: int = 0
+@export var assigned_weapon_idx: int = -1
+
 var fire_cooldown: float = 0.0
 var target_enemy: Node3D = null
 
-# Weapon mirroring, magazine & reload state
-var weapon_ammo: Dictionary = {} # weapon_index -> current_ammo
-var current_weapon_idx: int = 0
+# Assigned weapon state
+var current_ammo: int = -1
 var is_reloading: bool = false
 var reload_timer: float = 0.0
 var idle_timer: float = 0.0
+var _visuals_applied: bool = false
 
 @onready var light: OmniLight3D = $DroneLight
 @onready var ring: MeshInstance3D = $DroneRing
@@ -17,30 +19,45 @@ var idle_timer: float = 0.0
 const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
 
 func _ready() -> void:
+	if assigned_weapon_idx < 0:
+		assigned_weapon_idx = randi() % 3
+	_apply_weapon_visuals()
 	# Stagger initial shot timing based on drone index so multiple drones create rhythmic volley
 	fire_cooldown = float(drone_index) * 0.25
+
+func _apply_weapon_visuals() -> void:
+	if _visuals_applied or not is_inside_tree():
+		return
+	_visuals_applied = true
+	var col: Color = Color(0.0, 0.95, 1.0)
+	match assigned_weapon_idx:
+		0: col = Color(0.0, 0.95, 1.0)   # Cyan: Pulse Carbine
+		1: col = Color(1.0, 0.55, 0.08)  # Orange: Scatter Cannon
+		2: col = Color(0.9, 0.2, 1.0)    # Magenta: Plasma Core
+	if light:
+		light.light_color = col
+	if ring:
+		var mat = StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.albedo_color = col
+		ring.material_override = mat
 
 func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	if not is_instance_valid(player_ref) or player_ref.weapons.is_empty():
 		return
 	
-	var active_idx = player_ref.active_weapon_idx
-	if active_idx < 0 or active_idx >= player_ref.weapons.size():
-		active_idx = 0
-	var cur_weapon = player_ref.weapons[active_idx]
+	if not _visuals_applied:
+		_apply_weapon_visuals()
 	
-	# Detect weapon switch
-	if active_idx != current_weapon_idx:
-		current_weapon_idx = active_idx
-		if not weapon_ammo.has(current_weapon_idx):
-			weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
-		is_reloading = false
-		reload_timer = 0.0
+	if assigned_weapon_idx < 0 or assigned_weapon_idx >= player_ref.weapons.size():
+		assigned_weapon_idx = randi() % player_ref.weapons.size()
+	var cur_weapon = player_ref.weapons[assigned_weapon_idx]
 	
-	if not weapon_ammo.has(current_weapon_idx):
-		weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
+	# Initialize or clamp ammo to weapon's current max_ammo (which scales with Extended Mag)
+	if current_ammo < 0:
+		current_ammo = cur_weapon.max_ammo
 	else:
-		weapon_ammo[current_weapon_idx] = mini(weapon_ammo[current_weapon_idx], cur_weapon.max_ammo)
+		current_ammo = mini(current_ammo, cur_weapon.max_ammo)
 	
 	# Smooth orbital flight formation around player
 	var t = Time.get_ticks_msec() / 1000.0
@@ -67,15 +84,15 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		if reload_timer <= 0.0:
 			is_reloading = false
 			reload_timer = 0.0
-			weapon_ammo[current_weapon_idx] = cur_weapon.max_ammo
+			current_ammo = cur_weapon.max_ammo
 			if light:
 				light.light_energy = 1.5
 	
 	# Trigger reload if empty or if player reloads their weapon
 	if not is_reloading:
-		if weapon_ammo[current_weapon_idx] <= 0:
+		if current_ammo <= 0:
 			_start_reload(cur_weapon)
-		elif player_ref.is_reloading and weapon_ammo[current_weapon_idx] < cur_weapon.max_ammo:
+		elif player_ref.is_reloading and current_ammo < cur_weapon.max_ammo:
 			_start_reload(cur_weapon)
 	
 	# Update fire cooldown
@@ -89,17 +106,17 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		var enemy_aim_pos = target_enemy.global_position + Vector3(0, 0.7, 0)
 		look_at(enemy_aim_pos, Vector3.UP)
 		
-		# Fires at 1/4 fire rate of your actual weapon, scaled by Overclock Trigger (GameManager.fire_rate_mult)
+		# Fires at 1/4 fire rate of its assigned weapon, scaled by Overclock Trigger (GameManager.fire_rate_mult)
 		var effective_cooldown = (cur_weapon.fire_rate * 4.0) / GameManager.fire_rate_mult
 		if fire_cooldown <= 0.0 and not is_reloading:
-			if weapon_ammo[current_weapon_idx] > 0:
+			if current_ammo > 0:
 				fire_cooldown = effective_cooldown
-				_fire_weapon(enemy_aim_pos, cur_weapon, current_weapon_idx == 2)
+				_fire_weapon(enemy_aim_pos, cur_weapon, assigned_weapon_idx == 2)
 			else:
 				_start_reload(cur_weapon)
 	else:
 		# Idle reload after 3s out of combat if magazine is not full
-		if not is_reloading and weapon_ammo[current_weapon_idx] < cur_weapon.max_ammo:
+		if not is_reloading and current_ammo < cur_weapon.max_ammo:
 			idle_timer += delta
 			if idle_timer >= 3.0:
 				idle_timer = 0.0
@@ -116,7 +133,7 @@ func _start_reload(w) -> void:
 	if is_reloading:
 		return
 	is_reloading = true
-	# Matches your actual weapon's reload speed, scaled by Rapid Loader upgrades
+	# Matches assigned weapon's reload speed, scaled by Rapid Loader upgrades
 	reload_timer = w.reload_time
 	SoundManager.play("reload", 0.08, -4.0)
 
@@ -136,9 +153,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 	var aim_dir = (target_pos - global_position).normalized()
 	
 	# Consume magazine ammo
-	var cur_ammo = weapon_ammo.get(current_weapon_idx, w.max_ammo)
-	cur_ammo -= 1
-	weapon_ammo[current_weapon_idx] = cur_ammo
+	current_ammo -= 1
 	
 	# Inherits weapon base pellets and Multi-Barrel Splitter (+100% projectiles per stack)
 	var total_bullets = int(round(float(w.pellets) * (1.0 + GameManager.extra_projectile_mult)))
@@ -160,7 +175,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 		scene_root.add_child(bullet)
 		bullet.global_position = global_position + aim_dir * 0.4
 		
-		# Direction with spread matching weapon spread
+		# Direction with spread matching assigned weapon spread
 		var spread_angle = w.spread
 		if total_bullets > 1:
 			spread_angle = maxf(spread_angle, 0.045)
@@ -171,7 +186,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 		var spread_y = randf_range(-spread_angle, spread_angle)
 		var bullet_dir = (aim_dir + transform.basis.x * spread_x + transform.basis.y * spread_y).normalized()
 		
-		# Matches your actual weapon base stats (damage, explosive, plasma),
+		# Matches assigned weapon base stats (damage, explosive, plasma),
 		# and inherits ALL player weapon perks automatically:
 		# - Heavy Caliber (+25% damage per stack, infinite stacks)
 		# - Hyper-Penetrator (piercing)
@@ -185,5 +200,5 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 		# - Rapid Loader (same reload speed)
 		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma)
 	
-	if cur_ammo <= 0:
+	if current_ammo <= 0:
 		_start_reload(w)

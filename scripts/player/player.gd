@@ -521,6 +521,7 @@ func _sync_drones() -> void:
 	while active_drones.size() < target_count:
 		var d = DRONE_SCENE.instantiate()
 		d.drone_index = active_drones.size()
+		d.assigned_weapon_idx = randi() % (weapons.size() if weapons.size() > 0 else 3)
 		parent_node.add_child(d)
 		d.global_position = global_position + Vector3(0, 1.8, 0)
 		active_drones.append(d)
