@@ -84,8 +84,9 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
-| **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, or restart |
+| **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, toggle Damage Numbers, or restart |
 | **Toggle Window / Fullscreen** | `F11`, `Alt + Enter`, `M` (in menus), or Menu Button | Instantly toggle between Windowed and Borderless Fullscreen display modes |
+| **Toggle Damage Numbers** | `F8` or Pause Menu Button | Instantly toggle floating damage numbers ON/OFF to maximize FPS |
 
 ---
 
@@ -103,6 +104,30 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
 * **Automatic Preference Saving**:
   * Display choices are saved to `user://settings.cfg` and remembered across sessions.
   * *Smart bypass*: If launching multi-instance co-op tests via `Test_Coop_2Players.bat`, command-line position and resolution arguments are preserved automatically.
+
+---
+
+## ⚡ Performance Optimization & Visual Capping Systems
+
+To guarantee silky-smooth frame rates even during chaotic late-game waves with dozens of bouncing pellets, drones, explosions, and swarming enemies, CyberHorde employs several high-efficiency optimization systems:
+
+### 1. Dynamic Bullet Visual Capping
+* **Threshold Management**: Caps the active rendered bullets on screen to a balanced threshold (`40`).
+* **Non-Visual Bullet Simulation**: If the total active bullets exceed the threshold (e.g. from shotgun volleys, multi-barrel perks, multiple companion drones, and bouncing ricochets), excess bullets dynamically toggle off their `MeshInstance3D` tracer and `OmniLight3D` point lights.
+* **100% Gameplay & DPS Integrity**: Non-visual bullets continue calculating high-speed raycasts, hits, damage calculations, piercing, ricochets, and status effects behind the scenes without dropping any damage.
+* **Fair Visual Allocation**: Newly fired shots have a fair random chance to take visual priority over older ricocheting bullets, ensuring the player always sees tracer fire exiting their weapon.
+
+### 2. Streamlined Explosion Calculations
+* **Instantaneous Single-Pass AoE**: Replaced redundant physics Area3D collision sweeps and overlapping body queries with an instant synchronous calculation pass.
+* **Rapid AABB Pre-Filtering**: Checks 2D horizontal bounding box distance (`absf(dx) > r or absf(dz) > r`) to instantly discard ~95% of non-applicable enemies before computing squared distance, completely eliminating expensive `sqrt()` operations.
+* **Disabled Physics Area Monitoring**: Explosions and Bullets set `monitoring = false` and `monitorable = false`, removing hundreds of broadphase collision pairs from Godot's PhysicsServer.
+* **Clustered Forward+ Light Capping**: Active explosion `OmniLight3D` instances are capped to a maximum of 4 concurrent lights, preventing multi-light overlap bottlenecks.
+* **Particle & Audio Throttling**: Particle count per explosion reduced to 14 with a snappy 0.25s lifetime, and sound playback is throttled (50ms cooldown) to prevent audio bus clipping.
+
+### 3. Damage Number Toggle & Concurrency Limiting
+* **In-Game Toggle**: Toggle floating damage numbers on or off at any time via the **Pause Menu** (`💥 VISIBLE [ON]` / `🚫 HIDDEN [OFF]`) or the **`F8`** hotkey.
+* **Active Counter Throttling**: When damage numbers are enabled, a safety cap (max 35 active) suppresses non-critical spam numbers during mass AoE detonations, keeping label draw calls minimal.
+* **Persistent Setting**: Your preference is saved to `user://settings.cfg` across runs.
 
 ---
 

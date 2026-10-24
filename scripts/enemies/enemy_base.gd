@@ -111,11 +111,12 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	current_health -= amount
 	SoundManager.play( "crit_hit" if is_crit else "enemy_hit", 0.15)
 	
-	# Spawn floating damage number
-	var dnum = DAMAGE_NUMBER_SCENE.instantiate()
-	get_parent().add_child(dnum)
-	dnum.global_position = global_position + Vector3(randf_range(-0.3, 0.3), 1.2, randf_range(-0.3, 0.3))
-	dnum.setup(amount, is_crit)
+	# Spawn floating damage number (can be toggled in pause menu / F8)
+	if GameManager.show_damage_numbers:
+		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
+		get_parent().add_child(dnum)
+		dnum.global_position = global_position + Vector3(randf_range(-0.3, 0.3), 1.2, randf_range(-0.3, 0.3))
+		dnum.setup(amount, is_crit)
 	
 	# Flash mesh white/red
 	_flash_hit()

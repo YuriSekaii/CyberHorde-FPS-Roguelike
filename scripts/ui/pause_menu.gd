@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var sensitivity_slider: HSlider = $Panel/VBoxContainer/SensContainer/HSlider
 @onready var sens_label: Label = $Panel/VBoxContainer/SensContainer/SensValueLabel
 @onready var window_mode_btn: Button = $Panel/VBoxContainer/DisplayContainer/WindowModeBtn
+@onready var dmg_number_btn: Button = $Panel/VBoxContainer/DmgNumberContainer/DmgNumberBtn
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -28,7 +29,9 @@ func _ready() -> void:
 		sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
 	
 	_update_window_mode_ui()
+	_update_dmg_number_ui()
 	GameManager.window_mode_changed.connect(_on_window_mode_changed)
+	GameManager.damage_numbers_toggled.connect(_on_damage_numbers_toggled)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
@@ -44,6 +47,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func open_pause() -> void:
 	visible = true
 	_update_window_mode_ui()
+	_update_dmg_number_ui()
 	GameManager.state = GameManager.GameState.PAUSED
 	if not NetworkManager.is_multiplayer:
 		get_tree().paused = true
@@ -100,3 +104,17 @@ func _on_window_mode_pressed() -> void:
 
 func _on_window_mode_changed(_is_fullscreen: bool) -> void:
 	_update_window_mode_ui()
+
+func _update_dmg_number_ui() -> void:
+	if dmg_number_btn:
+		if GameManager.show_damage_numbers:
+			dmg_number_btn.text = "💥 VISIBLE [ON]"
+		else:
+			dmg_number_btn.text = "🚫 HIDDEN [OFF]"
+
+func _on_dmg_number_pressed() -> void:
+	SoundManager.play("upgrade_select", 0.05, 0.0)
+	GameManager.toggle_damage_numbers()
+
+func _on_damage_numbers_toggled(_enabled: bool) -> void:
+	_update_dmg_number_ui()

@@ -6,7 +6,20 @@ var velocity: Vector3 = Vector3.ZERO
 var lifetime: float = 0.8
 var timer: float = 0.0
 
+static var active_count: int = 0
+const MAX_ACTIVE: int = 35
+
+func _ready() -> void:
+	active_count += 1
+
+func _exit_tree() -> void:
+	active_count = maxi(0, active_count - 1)
+
 func setup(amount: float, is_crit: bool) -> void:
+	if active_count > MAX_ACTIVE and not is_crit:
+		queue_free()
+		return
+	
 	if not is_node_ready():
 		await ready
 	

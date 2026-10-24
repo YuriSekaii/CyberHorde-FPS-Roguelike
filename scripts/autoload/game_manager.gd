@@ -19,6 +19,7 @@ signal hitmarker_triggered(is_crit: bool)
 signal enemy_killed(enemy_type: String)
 signal upgrade_requested()
 signal window_mode_changed(is_fullscreen: bool)
+signal damage_numbers_toggled(enabled: bool)
 
 const SETTINGS_PATH: String = "user://settings.cfg"
 
@@ -38,6 +39,10 @@ var is_boss_battle_mode: bool = false
 
 # Roguelike Stats
 var damage_mult: float = 1.0
+
+# Performance & Visual Settings
+var show_damage_numbers: bool = true
+var max_visible_bullets: int = 40
 var fire_rate_mult: float = 1.0
 var speed_mult: float = 1.0
 var reload_speed_mult: float = 1.0
@@ -280,6 +285,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_fullscreen"):
 		toggle_fullscreen()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("toggle_dmg_numbers"):
+		toggle_damage_numbers()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if (event.keycode == KEY_ENTER or event.physical_keycode == KEY_ENTER) and event.alt_pressed:
 			toggle_fullscreen()
@@ -314,8 +322,15 @@ func _setup_inputs() -> void:
 	_bind_key("weapon_3", KEY_3)
 	_bind_key("pause", KEY_ESCAPE)
 	_bind_key("toggle_fullscreen", KEY_F11)
+	_bind_key("toggle_dmg_numbers", KEY_F8)
 
 var _is_fullscreen: bool = false
+
+func toggle_damage_numbers() -> bool:
+	show_damage_numbers = not show_damage_numbers
+	save_display_settings()
+	damage_numbers_toggled.emit(show_damage_numbers)
+	return show_damage_numbers
 
 func is_fullscreen() -> bool:
 	if DisplayServer.get_name() == "headless":
@@ -341,14 +356,16 @@ func save_display_settings() -> void:
 	var config = ConfigFile.new()
 	var _err = config.load(SETTINGS_PATH)
 	config.set_value("display", "fullscreen", is_fullscreen())
+	config.set_value("gameplay", "show_damage_numbers", show_damage_numbers)
 	config.save(SETTINGS_PATH)
 
 func load_display_settings() -> void:
-	for arg in OS.get_cmdline_args():
-		if "resolution" in arg or "position" in arg:
-			return
 	var config = ConfigFile.new()
 	if config.load(SETTINGS_PATH) == OK:
+		show_damage_numbers = config.get_value("gameplay", "show_damage_numbers", true)
+		for arg in OS.get_cmdline_args():
+			if "resolution" in arg or "position" in arg:
+				return
 		var fs = config.get_value("display", "fullscreen", false)
 		if fs:
 			call_deferred("set_fullscreen", true)
