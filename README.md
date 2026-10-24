@@ -63,13 +63,13 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
 | **Kinetic Thrusters** | `Common` (Cyan) | +18% Movement Speed and +15% Jump Power. |
 | **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
-| **Multi-Barrel Splitter** | `Rare` (Purple) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
-| **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy. |
+| **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy (stacks up to 2x). |
 | **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (4.5m → 9.0m). |
 | **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
+| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys companion drone using your Pulse Carbine (1/10 fire rate, no ammo, all weapon perks). +1 drone per pick. |

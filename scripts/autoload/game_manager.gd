@@ -110,8 +110,8 @@ var upgrade_database: Dictionary = {
 		"id": "multishot",
 		"name": "Multi-Barrel Splitter",
 		"desc": "+100% Projectiles per shot (Doubles shot count).",
-		"rarity": "Rare",
-		"color": Color(0.8, 0.3, 1.0),
+		"rarity": "Epic",
+		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 4
 	},
 	"piercing_core": {
@@ -120,7 +120,7 @@ var upgrade_database: Dictionary = {
 		"desc": "Shots pierce through +1 additional enemy.",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
-		"max_stacks": 3
+		"max_stacks": 2
 	},
 	"explosive_payload": {
 		"id": "explosive_payload",
