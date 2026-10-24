@@ -9,6 +9,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	GameManager.level_up.connect(_on_level_up)
+	GameManager.upgrade_requested.connect(open_menu)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -26,6 +27,8 @@ func _on_level_up(_lvl: int) -> void:
 	open_menu()
 
 func open_menu() -> void:
+	if visible:
+		return
 	current_options = GameManager.get_upgrade_options(3)
 	if current_options.is_empty():
 		GameManager.resume_game()

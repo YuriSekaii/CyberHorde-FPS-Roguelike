@@ -39,8 +39,10 @@ class Weapon:
 	var name: String
 	var fire_rate: float # Seconds per shot
 	var damage: float
+	var base_max_ammo: int
 	var max_ammo: int
 	var current_ammo: int
+	var base_reload_time: float
 	var reload_time: float
 	var is_auto: bool
 	var pellets: int
@@ -91,8 +93,10 @@ func _setup_weapons() -> void:
 	rifle.name = "Pulse Carbine"
 	rifle.fire_rate = 0.12
 	rifle.damage = 22.0
+	rifle.base_max_ammo = 32
 	rifle.max_ammo = 32
 	rifle.current_ammo = 32
+	rifle.base_reload_time = 1.2
 	rifle.reload_time = 1.2
 	rifle.is_auto = true
 	rifle.pellets = 1
@@ -106,8 +110,10 @@ func _setup_weapons() -> void:
 	shotgun.name = "Scatter Cannon"
 	shotgun.fire_rate = 0.65
 	shotgun.damage = 14.0
+	shotgun.base_max_ammo = 8
 	shotgun.max_ammo = 8
 	shotgun.current_ammo = 8
+	shotgun.base_reload_time = 1.6
 	shotgun.reload_time = 1.6
 	shotgun.is_auto = false
 	shotgun.pellets = 7
@@ -121,8 +127,10 @@ func _setup_weapons() -> void:
 	plasma.name = "Plasma Core"
 	plasma.fire_rate = 0.85
 	plasma.damage = 65.0
+	plasma.base_max_ammo = 5
 	plasma.max_ammo = 5
 	plasma.current_ammo = 5
+	plasma.base_reload_time = 1.8
 	plasma.reload_time = 1.8
 	plasma.is_auto = false
 	plasma.pellets = 1
@@ -138,11 +146,25 @@ func _update_stats() -> void:
 	current_health = minf(current_health, max_health)
 	current_shield = minf(current_shield, GameManager.shield_max)
 	
+	for w in weapons:
+		var new_max = int(round(w.base_max_ammo * GameManager.magazine_mult))
+		if new_max > w.max_ammo:
+			var diff = new_max - w.max_ammo
+			w.max_ammo = new_max
+			w.current_ammo = mini(w.current_ammo + diff, w.max_ammo)
+		else:
+			w.max_ammo = new_max
+			w.current_ammo = mini(w.current_ammo, w.max_ammo)
+		w.reload_time = w.base_reload_time / GameManager.reload_speed_mult
+	
 	if drone_companion:
 		drone_companion.visible = (GameManager.drone_count > 0)
 	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
+	if active_weapon_idx < weapons.size():
+		var cur_w = weapons[active_weapon_idx]
+		ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, is_reloading)
 
 func _input(event: InputEvent) -> void:
 	if GameManager.state != GameManager.GameState.PLAYING:
@@ -277,8 +299,8 @@ func _fire_active_weapon() -> void:
 	weapon_kick_rot_x = deg_to_rad(3.5 if not is_aiming else 1.8)
 	shake_intensity = 0.08 if active_weapon_idx != 1 else 0.18
 	
-	# Spawn bullets (pellets + multishot)
-	var total_projectiles = w.pellets + GameManager.extra_projectiles
+	# Spawn bullets (pellets + 100% multishot multiplier)
+	var total_projectiles = int(round(w.pellets * (1.0 + GameManager.extra_projectile_mult)))
 	var shoot_origin = camera.global_position + (-camera.global_transform.basis.z * 0.5)
 	
 	for i in range(total_projectiles):
@@ -290,7 +312,9 @@ func _fire_active_weapon() -> void:
 		var base_dir = -camera.global_transform.basis.z
 		var spread_angle = w.spread * (0.5 if is_aiming else 1.0)
 		if total_projectiles > 1:
-			spread_angle = maxf(spread_angle, 0.04)
+			spread_angle = maxf(spread_angle, 0.045)
+		if total_projectiles > 7:
+			spread_angle *= 1.2
 		
 		var spread_x = randf_range(-spread_angle, spread_angle)
 		var spread_y = randf_range(-spread_angle, spread_angle)

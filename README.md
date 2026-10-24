@@ -58,9 +58,11 @@ Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time free
 | :--- | :--- | :--- |
 | **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (stacks up to 8x). |
 | **Overclock Trigger** | `Common` (Cyan) | +25% Fire Rate for continuous suppression (stacks up to 6x). |
+| **Rapid Loader** | `Common` (Cyan) | +25% Reload Speed across all weapons (stacks up to 6x). |
+| **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
 | **Kinetic Thrusters** | `Common` (Cyan) | +18% Movement Speed and +15% Jump Power. |
 | **Nanite Magnet** | `Common` (Cyan) | +60% XP & Loot collection radius. |
-| **Multi-Barrel Splitter** | `Rare` (Purple) | +1 additional projectile per shot with spread. |
+| **Multi-Barrel Splitter** | `Rare` (Purple) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
 | **Hyper-Penetrator** | `Rare` (Purple) | Projectiles pierce through +1 enemy. |
 | **Explosive Payload** | `Rare` (Purple) | Bullets explode on impact for AoE blast damage. |
 | **Aegis Energy Shield** | `Rare` (Purple) | Grants +50 Regenerating Shield capacity. |
@@ -68,7 +70,7 @@ Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time free
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
-| **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet off walls/floors toward targets. |
+| **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys an autonomous companion drone that orbits and lasers enemies. |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage once with 3 seconds of invulnerability. |
 

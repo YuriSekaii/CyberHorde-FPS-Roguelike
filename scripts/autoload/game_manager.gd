@@ -12,6 +12,7 @@ signal wave_cleared(wave_number: int)
 signal game_over_triggered()
 signal hitmarker_triggered(is_crit: bool)
 signal enemy_killed(enemy_type: String)
+signal upgrade_requested()
 
 enum GameState { PLAYING, PAUSED, UPGRADING, GAME_OVER }
 var state: GameState = GameState.PLAYING
@@ -30,12 +31,16 @@ var run_time: float = 0.0
 var damage_mult: float = 1.0
 var fire_rate_mult: float = 1.0
 var speed_mult: float = 1.0
+var reload_speed_mult: float = 1.0
+var magazine_mult: float = 1.0
 var magnet_radius: float = 6.0
 var extra_projectiles: int = 0
+var extra_projectile_mult: float = 0.0
 var pierce_count: int = 0
 var explosive_rounds: bool = false
 var explosion_radius: float = 3.5
 var bouncing_bullets: bool = false
+var bounce_count: int = 0
 var chain_lightning: bool = false
 var vampiric_heal: float = 0.0
 var shield_max: float = 0.0
@@ -85,13 +90,29 @@ var upgrade_database: Dictionary = {
 		"color": Color(0.4, 0.8, 1.0),
 		"max_stacks": 4
 	},
+	"tactical_reload": {
+		"id": "tactical_reload",
+		"name": "Rapid Loader",
+		"desc": "+25% Reload Speed across all weapons.",
+		"rarity": "Common",
+		"color": Color(0.4, 0.8, 1.0),
+		"max_stacks": 6
+	},
+	"extended_mag": {
+		"id": "extended_mag",
+		"name": "Extended Mag",
+		"desc": "+30% Magazine Capacity for all weapons.",
+		"rarity": "Common",
+		"color": Color(0.4, 0.8, 1.0),
+		"max_stacks": 6
+	},
 	"multishot": {
 		"id": "multishot",
 		"name": "Multi-Barrel Splitter",
-		"desc": "+1 Additional projectile per shot with spread.",
+		"desc": "+100% Projectiles per shot (Doubles shot count).",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
-		"max_stacks": 3
+		"max_stacks": 4
 	},
 	"piercing_core": {
 		"id": "piercing_core",
@@ -144,10 +165,10 @@ var upgrade_database: Dictionary = {
 	"ricochet": {
 		"id": "ricochet",
 		"name": "Smart Bouncing Core",
-		"desc": "Projectiles ricochet off surfaces toward enemies.",
+		"desc": "Projectiles ricochet with on-hit explosion & lightning per bounce.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 2
+		"max_stacks": 3
 	},
 	"combat_drone": {
 		"id": "combat_drone",
@@ -245,12 +266,16 @@ func reset_game() -> void:
 	damage_mult = 1.0
 	fire_rate_mult = 1.0
 	speed_mult = 1.0
+	reload_speed_mult = 1.0
+	magazine_mult = 1.0
 	magnet_radius = 6.0
 	extra_projectiles = 0
+	extra_projectile_mult = 0.0
 	pierce_count = 0
 	explosive_rounds = false
 	explosion_radius = 3.5
 	bouncing_bullets = false
+	bounce_count = 0
 	chain_lightning = false
 	vampiric_heal = 0.0
 	shield_max = 0.0
@@ -294,6 +319,7 @@ func prompt_upgrade_menu() -> void:
 	state = GameState.UPGRADING
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	upgrade_requested.emit()
 
 func get_upgrade_options(count: int = 3) -> Array[Dictionary]:
 	var available: Array[Dictionary] = []
@@ -324,7 +350,12 @@ func apply_upgrade(upgrade_id: String) -> void:
 			speed_mult += 0.18
 		"nanite_magnet":
 			magnet_radius += 4.5
+		"tactical_reload":
+			reload_speed_mult += 0.25
+		"extended_mag":
+			magazine_mult += 0.30
 		"multishot":
+			extra_projectile_mult += 1.0
 			extra_projectiles += 1
 		"piercing_core":
 			pierce_count += 1
@@ -341,6 +372,7 @@ func apply_upgrade(upgrade_id: String) -> void:
 			chain_lightning = true
 		"ricochet":
 			bouncing_bullets = true
+			bounce_count += 2
 		"combat_drone":
 			drone_count += 1
 		"second_wind":
