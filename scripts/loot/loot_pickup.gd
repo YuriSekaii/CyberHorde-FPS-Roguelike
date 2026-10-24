@@ -62,11 +62,17 @@ func _physics_process(delta: float) -> void:
 			global_position.y = initial_y
 			velocity = Vector3.ZERO
 	
-	# Find player if not cached
-	if player == null or not is_instance_valid(player):
-		var players = get_tree().get_nodes_in_group("player")
-		if players.size() > 0:
-			player = players[0]
+	# Find closest player
+	var players = get_tree().get_nodes_in_group("player")
+	var closest_p: Node3D = null
+	var min_d: float = INF
+	for p in players:
+		if is_instance_valid(p):
+			var d = global_position.distance_to(p.global_position)
+			if d < min_d:
+				min_d = d
+				closest_p = p
+	player = closest_p
 	
 	if player != null and is_instance_valid(player):
 		var dist = global_position.distance_to(player.global_position)
@@ -88,18 +94,25 @@ func _physics_process(delta: float) -> void:
 func _collect() -> void:
 	match type:
 		PickupType.XP:
-			GameManager.add_xp(value)
+			if NetworkManager.is_multiplayer:
+				GameManager.rpc_add_xp.rpc(value)
+			else:
+				GameManager.add_xp(value)
 			SoundManager.play("pickup_xp", 0.15, -2.0)
 		PickupType.HEALTH:
 			if player and player.has_method("heal"):
 				player.heal(25.0)
 			SoundManager.play("pickup_health", 0.05, 1.0)
 		PickupType.SCRAP:
-			GameManager.add_scrap(value)
+			if NetworkManager.is_multiplayer:
+				GameManager.rpc_add_scrap.rpc(value)
+			else:
+				GameManager.add_scrap(value)
 			SoundManager.play("pickup_xp", 0.2, -4.0)
 	
 	queue_free()
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
+		player = body
 		_collect()

@@ -59,7 +59,9 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if is_crit:
 			final_dmg *= GameManager.crit_damage
 		
-		if collider.has_method("take_damage"):
+		if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+			collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
+		elif collider.has_method("take_damage"):
 			collider.take_damage(final_dmg, is_crit, global_position)
 		
 		GameManager.record_damage(final_dmg, is_crit)

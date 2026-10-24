@@ -73,6 +73,26 @@ material = SubResource("StandardMaterial3D_neon_cyan")
 inner_radius = 0.18
 outer_radius = 0.22
 
+[sub_resource type="BoxMesh" id="BoxMesh_tp_torso"]
+material = SubResource("StandardMaterial3D_gunmetal")
+size = Vector3(0.44, 0.65, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tp_chest"]
+material = SubResource("StandardMaterial3D_neon_cyan")
+size = Vector3(0.24, 0.22, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tp_head"]
+material = SubResource("StandardMaterial3D_gunmetal")
+size = Vector3(0.28, 0.28, 0.28)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tp_visor"]
+material = SubResource("StandardMaterial3D_neon_cyan")
+size = Vector3(0.24, 0.08, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tp_limb"]
+material = SubResource("StandardMaterial3D_gunmetal")
+size = Vector3(0.14, 0.65, 0.16)
+
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 4
 collision_mask = 11
@@ -169,3 +189,92 @@ mesh = SubResource("TorusMesh_drone_ring")
 light_color = Color(0, 0.95, 1, 1)
 light_energy = 1.5
 omni_range = 2.0
+
+[node name="ThirdPersonModel" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+
+[node name="Torso" type="MeshInstance3D" parent="ThirdPersonModel"]
+mesh = SubResource("BoxMesh_tp_torso")
+
+[node name="ChestLight" type="MeshInstance3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0.01)
+mesh = SubResource("BoxMesh_tp_chest")
+
+[node name="TPHead" type="Node3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="ThirdPersonModel/TPHead"]
+mesh = SubResource("BoxMesh_tp_head")
+
+[node name="VisorMesh" type="MeshInstance3D" parent="ThirdPersonModel/TPHead"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.01)
+mesh = SubResource("BoxMesh_tp_visor")
+
+[node name="LeftArm" type="MeshInstance3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32, 0.05, 0)
+mesh = SubResource("BoxMesh_tp_limb")
+
+[node name="RightArm" type="MeshInstance3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.05, -0.15)
+mesh = SubResource("BoxMesh_tp_limb")
+
+[node name="HeldWeapon" type="Node3D" parent="ThirdPersonModel/RightArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.25, -0.25)
+
+[node name="RifleMesh" type="MeshInstance3D" parent="ThirdPersonModel/RightArm/HeldWeapon"]
+mesh = SubResource("BoxMesh_rifle_body")
+
+[node name="ShotgunMesh" type="MeshInstance3D" parent="ThirdPersonModel/RightArm/HeldWeapon"]
+visible = false
+mesh = SubResource("BoxMesh_shotgun_body")
+
+[node name="PlasmaMesh" type="MeshInstance3D" parent="ThirdPersonModel/RightArm/HeldWeapon"]
+visible = false
+mesh = SubResource("BoxMesh_plasma_body")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.58, 0)
+mesh = SubResource("BoxMesh_tp_limb")
+
+[node name="RightLeg" type="MeshInstance3D" parent="ThirdPersonModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.58, 0)
+mesh = SubResource("BoxMesh_tp_limb")
+
+[node name="OverheadUI" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+visible = false
+
+[node name="NameLabel" type="Label3D" parent="OverheadUI"]
+billboard = 1
+no_depth_test = true
+text = "P2 [ALLY]"
+font_size = 28
+outline_size = 6
+modulate = Color(1, 0.5, 0.1, 1)
+
+[node name="StatusLabel" type="Label3D" parent="OverheadUI"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22, 0)
+billboard = 1
+no_depth_test = true
+text = "HP: 100/100"
+font_size = 20
+outline_size = 4
+modulate = Color(0.1, 1, 0.6, 1)
+
+[node name="RevivePrompt" type="Label3D" parent="OverheadUI"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+text = "[HOLD E TO REVIVE]"
+font_size = 26
+outline_size = 8
+modulate = Color(1, 0.85, 0.1, 1)
+
+[node name="DownedBeacon" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+light_color = Color(1, 0.15, 0.15, 1)
+light_energy = 5.0
+omni_range = 6.0

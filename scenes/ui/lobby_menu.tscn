@@ -1,0 +1,242 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.05, 0.07, 0.12, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.85, 1, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.1, 0.16, 0.25, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.8, 1, 0.5)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.15, 0.3, 0.45, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="LobbyMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 10
+script = ExtResource("1_lobby")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.85)
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(500, 520)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -260.0
+offset_right = 250.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "CYBERHORDE"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 0.7)
+theme_override_font_sizes/font_size = 12
+text = "ROGUE PROTOCOL • MULTIPLAYER PROTOCOL"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MainButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SoloBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🎮  SINGLE PLAYER (SOLO)"
+
+[node name="HostBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🌐  HOST CO-OP MISSION (SERVER)"
+
+[node name="JoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🔗  JOIN CO-OP MISSION (CLIENT)"
+
+[node name="HostContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HostIPLabel" type="Label" parent="Panel/VBoxContainer/HostContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 15
+text = "YOUR LOCAL IP: 127.0.0.1"
+horizontal_alignment = 1
+
+[node name="PortContainer" type="HBoxContainer" parent="Panel/VBoxContainer/HostContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HostContainer/PortContainer"]
+layout_mode = 2
+text = "Port: "
+
+[node name="HostPortInput" type="LineEdit" parent="Panel/VBoxContainer/HostContainer/PortContainer"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+text = "7777"
+alignment = 1
+
+[node name="PeerListLabel" type="Label" parent="Panel/VBoxContainer/HostContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "SQUAD MEMBERS (1):
+ • Player 1 (Host) - READY"
+
+[node name="StartSquadBtn" type="Button" parent="Panel/VBoxContainer/HostContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "LAUNCH SQUAD MISSION (1 PLAYER)"
+
+[node name="HostBackBtn" type="Button" parent="Panel/VBoxContainer/HostContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
+[node name="JoinContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="IPContainer" type="HBoxContainer" parent="Panel/VBoxContainer/JoinContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/JoinContainer/IPContainer"]
+layout_mode = 2
+text = "Host IP: "
+
+[node name="JoinIPInput" type="LineEdit" parent="Panel/VBoxContainer/JoinContainer/IPContainer"]
+custom_minimum_size = Vector2(220, 36)
+layout_mode = 2
+text = "127.0.0.1"
+placeholder_text = "192.168.x.x or IP"
+alignment = 1
+
+[node name="PortContainer" type="HBoxContainer" parent="Panel/VBoxContainer/JoinContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/JoinContainer/PortContainer"]
+layout_mode = 2
+text = "Port: "
+
+[node name="JoinPortInput" type="LineEdit" parent="Panel/VBoxContainer/JoinContainer/PortContainer"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+text = "7777"
+alignment = 1
+
+[node name="ConnectBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "CONNECT TO SQUAD"
+
+[node name="JoinBackBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
+[node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "Select deployment mode."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/SoloBtn" to="." method="_on_solo_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/HostBtn" to="." method="_on_host_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/JoinBtn" to="." method="_on_join_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HostContainer/StartSquadBtn" to="." method="_on_start_squad_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HostContainer/HostBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ConnectBtn" to="." method="_on_connect_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/JoinBackBtn" to="." method="_on_back_pressed"]

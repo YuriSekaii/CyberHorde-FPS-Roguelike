@@ -14,6 +14,7 @@ var is_dead: bool = false
 var slow_timer: float = 0.0
 var slow_multiplier: float = 1.0
 var knockback_velocity: Vector3 = Vector3.ZERO
+var retarget_timer: float = 0.0
 
 @onready var mesh_root: Node3D = $MeshRoot
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
@@ -30,16 +31,37 @@ func _ready() -> void:
 
 func _find_player() -> void:
 	var players = get_tree().get_nodes_in_group("player")
-	if players.size() > 0:
-		target_player = players[0]
+	var closest_dist: float = INF
+	target_player = null
+	
+	for p in players:
+		if is_instance_valid(p) and p is CharacterBody3D:
+			if p.get("is_downed") == true:
+				continue
+			var d = global_position.distance_squared_to(p.global_position)
+			if d < closest_dist:
+				closest_dist = d
+				target_player = p
+	
+	if target_player == null:
+		closest_dist = INF
+		for p in players:
+			if is_instance_valid(p) and p is CharacterBody3D:
+				var d = global_position.distance_squared_to(p.global_position)
+				if d < closest_dist:
+					closest_dist = d
+					target_player = p
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
-	if target_player == null or not is_instance_valid(target_player):
+	retarget_timer += delta
+	if retarget_timer >= 0.5 or target_player == null or not is_instance_valid(target_player):
+		retarget_timer = 0.0
 		_find_player()
-		return
+		if target_player == null:
+			return
 	
 	# Handle slow debuff
 	if slow_timer > 0.0:
@@ -56,6 +78,10 @@ func _physics_process(delta: float) -> void:
 func _behave(_delta: float) -> void:
 	# Overridden in child classes
 	pass
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
+	take_damage(amount, is_crit, from_pos)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	if is_dead:

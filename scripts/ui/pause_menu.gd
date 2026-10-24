@@ -36,7 +36,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func open_pause() -> void:
 	visible = true
 	GameManager.state = GameManager.GameState.PAUSED
-	get_tree().paused = true
+	if not NetworkManager.is_multiplayer:
+		get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func resume() -> void:

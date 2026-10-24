@@ -14,7 +14,14 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if is_player_nearby and not is_opened:
 		if Input.is_action_just_pressed("interact"):
-			open_chest()
+			if NetworkManager.is_multiplayer:
+				rpc_open_chest.rpc()
+			else:
+				open_chest()
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_open_chest() -> void:
+	open_chest()
 
 func open_chest() -> void:
 	if is_opened:

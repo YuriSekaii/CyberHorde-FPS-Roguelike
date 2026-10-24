@@ -303,9 +303,17 @@ func add_xp(amount: int) -> void:
 		prompt_upgrade_menu()
 	xp_changed.emit(player_xp, xp_to_next_level)
 
+@rpc("any_peer", "call_local", "reliable")
+func rpc_add_xp(amount: int) -> void:
+	add_xp(amount)
+
 func add_scrap(amount: int) -> void:
 	scrap += int(amount * greed_mult)
 	scrap_changed.emit(scrap)
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_add_scrap(amount: int) -> void:
+	add_scrap(amount)
 
 func record_damage(dmg: float, is_crit: bool) -> void:
 	total_damage_dealt += dmg
@@ -317,7 +325,8 @@ func record_kill(enemy_type: String) -> void:
 
 func prompt_upgrade_menu() -> void:
 	state = GameState.UPGRADING
-	get_tree().paused = true
+	if not NetworkManager.is_multiplayer:
+		get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	upgrade_requested.emit()
 
@@ -435,7 +444,8 @@ func apply_upgrade(upgrade_id: String) -> void:
 
 func resume_game() -> void:
 	state = GameState.PLAYING
-	get_tree().paused = false
+	if not NetworkManager.is_multiplayer:
+		get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func trigger_game_over() -> void:

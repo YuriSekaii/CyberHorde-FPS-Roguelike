@@ -13,9 +13,25 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 ## 🎮 How to Play
 
 ### 1-Click Launchers:
-* **`Play_Game.bat`**: Launches the game window immediately using Godot's console runtime with full error-reporting safeguards.
+* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (Single Player, Host Co-op, or Join Co-op).
+* **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side so you can test 2-player co-op locally on one PC with zero setup!
 * **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
 * **`Push_To_GitHub.bat`**: Automatically stages, commits, and pushes any local modifications to your remote GitHub repository (`main` branch).
+
+---
+
+## 🌐 Co-op Multiplayer Protocol
+
+Team up with your squad in fast-paced online horde survival using Godot 4 high-level ENet multiplayer:
+
+* **Host a Mission**: Click `🌐 HOST CO-OP MISSION`. Your local IP address and port (default: `7777`) will be displayed. Tell your friend to join your IP!
+* **Join a Squad**: Click `🔗 JOIN CO-OP MISSION`, enter your friend's IP address (use `127.0.0.1` for local machine testing), and click `CONNECT`.
+* **Squad Mech Avatars**:
+  * **Player 1 (Host)**: Clad in sleek gunmetal cyber-armor with glowing **Neon Cyan** visor and chest lights.
+  * **Player 2 (Ally)**: Fitted with matching cyber-armor with glowing **Neon Orange/Amber** visor and chest lights.
+  * Real-time 3D overhead tags display your teammate's name and remaining HP bar.
+* **Squad Upgrades & Shared Economy**: XP crystals and Scrap harvested by any player advance the squad's level up bar. When leveling up in co-op, both players get to pick their upgrade card in real-time with an active **Aegis Stasis** protective shield!
+* **Downed & Revive Mechanic**: When a squadmate runs out of health, they enter a downed state emitting an emergency beacon light. Rush over and **hold `E` for 2 seconds** to revive them back to full combat readiness with 50% HP and 3s invulnerability!
 
 ---
 
@@ -31,6 +47,7 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 | **Reload** | `R` | Manual reload (or automatic when empty) |
 | **Switch Weapons** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
+| **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
 | **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, or restart |
 
@@ -105,16 +122,18 @@ Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$
 Game/
 ├── project.godot                     # Core Godot 4.7 project configuration
 ├── Play_Game.bat                     # 1-click game launcher with error protection
+├── Test_Coop_2Players.bat            # 1-click 2-player local co-op test launcher
 ├── Open_In_Godot_Editor.bat          # 1-click editor launcher
 ├── Push_To_GitHub.bat                # 1-click GitHub sync launcher
 ├── README.md                         # Comprehensive documentation
 ├── icon.svg                          # Vector cyber reticle icon
 ├── scripts/
 │   ├── autoload/
+│   │   ├── network_manager.gd        # ENet high-level multiplayer squad manager
 │   │   ├── game_manager.gd           # Stats, upgrades catalog, wave director, XP
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
-│   │   └── player.gd                 # FPS controller, recoil, viewmodels, weapons, drone
+│   │   └── player.gd                 # FPS controller, co-op sync, 3D armor, revives
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (health, damage numbers, loot)
 │   │   ├── swarmer.gd                # Fast swarm insect AI
@@ -128,6 +147,7 @@ Game/
 │   │   ├── loot_pickup.gd            # Magnetized XP, Health, and Scrap items
 │   │   └── chest.gd                  # Interactive Loot Cache with beacon
 │   ├── ui/
+│   │   ├── lobby_menu.gd             # Cyberpunk multiplayer Host & Join lobby
 │   │   ├── hud.gd                    # Reticle, hitmarker, health, shield, ammo, waves
 │   │   ├── upgrade_menu.gd           # 3-card holographic roguelike selector
 │   │   ├── pause_menu.gd             # Pause screen with sensitivity slider
@@ -136,12 +156,12 @@ Game/
 │       ├── spawner.gd                # Wave director & horde scaling
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/
-    ├── main.tscn                     # Main game scene combining arena, player, HUD
-    ├── player/player.tscn
+    ├── main.tscn                     # Main game scene combining arena, squad, HUD
+    ├── player/player.tscn            # Player scene with 1st-person & 3rd-person armor
     ├── enemies/                      # Swarmer, Spitter, Brute scenes
     ├── projectiles/                  # Bullet, Plasma, Explosion scenes
     ├── loot/                         # Pickup & Chest scenes
-    ├── ui/                           # HUD, Upgrade, Pause, GameOver scenes
+    ├── ui/                           # Lobby, HUD, Upgrade, Pause, GameOver scenes
     └── world/                        # Arena & JumpPad scenes
 ```
 
