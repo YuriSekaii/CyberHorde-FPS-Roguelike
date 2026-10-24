@@ -108,12 +108,23 @@ func _generate_all_sounds() -> void:
 		return (bass * 0.6 + noise * 0.7) * env
 	)
 	
-	# 3. Plasma blast (energy chirp sweep)
-	sounds["shoot_plasma"] = _create_wav(0.20, func(t, d):
-		var env = exp(-t * 16.0)
-		var freq = 1200.0 * (1.0 - (t / d) * 0.8)
-		var tone = sin(TAU * freq * t + sin(t * 80.0) * 0.5)
-		return tone * env * 0.8
+	# 3. Plasma blast (heavy sub-bass concussive blast + energy sweep)
+	sounds["shoot_plasma"] = _create_wav(0.26, func(t, d):
+		var env = exp(-t * 14.0)
+		var freq = 1400.0 * (1.0 - (t / d) * 0.85)
+		var tone = sin(TAU * freq * t + sin(t * 70.0) * 0.5)
+		var sub_bass = sin(TAU * (90.0 * exp(-t * 8.0)) * t) * exp(-t * 9.0) * 0.65
+		return (tone * 0.7 + sub_bass) * env * 0.85
+	)
+	
+	# 3b. Plasma charge windup (rising energy coil chirp)
+	sounds["plasma_charge"] = _create_wav(0.22, func(t, d):
+		var p = t / d
+		var freq = 220.0 + (p * p * 1250.0)
+		var env = clampf(t * 15.0, 0.0, 1.0) * (0.5 + p * 0.5)
+		var tone = sin(TAU * freq * t + sin(t * 60.0) * 0.4)
+		var buzz = (randf() * 2.0 - 1.0) * 0.08 * p
+		return (tone * 0.7 + buzz) * env * 0.75
 	)
 	
 	# 4. Hitmarker (high crisp tick)

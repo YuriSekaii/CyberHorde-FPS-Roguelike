@@ -102,7 +102,7 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
 | **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 15% | Close-quarters shotgun spread |
-| **Plasma Core** | `3` | Semi-Auto | 150.0 direct + 150.0 AoE | 1 | 0.50s (2.0/s) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*) |
+| **Plasma Core** | `3` | Semi-Auto (Charge) | 150.0 direct + 150.0 AoE | 1 | 0.50s (0.18s charge + 0.32s cd) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
@@ -111,8 +111,10 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
    - Heavy close-quarters shotgun blasting 10 pellets simultaneously with punchy recoil and screen kick.
    - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 15% base crit chance.
 3. **Plasma Core (`Key 3`)**:
-   - High-yield energy launcher firing concentrated plasma orbs.
-   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s fire rate (2.0 shots/sec), 2.0s reload time, 25% base crit chance.
+   - High-yield heavy energy launcher firing concentrated plasma orbs.
+   - **Charge Delay Mechanic**: Features a brief 0.18s magnetic capacitor spin-up delay on trigger pull with pulsing core glow, coil whine synth SFX, and weapon vibration before discharging.
+   - **High Concussive Recoil**: Unleashes massive gun kickback, +13° muzzle pitch lift, camera vertical recoil, screen trauma shake (0.38 intensity), and a backward propulsion impulse.
+   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s total shot cycle, 2.0s reload time, 25% base crit chance.
 
 ---
 

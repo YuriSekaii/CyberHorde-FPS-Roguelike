@@ -66,12 +66,16 @@ class Weapon:
 	var is_explosive: bool
 	var sound_name: String
 	var base_crit_chance: float = 0.10
+	var charge_time: float = 0.0
 
 var weapons: Array[Weapon] = []
 var active_weapon_idx: int = 0
 var fire_cooldown: float = 0.0
 var reload_timer: float = 0.0
 var is_reloading: bool = false
+var is_charging: bool = false
+var charge_timer: float = 0.0
+var charge_duration: float = 0.0
 
 # Drone Companions
 var active_drones: Array[Node3D] = []
@@ -84,6 +88,7 @@ const DRONE_SCENE = preload("res://scenes/player/drone.tscn")
 @onready var gun_model_rifle: Node3D = $Head/Camera3D/WeaponRig/Rifle
 @onready var gun_model_shotgun: Node3D = $Head/Camera3D/WeaponRig/Shotgun
 @onready var gun_model_plasma: Node3D = $Head/Camera3D/WeaponRig/Plasma
+@onready var plasma_core_mesh: MeshInstance3D = $Head/Camera3D/WeaponRig/Plasma/Core
 @onready var muzzle_flash_light: OmniLight3D = $Head/Camera3D/WeaponRig/MuzzleFlashLight
 @onready var muzzle_particles: CPUParticles3D = $Head/Camera3D/WeaponRig/MuzzleParticles
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
@@ -225,6 +230,7 @@ func _setup_weapons() -> void:
 	plasma.is_explosive = true
 	plasma.sound_name = "shoot_plasma"
 	plasma.base_crit_chance = 0.25
+	plasma.charge_time = 0.18
 	weapons.append(plasma)
 	
 	_switch_weapon(0)
@@ -416,11 +422,37 @@ func _handle_weapons(delta: float) -> void:
 	fire_cooldown -= delta
 	
 	if is_reloading:
+		if is_charging:
+			_cancel_charge()
 		reload_timer -= delta
 		if reload_timer <= 0.0:
 			is_reloading = false
 			w.current_ammo = w.max_ammo
 			ammo_changed.emit(w.current_ammo, w.max_ammo, false)
+		return
+	
+	# Process active charge delay (Slot 3: Plasma Core)
+	if is_charging:
+		charge_timer -= delta
+		var p = clampf(1.0 - (charge_timer / maxf(0.001, charge_duration)), 0.0, 1.0)
+		
+		# Charging visual feedback: core pulses and weapon vibrates
+		if plasma_core_mesh and active_weapon_idx == 2:
+			plasma_core_mesh.scale = Vector3.ONE * (1.0 + p * 0.35)
+		
+		muzzle_flash_light.visible = true
+		muzzle_flash_light.light_color = Color(0.85, 0.2, 1.0)
+		muzzle_flash_light.light_energy = p * 2.2
+		
+		# Slight pre-fire coil vibration and draw-back
+		weapon_kick_z = lerpf(weapon_kick_z, -0.015 * p, 18.0 * delta)
+		target_sway_pos += Vector3(randf_range(-0.002, 0.002), randf_range(-0.002, 0.002), 0.0) * p
+		
+		if charge_timer <= 0.0:
+			is_charging = false
+			if plasma_core_mesh:
+				plasma_core_mesh.scale = Vector3.ONE
+			_fire_active_weapon()
 		return
 	
 	if Input.is_action_just_pressed("reload") and w.current_ammo < w.max_ammo:
@@ -431,14 +463,31 @@ func _handle_weapons(delta: float) -> void:
 	if wants_fire:
 		if w.current_ammo > 0:
 			if fire_cooldown <= 0.0:
-				_fire_active_weapon()
+				if w.charge_time > 0.0:
+					_start_charge(w)
+				else:
+					_fire_active_weapon()
 		else:
 			SoundManager.play("empty_ammo")
 			_start_reload()
 
+func _start_charge(w: Weapon) -> void:
+	is_charging = true
+	charge_duration = w.charge_time / GameManager.fire_rate_mult
+	charge_timer = charge_duration
+	SoundManager.play("plasma_charge", 0.06, 1.0)
+
+func _cancel_charge() -> void:
+	is_charging = false
+	charge_timer = 0.0
+	if muzzle_flash_light:
+		muzzle_flash_light.visible = false
+	if plasma_core_mesh:
+		plasma_core_mesh.scale = Vector3.ONE
+
 func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
-	var effective_cooldown = w.fire_rate / GameManager.fire_rate_mult
+	var effective_cooldown = maxf(0.05, (w.fire_rate - w.charge_time) / GameManager.fire_rate_mult)
 	fire_cooldown = effective_cooldown
 	w.current_ammo -= 1
 	ammo_changed.emit(w.current_ammo, w.max_ammo, false)
@@ -446,9 +495,25 @@ func _fire_active_weapon() -> void:
 	SoundManager.play(w.sound_name, 0.08)
 	_flash_muzzle()
 	
-	weapon_kick_z = 0.055 if not is_aiming else 0.03
-	weapon_kick_rot_x = deg_to_rad(3.5 if not is_aiming else 1.8)
-	shake_intensity = 0.08 if active_weapon_idx != 1 else 0.18
+	if active_weapon_idx == 2:
+		# Slot 3 (Plasma Core): Massive heavy cannon recoil!
+		weapon_kick_z = 0.16 if not is_aiming else 0.11
+		weapon_kick_rot_x = deg_to_rad(13.0 if not is_aiming else 7.5)
+		shake_intensity = 0.38
+		# Visceral upward camera kick
+		head.rotation.x = clampf(head.rotation.x + deg_to_rad(2.6 if not is_aiming else 1.4), -deg_to_rad(88.0), deg_to_rad(88.0))
+		# Heavy backward concussive impulse
+		velocity += camera.global_transform.basis.z * (4.2 if not is_on_floor() else 2.5)
+	elif active_weapon_idx == 1:
+		# Slot 2 (Scatter Cannon): Punchy shotgun recoil
+		weapon_kick_z = 0.085 if not is_aiming else 0.05
+		weapon_kick_rot_x = deg_to_rad(5.5 if not is_aiming else 3.0)
+		shake_intensity = 0.18
+	else:
+		# Slot 1 (Pulse Carbine): Crisp automatic rifle recoil
+		weapon_kick_z = 0.045 if not is_aiming else 0.025
+		weapon_kick_rot_x = deg_to_rad(2.8 if not is_aiming else 1.4)
+		shake_intensity = 0.06
 	
 	var total_projectiles = int(round(w.pellets * (1.0 + GameManager.extra_projectile_mult)))
 	var shoot_origin = camera.global_position + (-camera.global_transform.basis.z * 0.5)
@@ -477,6 +542,15 @@ func _fire_active_weapon() -> void:
 
 func _flash_muzzle() -> void:
 	muzzle_flash_light.visible = true
+	if active_weapon_idx == 2:
+		muzzle_flash_light.light_color = Color(0.95, 0.3, 1.0)
+		muzzle_flash_light.light_energy = 3.5
+	elif active_weapon_idx == 1:
+		muzzle_flash_light.light_color = Color(1.0, 0.65, 0.2)
+		muzzle_flash_light.light_energy = 2.5
+	else:
+		muzzle_flash_light.light_color = Color(0.3, 0.9, 1.0)
+		muzzle_flash_light.light_energy = 2.0
 	if muzzle_particles:
 		muzzle_particles.restart()
 		muzzle_particles.emitting = true
@@ -486,6 +560,8 @@ func _start_reload() -> void:
 	var w = weapons[active_weapon_idx]
 	if is_reloading:
 		return
+	if is_charging:
+		_cancel_charge()
 	is_reloading = true
 	reload_timer = w.reload_time
 	SoundManager.play("reload", 0.05)
@@ -494,6 +570,8 @@ func _start_reload() -> void:
 func _switch_weapon(new_idx: int) -> void:
 	if new_idx == active_weapon_idx and not is_reloading:
 		return
+	if is_charging:
+		_cancel_charge()
 	active_weapon_idx = new_idx
 	is_reloading = false
 	fire_cooldown = 0.1
@@ -755,6 +833,8 @@ func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func rpc_set_downed(downed: bool) -> void:
+	if downed and is_charging:
+		_cancel_charge()
 	is_downed = downed
 	bleedout_timer = 30.0
 	downed_state_changed.emit(downed)
