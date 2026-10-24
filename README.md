@@ -2,19 +2,20 @@
 
 [![Engine](https://img.shields.io/badge/Engine-Godot%204.7-478cbf?logo=godotengine&logoColor=white)](https://godotengine.org)
 [![Renderer](https://img.shields.io/badge/Renderer-Vulkan%20Forward%2B-red)](https://vulkan.org)
+[![Multiplayer](https://img.shields.io/badge/Networking-ENet%20Co--op%20Multiplayer-brightgreen)](https://docs.godotengine.org/en/stable/classes/class_enetmultiplayerpeer.html)
 [![Repository](https://img.shields.io/badge/GitHub-YuriSekaii%2FCyberHorde--FPS--Roguelike-181717?logo=github)](https://github.com/YuriSekaii/CyberHorde-FPS-Roguelike)
 
-A fast-paced 3D First-Person Horde Roguelike Upgrade Looter built in **Godot 4.7**.
+A fast-paced 3D First-Person Horde Roguelike Shooter featuring **Online Co-op Multiplayer** built with **Godot 4.7**.
 
-Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and scrap, crack open holographic loot caches, and craft overpowered character builds through dynamic roguelike upgrades.
+Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and scrap, crack open holographic loot caches, and craft overpowered character builds through dynamic roguelike upgrades—either solo or side-by-side with your squad!
 
 ---
 
 ## 🎮 How to Play
 
 ### 1-Click Launchers:
-* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (Single Player, Host Co-op, or Join Co-op).
-* **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side so you can test 2-player co-op locally on one PC with zero setup!
+* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, or `Join Co-op`).
+* **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side on your desktop so you can test 2-player co-op locally with zero setup!
 * **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
 * **`Push_To_GitHub.bat`**: Automatically stages, commits, and pushes any local modifications to your remote GitHub repository (`main` branch).
 
@@ -24,14 +25,15 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 
 Team up with your squad in fast-paced online horde survival using Godot 4 high-level ENet multiplayer:
 
-* **Host a Mission**: Click `🌐 HOST CO-OP MISSION`. Your local IP address and port (default: `7777`) will be displayed. Tell your friend to join your IP!
-* **Join a Squad**: Click `🔗 JOIN CO-OP MISSION`, enter your friend's IP address (use `127.0.0.1` for local machine testing), and click `CONNECT`.
+* **Host a Mission**: Click `🌐 HOST CO-OP MISSION (SERVER)`. Your local IP address and port (default: `7777`) will be displayed. Tell your friend to join your IP!
+* **Join a Squad**: Click `🔗 JOIN CO-OP MISSION (CLIENT)`, enter your friend's IP address (use `127.0.0.1` for local machine testing), and click `CONNECT TO SQUAD`.
 * **Squad Mech Avatars**:
-  * **Player 1 (Host)**: Clad in sleek gunmetal cyber-armor with glowing **Neon Cyan** visor and chest lights.
-  * **Player 2 (Ally)**: Fitted with matching cyber-armor with glowing **Neon Orange/Amber** visor and chest lights.
-  * Real-time 3D overhead tags display your teammate's name and remaining HP bar.
-* **Squad Upgrades & Shared Economy**: XP crystals and Scrap harvested by any player advance the squad's level up bar. When leveling up in co-op, both players get to pick their upgrade card in real-time with an active **Aegis Stasis** protective shield!
-* **Downed & Revive Mechanic**: When a squadmate runs out of health, they enter a downed state emitting an emergency beacon light. Rush over and **hold `E` for 2 seconds** to revive them back to full combat readiness with 50% HP and 3s invulnerability!
+  * **Player 1 (Host)**: Clad in sleek gunmetal cyber-armor with glowing **Neon Cyan** visor and chest reactor.
+  * **Player 2 (Ally)**: Fitted with matching cyber-armor with glowing **Neon Orange/Amber** visor and chest reactor.
+  * Real-time 3D overhead tags display your teammate's name (`P1 [HOST]` or `P2 [ALLY]`) and live HP bar.
+* **Squad Upgrades & Shared Economy**: XP crystals and Scrap harvested by any player advance the squad's level up bar. When leveling up in co-op, players select upgrade cards in real-time with an active **Aegis Stasis** protective shield!
+* **Downed & Revive Mechanic**: When a squadmate runs out of health, they enter a downed crawling state emitting an emergency beacon light. Rush over and **hold `E` for 2 seconds** to revive them back to full combat readiness with **50% HP and 3s invulnerability**!
+* **Multi-Targeting Horde AI**: Swarmers, Spitters, and Brutes dynamically seek out and split up to attack the nearest non-downed squadmate.
 
 ---
 
@@ -69,7 +71,7 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 
 ## 🧬 Roguelike Upgrades System
 
-Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, time freezes and you are offered **3 holographic upgrade cards**.
+Whenever your **Nanite XP bar** fills up or you open a **Loot Cache**, you are offered **3 holographic upgrade cards**.
 Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **Rare** (~18.8%), **Epic** (~4.7%), and **Legendary** (~1.2%), giving a **57.3% chance** of offering at least one Rare or higher card on every level-up.
 
 | Upgrade | Rarity | Effect |
@@ -98,7 +100,7 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 
 Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$ is the wave number).
 
-1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush you for melee bites.
+1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
 3. **Armored Goliaths (Brutes)**: Giant high-HP armored cyber crushers that charge in and slam the ground creating shockwaves and knockback!
 
@@ -106,7 +108,7 @@ Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$
 
 ## 💎 Loot & Arena Mechanics
 
-* **Nanite XP Crystals** *(Green/Cyan)*: Magnetize to the player and fill the Level Up bar.
+* **Nanite XP Crystals** *(Green/Cyan)*: Magnetize to the player and fill the squad Level Up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 Health (drops more often when HP is low).
 * **Scrap Currency** *(Gold)*: Collect currency to build your high score.
 * **Loot Caches (Chests)**: Dropped every 2 waves with an aerial beacon light beam. Press `E` to open for bonus loot and a **free upgrade pick**!
@@ -120,12 +122,12 @@ Enemies scale with compounding health: $\text{Base HP} \times 1.05^n$ (where $n$
 
 ```
 Game/
-├── project.godot                     # Core Godot 4.7 project configuration
-├── Play_Game.bat                     # 1-click game launcher with error protection
-├── Test_Coop_2Players.bat            # 1-click 2-player local co-op test launcher
-├── Open_In_Godot_Editor.bat          # 1-click editor launcher
-├── Push_To_GitHub.bat                # 1-click GitHub sync launcher
-├── README.md                         # Comprehensive documentation
+├── project.godot                     # Core Godot 4.7 project configuration & autoloads
+├── Play_Game.bat                     # 1-click launcher for single game window
+├── Test_Coop_2Players.bat            # 1-click launcher for 2-player local co-op test
+├── Open_In_Godot_Editor.bat          # 1-click launcher for Godot Editor
+├── Push_To_GitHub.bat                # 1-click sync to GitHub main branch
+├── README.md                         # Comprehensive documentation & developer guide
 ├── icon.svg                          # Vector cyber reticle icon
 ├── scripts/
 │   ├── autoload/
@@ -133,9 +135,10 @@ Game/
 │   │   ├── game_manager.gd           # Stats, upgrades catalog, wave director, XP
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
-│   │   └── player.gd                 # FPS controller, co-op sync, 3D armor, revives
+│   │   ├── player.gd                 # FPS controller, co-op sync, 3D armor, revives
+│   │   └── drone.gd                  # Companion drone AI and carbine firing
 │   ├── enemies/
-│   │   ├── enemy_base.gd             # Base enemy class (health, damage numbers, loot)
+│   │   ├── enemy_base.gd             # Base enemy class (health, multi-target, damage)
 │   │   ├── swarmer.gd                # Fast swarm insect AI
 │   │   ├── spitter.gd                # Ranged hovering drone AI
 │   │   └── brute.gd                  # Ground-slamming heavy golem AI
@@ -150,7 +153,7 @@ Game/
 │   │   ├── lobby_menu.gd             # Cyberpunk multiplayer Host & Join lobby
 │   │   ├── hud.gd                    # Reticle, hitmarker, health, shield, ammo, waves
 │   │   ├── upgrade_menu.gd           # 3-card holographic roguelike selector
-│   │   ├── pause_menu.gd             # Pause screen with sensitivity slider
+│   │   ├── pause_menu.gd             # Pause screen with sensitivity & audio sliders
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
 │       ├── spawner.gd                # Wave director & horde scaling
@@ -167,12 +170,100 @@ Game/
 
 ---
 
-## 🛠️ Beginner Tweaks to Try in Godot
+## 🛠️ Developer Guide: Architecture & Extending the Game
 
-Double-click `Open_In_Godot_Editor.bat` to modify the game:
-1. **Change Weapon Stats**:
-   - Open `scripts/player/player.gd` and adjust `rifle.fire_rate`, `shotgun.pellets`, or `plasma.damage` inside `_setup_weapons()`.
-2. **Tweak Enemy Scaling**:
-   - Open `scripts/world/spawner.gd` and change `total_enemies_in_wave` or `spawn_interval`.
-3. **Change Arena Lighting & Bloom**:
-   - Open `scenes/world/arena.tscn` -> select `WorldEnvironment` -> adjust `Glow Intensity` and `Bloom` in the Inspector!
+If you are continuing development on **CyberHorde**, this section gives you the exact blueprint of how systems connect and how to add new features safely.
+
+### 1. Multiplayer Networking Architecture
+* **Autoload**: [`scripts/autoload/network_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/network_manager.gd) handles `ENetMultiplayerPeer`, hosting, client joining, and connection signals.
+* **Squad Launch Pipeline**:
+  1. Players connect in [`lobby_menu.tscn`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scenes/ui/lobby_menu.tscn).
+  2. Host clicks **`LAUNCH SQUAD MISSION`** $\rightarrow$ calls `rpc_start_mission.rpc(NetworkManager.connected_peers)`.
+  3. Both Host and Client receive `rpc_start_mission` and spawn each squad member into the `$Players` container in [`scripts/main.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/main.gd).
+* **Player Authority & Avatars** ([`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd)):
+  * Each player node is named `"Player_%d" % peer_id`.
+  * `set_multiplayer_authority(id)` assigns ownership.
+  * **Local Player** (`id == multiplayer.get_unique_id()`):
+    * `camera.make_current()` activates the first-person view.
+    * First-person `WeaponRig` is visible.
+    * `ThirdPersonModel` cyber-suit is hidden to prevent camera clipping.
+  * **Remote Player** (`id != multiplayer.get_unique_id()`):
+    * `camera.current = false` deactivates camera.
+    * `ThirdPersonModel` cyber-suit is visible with color accent (**Cyan** for Host, **Orange** for Client).
+    * `OverheadUI` shows `P1 [HOST]` or `P2 [ALLY]` and live HP.
+* **RPC Best Practices**:
+  * Any RPC called from a client to the server **must** include `"any_peer"` (e.g. `@rpc("any_peer", "unreliable_ordered") func rpc_sync_state(...)`).
+  * Otherwise, Godot 4 will discard the packet with an authority violation error.
+
+---
+
+### 2. How to Add a New Roguelike Upgrade
+1. Open [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd).
+2. Add your upgrade dictionary to `UPGRADE_CATALOG`:
+   ```gdscript
+   "laser_sights": {
+       "id": "laser_sights",
+       "name": "Precision Optics",
+       "desc": "+30% Critical Hit Chance and +50% Crit Damage.",
+       "rarity": "Rare",
+       "color": Color(0.8, 0.3, 1.0),
+       "max_stacks": 3
+   },
+   ```
+3. Add any necessary stat tracking variable in `GameManager` (e.g. `var crit_chance: float = 0.15`).
+4. In `apply_upgrade(id: String)`, handle the stat increase:
+   ```gdscript
+   "laser_sights":
+       crit_chance += 0.30
+       crit_damage += 0.50
+   ```
+5. `stats_updated.emit()` automatically triggers updates in player weapons and HUD.
+
+---
+
+### 3. How to Add a New Weapon
+1. Open [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd).
+2. In `_setup_weapons()`, create a new `Weapon` instance and append it to `weapons`:
+   ```gdscript
+   var smg = Weapon.new()
+   smg.name = "Hyper SMG"
+   smg.fire_rate = 0.08
+   smg.damage = 12.0
+   smg.base_max_ammo = 45
+   smg.max_ammo = 45
+   smg.current_ammo = 45
+   smg.base_reload_time = 1.0
+   smg.reload_time = 1.0
+   smg.is_auto = true
+   smg.pellets = 1
+   smg.spread = 0.035
+   smg.is_explosive = false
+   smg.sound_name = "shoot_rifle"
+   weapons.append(smg)
+   ```
+3. Add a corresponding 3D gun mesh under `Head/Camera3D/WeaponRig` in [`scenes/player/player.tscn`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scenes/player/player.tscn).
+4. Update `_switch_weapon(new_idx)` and `_update_third_person_weapon(idx)` to toggle your new gun model's visibility.
+
+---
+
+### 4. How to Add a New Enemy Type
+1. Create a new script in `scripts/enemies/` inheriting from [`scripts/enemies/enemy_base.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/enemies/enemy_base.gd).
+2. Override `_behave(delta)` with your custom movement and attack pattern (e.g. charging, dodging, sniping).
+   * `target_player` automatically updates to the nearest active, non-downed squadmate!
+3. Create a corresponding `.tscn` scene in `scenes/enemies/` with a `CharacterBody3D`, `CollisionShape3D`, and visual meshes.
+4. Open [`scripts/world/spawner.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/world/spawner.gd):
+   * Preload the scene: `const MY_ENEMY_SCENE = preload("res://scenes/enemies/my_enemy.tscn")`.
+   * Add a type ID condition in `_spawn_one_enemy()` and `_instantiate_enemy()`.
+
+---
+
+### 5. Future Web Export Roadmap (Notes for Porting to Web)
+If you ever want to port the game to play inside a web browser:
+1. **Switch Renderer**: Change from `Forward Plus` to `Compatibility` (WebGL2) in `project.godot`:
+   ```ini
+   rendering/renderer/rendering_method="gl_compatibility"
+   ```
+2. **Web Browser Sockets**: Web browsers cannot open raw UDP sockets used by `ENetMultiplayerPeer`. For web multiplayer, switch to:
+   * **`WebSocketMultiplayerPeer`** connected to a dedicated cloud relay server (e.g., hosted on Fly.io or Render).
+   * Or **`WebRTCMultiplayerPeer`** with a signaling broker.
+3. **HTTP Security Headers**: Ensure your web host serves the game with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` for multi-threaded `SharedArrayBuffer` support.
