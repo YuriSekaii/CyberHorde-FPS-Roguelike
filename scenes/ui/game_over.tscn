@@ -16,6 +16,7 @@ corner_radius_bottom_left = 12
 
 [node name="GameOver" type="CanvasLayer"]
 process_mode = 3
+visible = false
 layer = 10
 script = ExtResource("1_gover")
 

@@ -10,7 +10,16 @@ const BASE_WALK_SPEED: float = 7.0
 const SPRINT_MULTIPLIER: float = 1.4
 const JUMP_VELOCITY: float = 6.8
 const GRAVITY: float = 20.0
-const MOUSE_SENSITIVITY: float = 0.0022
+var mouse_sensitivity: float = 0.0022
+
+# Weapon Positioning (Hip vs Aim Down Sights)
+const HIP_POSITION: Vector3 = Vector3(0.24, -0.22, -0.45)
+const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
+var is_aiming: bool = false
+var target_sway_pos: Vector3 = Vector3.ZERO
+var target_sway_rot: Vector3 = Vector3.ZERO
+var weapon_kick_z: float = 0.0
+var weapon_kick_rot_x: float = 0.0
 
 # State
 var current_health: float = 100.0
@@ -71,6 +80,11 @@ func _ready() -> void:
 	GameManager.stats_updated.connect(_update_stats)
 	muzzle_flash_light.visible = false
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		if GameManager.state == GameManager.GameState.PLAYING:
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
 func _setup_weapons() -> void:
 	# Weapon 0: Pulse Rifle
 	var rifle = Weapon.new()
@@ -130,19 +144,31 @@ func _update_stats() -> void:
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if GameManager.state != GameManager.GameState.PLAYING:
 		return
 	
+	# Clicking in window recaptures mouse if lost
+	if event is InputEventMouseButton and event.pressed:
+		if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	# Mouse look & Weapon sway
 	if event is InputEventMouseMotion:
-		rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
-		head.rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
+		var sens = mouse_sensitivity * (0.65 if is_aiming else 1.0)
+		rotate_y(-event.relative.x * sens)
+		head.rotate_x(-event.relative.y * sens)
 		head.rotation.x = clampf(head.rotation.x, -deg_to_rad(88.0), deg_to_rad(88.0))
 		
-		# Weapon sway
-		if weapon_rig:
-			weapon_rig.position.x = lerpf(weapon_rig.position.x, -event.relative.x * 0.0004, 0.2)
-			weapon_rig.position.y = lerpf(weapon_rig.position.y, event.relative.y * 0.0004, 0.2)
+		# Weapon sway (swings opposite to mouse motion with natural inertial lag)
+		var sway_mult = 0.35 if is_aiming else 1.0
+		var sway_x = clampf(-event.relative.x * 0.0006 * sway_mult, -0.035, 0.035)
+		var sway_y = clampf(event.relative.y * 0.0006 * sway_mult, -0.03, 0.03)
+		var sway_rot_z = clampf(-event.relative.x * 0.001 * sway_mult, -0.06, 0.06)
+		var sway_rot_x = clampf(event.relative.y * 0.001 * sway_mult, -0.05, 0.05)
+		
+		target_sway_pos = Vector3(sway_x, sway_y, 0.0)
+		target_sway_rot = Vector3(sway_rot_x, 0.0, sway_rot_z)
 	
 	# Weapon switching
 	if event.is_action_pressed("weapon_1"):
@@ -246,10 +272,9 @@ func _fire_active_weapon() -> void:
 	SoundManager.play(w.sound_name, 0.08)
 	_flash_muzzle()
 	
-	# Weapon kick recoil
-	if weapon_rig:
-		weapon_rig.position.z = 0.08
-		weapon_rig.rotation.x = deg_to_rad(4.0)
+	# Weapon kick recoil (pushes gun back along Z and pitches up)
+	weapon_kick_z = 0.055 if not is_aiming else 0.03
+	weapon_kick_rot_x = deg_to_rad(3.5 if not is_aiming else 1.8)
 	shake_intensity = 0.08 if active_weapon_idx != 1 else 0.18
 	
 	# Spawn bullets (pellets + multishot)
@@ -261,11 +286,11 @@ func _fire_active_weapon() -> void:
 		get_parent().add_child(bullet)
 		bullet.global_position = shoot_origin
 		
-		# Direction with spread
+		# Direction with spread (50% spread reduction while aiming)
 		var base_dir = -camera.global_transform.basis.z
-		var spread_angle = w.spread
+		var spread_angle = w.spread * (0.5 if is_aiming else 1.0)
 		if total_projectiles > 1:
-			spread_angle = maxf(spread_angle, 0.05)
+			spread_angle = maxf(spread_angle, 0.04)
 		
 		var spread_x = randf_range(-spread_angle, spread_angle)
 		var spread_y = randf_range(-spread_angle, spread_angle)
@@ -347,17 +372,30 @@ func _handle_drone(delta: float) -> void:
 			SoundManager.play("shoot_rifle", 0.3, -4.0)
 
 func _handle_head_bob_and_shake(delta: float) -> void:
-	# Recover weapon rig position
-	if weapon_rig:
-		weapon_rig.position = weapon_rig.position.lerp(Vector3(0.24, -0.22, -0.45), 10.0 * delta)
-		weapon_rig.rotation = weapon_rig.rotation.lerp(Vector3.ZERO, 10.0 * delta)
+	# ADS Aim Down Sights transition
+	is_aiming = Input.is_action_pressed("aim")
+	var target_fov = 65.0 if is_aiming else 85.0
+	camera.fov = lerpf(camera.fov, target_fov, 14.0 * delta)
 	
-	# Head bob
+	var base_pos = ADS_POSITION if is_aiming else HIP_POSITION
+	
+	# Movement & bobbing
 	var is_moving = is_on_floor() and velocity.length_squared() > 1.0
+	var is_sprinting = Input.is_action_pressed("sprint") and is_moving
+	
+	var gun_bob = Vector3.ZERO
 	if is_moving:
-		bob_time += delta * (14.0 if Input.is_action_pressed("sprint") else 10.0)
-		camera.position.y = lerpf(camera.position.y, sin(bob_time) * 0.05, 10.0 * delta)
-		camera.position.x = lerpf(camera.position.x, cos(bob_time * 0.5) * 0.03, 10.0 * delta)
+		var speed_factor = 14.0 if is_sprinting else 10.0
+		bob_time += delta * speed_factor
+		
+		# Camera bob
+		camera.position.y = lerpf(camera.position.y, sin(bob_time) * 0.04, 10.0 * delta)
+		camera.position.x = lerpf(camera.position.x, cos(bob_time * 0.5) * 0.025, 10.0 * delta)
+		
+		# Weapon rhythmic walking bob
+		var bob_scale = 0.3 if is_aiming else (1.4 if is_sprinting else 1.0)
+		gun_bob.x = cos(bob_time * 0.5) * 0.014 * bob_scale
+		gun_bob.y = sin(bob_time) * 0.012 * bob_scale
 	else:
 		bob_time = 0.0
 		camera.position = camera.position.lerp(Vector3.ZERO, 8.0 * delta)
@@ -370,6 +408,19 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	else:
 		camera.h_offset = 0.0
 		camera.v_offset = 0.0
+	
+	# Decay kick & sway
+	weapon_kick_z = lerpf(weapon_kick_z, 0.0, 12.0 * delta)
+	weapon_kick_rot_x = lerpf(weapon_kick_rot_x, 0.0, 12.0 * delta)
+	target_sway_pos = target_sway_pos.lerp(Vector3.ZERO, 8.0 * delta)
+	target_sway_rot = target_sway_rot.lerp(Vector3.ZERO, 8.0 * delta)
+	
+	# Smoothly position and rotate weapon rig
+	if weapon_rig:
+		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
+		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
+		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
+		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
 
 func take_damage(amount: float) -> void:
 	if is_invulnerable:

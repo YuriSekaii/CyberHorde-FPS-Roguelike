@@ -39,7 +39,7 @@ func _on_sensitivity_changed(value: float) -> void:
 	sens_label.text = "%.1f" % value
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
-		players[0].set("MOUSE_SENSITIVITY", value * 0.001)
+		players[0].set("mouse_sensitivity", value * 0.001)
 
 func _on_resume_pressed() -> void:
 	resume()

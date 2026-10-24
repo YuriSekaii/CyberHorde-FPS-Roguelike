@@ -180,23 +180,32 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_setup_inputs()
 
 func _process(delta: float) -> void:
 	if state == GameState.PLAYING:
 		run_time += delta
 
 func _setup_inputs() -> void:
-	# Ensure all required FPS and UI keys are bound even if project.godot wasn't edited via UI
+	# Primary bindings
 	_bind_key("move_forward", KEY_W)
 	_bind_key("move_back", KEY_S)
 	_bind_key("move_left", KEY_A)
 	_bind_key("move_right", KEY_D)
+	
+	# Secondary arrow key bindings
+	_bind_key("move_forward", KEY_UP)
+	_bind_key("move_back", KEY_DOWN)
+	_bind_key("move_left", KEY_LEFT)
+	_bind_key("move_right", KEY_RIGHT)
+	
 	_bind_key("jump", KEY_SPACE)
 	_bind_key("sprint", KEY_SHIFT)
 	_bind_mouse("shoot", MOUSE_BUTTON_LEFT)
 	_bind_mouse("aim", MOUSE_BUTTON_RIGHT)
 	_bind_key("reload", KEY_R)
 	_bind_key("interact", KEY_E)
+	_bind_key("interact", KEY_F)
 	_bind_key("weapon_1", KEY_1)
 	_bind_key("weapon_2", KEY_2)
 	_bind_key("weapon_3", KEY_3)
