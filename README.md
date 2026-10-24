@@ -98,15 +98,21 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
 
 ## 🔫 Weapons Arsenal
 
+| Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag Size | Reload Time | Base Crit | AoE / Effect |
+| :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
+| **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
+| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 15% | Close-quarters shotgun spread |
+| **Plasma Core** | `3` | Semi-Auto | 150.0 direct + 150.0 AoE | 1 | 0.50s (2.0/s) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*) |
+
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
-   - 32-round magazine, 0.12s fire rate (8.3 shots/sec), crisp suppressive fire.
+   - 32-round magazine, 0.12s fire rate (8.3 shots/sec), 22.0 base damage, 10% base crit chance, crisp suppressive fire.
 2. **Scatter Cannon (`Key 2`)**:
-   - Heavy close-quarters shotgun blasting 7 pellets simultaneously with punchy recoil and screen kick.
-   - 8-round magazine, 0.65s fire rate.
+   - Heavy close-quarters shotgun blasting 10 pellets simultaneously with punchy recoil and screen kick.
+   - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 15% base crit chance.
 3. **Plasma Core (`Key 3`)**:
    - High-yield energy launcher firing concentrated plasma orbs.
-   - Detonates on impact in an Area-of-Effect blast (65 base damage).
+   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s fire rate (2.0 shots/sec), 2.0s reload time, 25% base crit chance.
 
 ---
 
@@ -141,10 +147,10 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
-| **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (4.5m → 9.0m). |
+| **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (5.0m → 10.0m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
-| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 14 pellets). |
+| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 20 pellets). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick. |
@@ -154,8 +160,8 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 
 ## 🎯 Critical Hit & Explosive Mechanics
 
-* **Direct Hit Crits**: Every projectile rolls against your **Critical Strike Chance** (base 10%, boosted by *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
-* **Explosive Damage**: Explosive damage is **purely calculated from the initial hit damage** (80% of hit damage).
+* **Direct Hit Crits**: Every projectile rolls against its weapon's **Critical Strike Chance** (10% for Pulse Carbine, 15% for Scatter Cannon, 25% for Plasma Core, augmented by +10% per stack of *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
+* **Explosive Damage**: Explosive damage is **calculated from the initial hit damage** (100% of hit damage for Plasma Core: 150 base direct + 150 base AoE; 80% for perk-granted bullet explosions).
 * **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
 
 ---

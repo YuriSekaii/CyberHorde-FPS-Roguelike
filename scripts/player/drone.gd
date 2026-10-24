@@ -198,7 +198,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 		# - Multi-Barrel Splitter (extra projectiles)
 		# - Extended Mag (same magazine capacity)
 		# - Rapid Loader (same reload speed)
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance)
 	
 	if current_ammo <= 0:
 		_start_reload(w)

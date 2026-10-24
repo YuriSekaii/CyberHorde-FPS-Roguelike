@@ -65,6 +65,7 @@ class Weapon:
 	var spread: float
 	var is_explosive: bool
 	var sound_name: String
+	var base_crit_chance: float = 0.10
 
 var weapons: Array[Weapon] = []
 var active_weapon_idx: int = 0
@@ -187,40 +188,43 @@ func _setup_weapons() -> void:
 	rifle.spread = 0.02
 	rifle.is_explosive = false
 	rifle.sound_name = "shoot_rifle"
+	rifle.base_crit_chance = 0.10
 	weapons.append(rifle)
 	
 	# Weapon 1: Scatter Shotgun
 	var shotgun = Weapon.new()
 	shotgun.name = "Scatter Cannon"
 	shotgun.fire_rate = 0.65
-	shotgun.damage = 14.0
+	shotgun.damage = 18.0
 	shotgun.base_max_ammo = 8
 	shotgun.max_ammo = 8
 	shotgun.current_ammo = 8
 	shotgun.base_reload_time = 1.6
 	shotgun.reload_time = 1.6
 	shotgun.is_auto = false
-	shotgun.pellets = 7
+	shotgun.pellets = 10
 	shotgun.spread = 0.075
 	shotgun.is_explosive = false
 	shotgun.sound_name = "shoot_shotgun"
+	shotgun.base_crit_chance = 0.15
 	weapons.append(shotgun)
 	
 	# Weapon 2: Plasma Launcher
 	var plasma = Weapon.new()
 	plasma.name = "Plasma Core"
-	plasma.fire_rate = 0.85
-	plasma.damage = 65.0
+	plasma.fire_rate = 0.5
+	plasma.damage = 150.0
 	plasma.base_max_ammo = 5
 	plasma.max_ammo = 5
 	plasma.current_ammo = 5
-	plasma.base_reload_time = 1.8
-	plasma.reload_time = 1.8
+	plasma.base_reload_time = 2.0
+	plasma.reload_time = 2.0
 	plasma.is_auto = false
 	plasma.pellets = 1
 	plasma.spread = 0.015
 	plasma.is_explosive = true
 	plasma.sound_name = "shoot_plasma"
+	plasma.base_crit_chance = 0.25
 	weapons.append(plasma)
 	
 	_switch_weapon(0)
@@ -465,7 +469,7 @@ func _fire_active_weapon() -> void:
 		var spread_y = randf_range(-spread_angle, spread_angle)
 		var bullet_dir = (base_dir + camera.global_transform.basis.x * spread_x + camera.global_transform.basis.y * spread_y).normalized()
 		
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2, w.base_crit_chance)
 	
 	# Notify squad of gunfire visual & sound
 	if NetworkManager.is_multiplayer:
@@ -747,7 +751,7 @@ func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 		var bullet = BULLET_SCENE.instantiate()
 		get_parent().add_child(bullet)
 		bullet.global_position = origin
-		bullet.setup(dir, w.damage, w.is_explosive, wep_idx == 2)
+		bullet.setup(dir, w.damage, w.is_explosive, wep_idx == 2, w.base_crit_chance)
 
 @rpc("any_peer", "call_local", "reliable")
 func rpc_set_downed(downed: bool) -> void:

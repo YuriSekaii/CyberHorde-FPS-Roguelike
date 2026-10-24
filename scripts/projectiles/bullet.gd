@@ -11,6 +11,7 @@ var timer: float = 0.0
 var pierces_left: int = 0
 var bounces_left: int = 0
 var already_hit: Array[Node] = []
+var crit_chance: float = 0.10
 
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
@@ -19,11 +20,12 @@ func _ready() -> void:
 	if GameManager.bouncing_bullets:
 		bounces_left = GameManager.bounce_count
 
-func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false) -> void:
+func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10) -> void:
 	direction = dir.normalized()
 	base_damage = dmg
 	is_explosive = explosive or GameManager.explosive_rounds
 	is_plasma = from_plasma
+	crit_chance = base_crit + (GameManager.crit_chance - 0.10)
 	if direction != Vector3.ZERO:
 		look_at(global_position + direction, Vector3.UP)
 
@@ -54,7 +56,7 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 	
 	if collider is Node and collider.is_in_group("enemies"):
 		already_hit.append(collider)
-		var is_crit = randf() < GameManager.crit_chance
+		var is_crit = randf() < crit_chance
 		var final_dmg = base_damage * GameManager.damage_mult
 		if is_crit:
 			final_dmg *= GameManager.crit_damage
@@ -146,10 +148,11 @@ func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 		exp_inst.global_position = pos
 		var rad = GameManager.explosion_radius
 		if is_plasma:
-			# Base Plasma AoE is 4.5. If denote perk (explosive_rounds) is picked, get +100% more radius (9.0m)!
-			rad = 4.5 * (2.0 if GameManager.explosive_rounds else 1.0)
-		# Explosive damage is purely based on the initial hit damage
-		exp_inst.setup(initial_hit_dmg * 0.8, rad)
+			# Base Plasma AoE is 5.0m. If Explosive Payload perk is picked, get +100% more radius (10.0m)!
+			rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
+		# Explosive damage: Plasma deals 100% AoE (150 base direct, 150 base AoE), others deal 80% AoE
+		var aoe_dmg = initial_hit_dmg if is_plasma else (initial_hit_dmg * 0.8)
+		exp_inst.setup(aoe_dmg, rad)
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -158,7 +161,7 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, igno
 		if enemy is Node3D and is_instance_valid(enemy) and enemy != ignore_enemy:
 			var d = origin_pos.distance_to(enemy.global_position)
 			if d < 8.5:
-				var is_crit = randf() < GameManager.crit_chance
+				var is_crit = randf() < crit_chance
 				var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
 				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
 					enemy.rpc_take_damage.rpc(final_dmg, is_crit, origin_pos)
