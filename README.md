@@ -14,10 +14,33 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 ## 🎮 How to Play
 
 ### 1-Click Launchers:
-* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, or `Join Co-op`).
+* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, `Join Co-op`, or `Check for Updates`).
+* **`Update_Game.bat`**: 1-click update script to automatically run `git pull` from Windows Explorer.
 * **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side on your desktop so you can test 2-player co-op locally with zero setup!
 * **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
 * **`Push_To_GitHub.bat`**: Automatically stages, commits, and pushes any local modifications to your remote GitHub repository (`main` branch).
+
+---
+
+## 🔄 Check for Updates & Auto-Updater Feature
+
+CyberHorde includes an integrated **In-Game Software Updater** powered by `UpdateManager`:
+
+* **In-Game Update Check**:
+  * On launch and at any time in the main lobby, click `🔄 CHECK FOR UPDATES`.
+  * The game runs a non-blocking asynchronous check against the remote GitHub repository (`git fetch`).
+* **Smart Update Notification**:
+  * If the game is already up to date, it displays your current commit hash and a green confirmation: `✓ GAME IS UP TO DATE!`.
+  * If a new version exists on GitHub, it highlights the number of new commits and shows a changelog summary:
+    ```
+    ⚡ UPDATE AVAILABLE! (2 new commits found)
+    • feat: New laser drone companion
+    • fix: Spawner balancing
+    ```
+* **1-Click In-Game Update (`git pull`)**:
+  * Click `⬇ UPDATE GAME NOW (GIT PULL)` directly in the lobby menu.
+  * The updater pulls the latest changes in the background while keeping the UI responsive.
+  * Once the update finishes, click `🚀 RESTART GAME NOW` to immediately reload the updated game!
 
 ---
 

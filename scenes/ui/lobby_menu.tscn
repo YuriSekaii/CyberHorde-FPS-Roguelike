@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
 
@@ -38,6 +38,42 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_update"]
+bg_color = Color(0.08, 0.32, 0.18, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1, 0.5, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_update_hover"]
+bg_color = Color(0.12, 0.45, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 1, 0.6, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
+bg_color = Color(0.03, 0.05, 0.09, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.6, 0.8, 0.3)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="LobbyMenu" type="CanvasLayer"]
 process_mode = 3
 layer = 10
@@ -52,16 +88,16 @@ grow_vertical = 2
 color = Color(0.02, 0.03, 0.05, 0.85)
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(500, 520)
+custom_minimum_size = Vector2(520, 560)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -260.0
-offset_right = 250.0
-offset_bottom = 260.0
+offset_left = -260.0
+offset_top = -280.0
+offset_right = 260.0
+offset_bottom = 280.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -71,13 +107,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 24.0
-offset_right = -32.0
-offset_bottom = -24.0
+offset_left = 28.0
+offset_top = 20.0
+offset_right = -28.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="Title" type="Label" parent="Panel/VBoxContainer"]
@@ -99,10 +135,10 @@ layout_mode = 2
 
 [node name="MainButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="SoloBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
@@ -110,7 +146,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🎮  SINGLE PLAYER (SOLO)"
 
 [node name="HostBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
@@ -118,12 +154,20 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🌐  HOST CO-OP MISSION (SERVER)"
 
 [node name="JoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🔗  JOIN CO-OP MISSION (CLIENT)"
+
+[node name="UpdateBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🔄  CHECK FOR UPDATES"
 
 [node name="HostContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
 visible = false
@@ -152,7 +196,7 @@ text = "7777"
 alignment = 1
 
 [node name="PeerListLabel" type="Label" parent="Panel/VBoxContainer/HostContainer"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.9, 1, 0.9)
 theme_override_font_sizes/font_size = 13
@@ -223,8 +267,96 @@ theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
 theme_override_font_sizes/font_size = 13
 text = "← BACK TO MAIN MENU"
 
-[node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
+[node name="UpdateContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UpdateHeader" type="Label" parent="Panel/VBoxContainer/UpdateContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "SOFTWARE UPDATE SYSTEM"
+horizontal_alignment = 1
+
+[node name="VersionInfoLabel" type="Label" parent="Panel/VBoxContainer/UpdateContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.85, 1, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "LOCAL BUILD: ..."
+horizontal_alignment = 1
+
+[node name="UpdateStatusLabel" type="Label" parent="Panel/VBoxContainer/UpdateContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Connecting to repository..."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ChangelogBox" type="PanelContainer" parent="Panel/VBoxContainer/UpdateContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_box")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/UpdateContainer/ChangelogBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="ChangelogLabel" type="Label" parent="Panel/VBoxContainer/UpdateContainer/ChangelogBox/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 2
+
+[node name="ActionButtons" type="VBoxContainer" parent="Panel/VBoxContainer/UpdateContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PullUpdateBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_update")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_update_hover")
+text = "⬇  UPDATE GAME NOW (GIT PULL)"
+
+[node name="RestartBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_update")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_update_hover")
+text = "🚀  RESTART GAME NOW"
+
+[node name="CheckAgainBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
+visible = false
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🔄  CHECK AGAIN"
+
+[node name="UpdateBackBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
 custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
+[node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
 theme_override_font_sizes/font_size = 13
@@ -233,10 +365,22 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
+[node name="VersionFooter" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.7, 0.9, 0.5)
+theme_override_font_sizes/font_size = 11
+text = "CyberHorde v1.0.0"
+horizontal_alignment = 1
+
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/SoloBtn" to="." method="_on_solo_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/HostBtn" to="." method="_on_host_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/JoinBtn" to="." method="_on_join_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/UpdateBtn" to="." method="_on_update_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/StartSquadBtn" to="." method="_on_start_squad_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/HostBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ConnectBtn" to="." method="_on_connect_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/JoinBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/PullUpdateBtn" to="." method="_on_pull_update_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/RestartBtn" to="." method="_on_restart_game_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/CheckAgainBtn" to="." method="_on_check_again_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/UpdateBackBtn" to="." method="_on_back_pressed"]
