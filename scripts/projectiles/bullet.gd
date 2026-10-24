@@ -61,23 +61,27 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if is_crit:
 			final_dmg *= GameManager.crit_damage
 		
-		if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-			collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
-		elif collider.has_method("take_damage"):
-			collider.take_damage(final_dmg, is_crit, global_position)
-		
-		GameManager.record_damage(final_dmg, is_crit)
-		
-		# Chain Lightning effect on enemy hit
-		if GameManager.chain_lightning:
-			_trigger_chain_lightning_at_pos(hit_pos, final_dmg * 0.5, collider)
-		
-		# Cryo slow
-		if GameManager.cryo_slow and collider.has_method("apply_slow"):
-			collider.apply_slow(0.4, 3.0)
-		
-		# Explosion on hit (purely based on initial hit damage)
-		_trigger_impact_effects(hit_pos, final_dmg)
+		# Slot 3 (Plasma Core) exclusive chain lightning behavior
+		if is_plasma and GameManager.chain_lightning:
+			_trigger_plasma_chain_lightning(hit_pos, final_dmg, collider, is_crit)
+		else:
+			if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
+			elif collider.has_method("take_damage"):
+				collider.take_damage(final_dmg, is_crit, global_position)
+			
+			GameManager.record_damage(final_dmg, is_crit)
+			
+			# Standard Chain Lightning effect on enemy hit
+			if GameManager.chain_lightning:
+				_trigger_chain_lightning_at_pos(hit_pos, final_dmg * 0.5, collider)
+			
+			# Cryo slow
+			if GameManager.cryo_slow and collider.has_method("apply_slow"):
+				collider.apply_slow(0.4, 3.0)
+			
+			# Explosion on hit (purely based on initial hit damage)
+			_trigger_impact_effects(hit_pos, final_dmg)
 		
 		if pierces_left > 0:
 			pierces_left -= 1
@@ -98,14 +102,20 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			bounces_left -= 1
 			
 			# Trigger all on-hit effects for each bounce!
-			_trigger_impact_effects(hit_pos, wall_hit_dmg)
-			if GameManager.chain_lightning:
-				_trigger_chain_lightning_at_pos(hit_pos, wall_hit_dmg * 0.5, null)
+			if is_plasma and GameManager.chain_lightning:
+				_trigger_plasma_chain_lightning(hit_pos, wall_hit_dmg, null, false)
+			else:
+				_trigger_impact_effects(hit_pos, wall_hit_dmg)
+				if GameManager.chain_lightning:
+					_trigger_chain_lightning_at_pos(hit_pos, wall_hit_dmg * 0.5, null)
 			
 			_ricochet_from(hit_pos, hit_normal, null)
 			return
 		
-		_trigger_impact_effects(hit_pos, wall_hit_dmg)
+		if is_plasma and GameManager.chain_lightning:
+			_trigger_plasma_chain_lightning(hit_pos, wall_hit_dmg, null, false)
+		else:
+			_trigger_impact_effects(hit_pos, wall_hit_dmg)
 		queue_free()
 
 func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) -> void:
@@ -153,6 +163,100 @@ func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 		# Explosive damage: Plasma deals 100% AoE (150 base direct, 150 base AoE), others deal 80% AoE
 		var aoe_dmg = initial_hit_dmg if is_plasma else (initial_hit_dmg * 0.8)
 		exp_inst.setup(aoe_dmg, rad)
+
+func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct_enemy: Node, is_direct_crit: bool) -> void:
+	# Slot 3 (Plasma Core) exclusive sequence:
+	# 1. Explode radius is 5.0m base (10.0m if Explosive Payload perk is picked)
+	var explode_rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
+	var chain_base_dmg = impact_dmg * 0.5
+	
+	# Step 1: Shoot 1 lightning bolt to EVERY alive enemy in the explosive range BEFORE AoE damage
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var primary_targets: Array[Dictionary] = []
+	var hit_count: int = 0
+	
+	for enemy in enemies:
+		if enemy is Node3D and is_instance_valid(enemy) and not enemy.get("is_dead"):
+			var d = hit_pos.distance_to(enemy.global_position)
+			if d <= explode_rad:
+				var target_pos = enemy.global_position + Vector3(0, 0.6, 0)
+				primary_targets.append({ "node": enemy, "pos": target_pos })
+				
+				_create_lightning_beam(hit_pos, target_pos)
+				
+				var is_crit = randf() < crit_chance
+				var bolt_dmg = chain_base_dmg * (GameManager.crit_damage if is_crit else 1.0)
+				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+					enemy.rpc_take_damage.rpc(bolt_dmg, is_crit, hit_pos)
+				elif enemy.has_method("take_damage"):
+					enemy.take_damage(bolt_dmg, is_crit, hit_pos)
+				GameManager.record_damage(bolt_dmg, is_crit)
+				
+				if GameManager.cryo_slow and enemy.has_method("apply_slow"):
+					enemy.apply_slow(0.3, 2.0)
+				
+				hit_count += 1
+	
+	if hit_count > 0:
+		SoundManager.play("hitmarker", 0.15, 6.0)
+	
+	# Step 2: Deal direct hit damage on collider (if direct enemy hit) AND AoE Plasma Explosion damage
+	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.get("is_dead"):
+		if direct_enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position)
+		elif direct_enemy.has_method("take_damage"):
+			direct_enemy.take_damage(impact_dmg, is_direct_crit, global_position)
+		GameManager.record_damage(impact_dmg, is_direct_crit)
+		
+		if GameManager.cryo_slow and direct_enemy.has_method("apply_slow"):
+			direct_enemy.apply_slow(0.4, 3.0)
+	
+	# Detonate plasma explosion AoE damage
+	_trigger_impact_effects(hit_pos, impact_dmg)
+	
+	# Step 3: Lightning chains to alive enemy within 8.5m of each primary struck target
+	var secondary_hit_counts: Dictionary = {}
+	var secondary_hits: int = 0
+	
+	for entry in primary_targets:
+		var from_pos: Vector3 = entry["pos"]
+		var src_enemy: Node = entry["node"]
+		
+		var best_cand: Node3D = null
+		var best_score: float = INF
+		
+		for enemy in enemies:
+			if enemy is Node3D and is_instance_valid(enemy) and not enemy.get("is_dead") and enemy.get("current_health") != null and enemy.get("current_health") > 0.0:
+				if enemy == src_enemy:
+					continue
+				var dist = from_pos.distance_to(enemy.global_position)
+				if dist <= 8.5:
+					var times_hit = secondary_hit_counts.get(enemy, 0)
+					var score = float(times_hit) * 1000.0 + dist
+					if score < best_score:
+						best_score = score
+						best_cand = enemy
+		
+		if best_cand != null:
+			secondary_hit_counts[best_cand] = secondary_hit_counts.get(best_cand, 0) + 1
+			var cand_pos = best_cand.global_position + Vector3(0, 0.6, 0)
+			_create_lightning_beam(from_pos, cand_pos)
+			
+			var chain_is_crit = randf() < crit_chance
+			var chain_dmg = chain_base_dmg * (GameManager.crit_damage if chain_is_crit else 1.0)
+			if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+				best_cand.rpc_take_damage.rpc(chain_dmg, chain_is_crit, from_pos)
+			elif best_cand.has_method("take_damage"):
+				best_cand.take_damage(chain_dmg, chain_is_crit, from_pos)
+			GameManager.record_damage(chain_dmg, chain_is_crit)
+			
+			if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
+				best_cand.apply_slow(0.3, 2.0)
+			
+			secondary_hits += 1
+	
+	if secondary_hits > 0 and hit_count == 0:
+		SoundManager.play("hitmarker", 0.15, 6.0)
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

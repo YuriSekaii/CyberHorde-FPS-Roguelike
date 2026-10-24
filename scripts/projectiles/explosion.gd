@@ -24,6 +24,14 @@ func setup(dmg: float, rad: float) -> void:
 	_deal_damage()
 
 func _deal_damage() -> void:
+	# Direct distance check on existing enemies ensures instant synchronous AoE damage
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if enemy is Node3D and is_instance_valid(enemy) and not enemy in hit_targets:
+			if global_position.distance_to(enemy.global_position) <= radius:
+				hit_targets.append(enemy)
+				_damage_enemy(enemy)
+	
 	var bodies = get_overlapping_bodies()
 	for b in bodies:
 		if b.is_in_group("enemies") and not b in hit_targets:

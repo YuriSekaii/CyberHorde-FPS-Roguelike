@@ -170,7 +170,7 @@ var upgrade_database: Dictionary = {
 	"chain_lightning": {
 		"id": "chain_lightning",
 		"name": "Tesla Arc Emitter",
-		"desc": "Bullet hits arc chain lightning to nearby targets.",
+		"desc": "Bullet hits arc chain lightning to 2 targets. Plasma Core casts lightning to EVERY enemy in blast radius before detonating, which then chain outward!",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 2

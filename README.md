@@ -115,6 +115,7 @@ CyberHorde supports seamless switching between **Windowed** and **Fullscreen** m
    - **Charge Delay Mechanic**: Features a brief 0.18s magnetic capacitor spin-up delay on trigger pull with pulsing core glow, coil whine synth SFX, and weapon vibration before discharging.
    - **High Concussive Recoil**: Unleashes massive gun kickback, +13° muzzle pitch lift, camera vertical recoil, screen trauma shake (0.38 intensity), and a backward propulsion impulse.
    - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s total shot cycle, 2.0s reload time, 25% base crit chance.
+   - **Exclusive Tesla Arc Synergy**: When paired with **Tesla Arc Emitter**, strikes *every* enemy in its explosive radius before detonating, and each arc chains outward to alive enemies within 8.5m!
 
 ---
 
@@ -153,7 +154,7 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 20 pellets). |
-| **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 nearby enemies. |
+| **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets. **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick. |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage, gaining **5s of invulnerability**. Automatically **recharges after surviving 10 waves**! |
@@ -165,6 +166,13 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 * **Direct Hit Crits**: Every projectile rolls against its weapon's **Critical Strike Chance** (10% for Pulse Carbine, 15% for Scatter Cannon, 25% for Plasma Core, augmented by +10% per stack of *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
 * **Explosive Damage**: Explosive damage is **calculated from the initial hit damage** (100% of hit damage for Plasma Core: 150 base direct + 150 base AoE; 80% for perk-granted bullet explosions).
 * **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
+
+### ⚡ Plasma Core Exclusive: Tesla Supercharge Sequence
+When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk active, the weapon bypasses the standard 2-target limit with a unique 4-phase detonation sequence:
+1. **Plasma Impact**: The orb strikes a target or surface environment.
+2. **Radial Lightning Burst**: One lightning bolt is fired from the impact center to **EVERY** enemy inside the explosive blast radius (**5.0m base**, **10.0m with *Explosive Payload***). If 10 enemies are inside the radius, 10 lightning bolts fire simultaneously! This triggers **before** explosive AoE damage to maximize initial lightning targets.
+3. **Plasma AoE Detonation**: Direct hit and full Area-of-Effect explosive damage are dealt to the impact point and surrounding blast radius, eliminating weaker horde units.
+4. **Outward Secondary Chain**: Each of the lightning bolts from Step 2 chains outward to another **alive enemy within 8.5m**! Against tough survivors or bosses, multiple arcs focus onto remaining threats. (Inherits *Cryo Rounds* chills and independent crit checks).
 
 ---
 
