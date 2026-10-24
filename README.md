@@ -239,7 +239,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~55.6% |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% |
 | **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Reduced by 20%) |
-| **Apex Overlord (Final Boss)** | **100,000.0** (Base) → ~16M (Wave 100) | 3.2 – 78.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
+| **Apex Overlord (Final Boss)** | **44,444.0** (Base) → ~7.0M (Wave 100) | 3.2 – 78.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
@@ -247,7 +247,7 @@ Hordes scale progressively to challenge late-game builds:
 3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing mini-boss style threats that charge in and slam the ground creating shockwaves and knockback!
 
 ### 👑 Wave 100 Final Boss: Apex Overlord & Multi-Stage Escalation
-**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **100,000 Base HP**, scaling to ~16M HP on Wave 100)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
+**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring **44,444 Base HP**, scaling to ~7.0M HP on Wave 100)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
 * **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's evolving aerial and ground attacks.
 * **Stage 1 (100% – 66% HP) — Armored Ground Juggernaut**:
