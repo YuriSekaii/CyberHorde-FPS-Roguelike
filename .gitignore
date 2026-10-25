@@ -6,6 +6,10 @@
 .import/
 export_presets.cfg
 
+# Extracted engine binaries (keep git clean; engine.zip is used for distribution)
+Godot*.exe
+godot*.exe
+
 # OS generated files
 .DS_Store
 Thumbs.db

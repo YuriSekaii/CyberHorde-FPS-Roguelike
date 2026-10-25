@@ -13,8 +13,11 @@ Survive escalating cybernetic hordes, harvest magnetized Nanite XP crystals and 
 
 ## 🎮 How to Play
 
+### 🚀 Zero-Setup "Clone & Play":
+The matching Godot 4.7.2 Engine is bundled directly in the repository (`engine.zip`, 82 MB). When you or a friend clones the repository and double-clicks `Play_Game.bat`, it automatically unpacks the engine in seconds on first run—**no manual downloads, installations, or external dependencies required!**
+
 ### 1-Click Launchers:
-* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, `Join Co-op`, `Boss Battle`, or `Check for Updates`).
+* **`Play_Game.bat`**: Launches the game window immediately with the cyberpunk Main Lobby (`Single Player`, `Host Co-op`, `Join Co-op`, `Boss Battle`, or `Check for Updates`). Auto-unpacks the bundled engine if needed.
 * **`Update_Game.bat`**: 1-click update script to automatically run `git pull` from Windows Explorer.
 * **`Test_Coop_2Players.bat`**: Instantly launches two game windows side-by-side on your desktop so you can test 2-player co-op locally with zero setup!
 * **`Open_In_Godot_Editor.bat`**: Opens the project directly inside the Godot 4.7 Editor for inspecting scenes, tweaking stats, or modifying scripts.
