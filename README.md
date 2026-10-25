@@ -87,7 +87,7 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
-| **Reroll Upgrade Cards** | `Click` | Reroll 3 cards using Scrap (starts at 100 Scrap, doubling with each reroll) |
+| **Reroll Upgrade Cards** | `Click` | Reroll 3 cards using Scrap (starts at 500 Scrap, doubling with each reroll) |
 | **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, toggle Damage Numbers, or restart |
 | **Toggle Window / Fullscreen** | `F11`, `Alt + Enter`, `M` (in menus), or Menu Button | Instantly toggle between Windowed and Borderless Fullscreen display modes |
 | **Toggle Damage Numbers** | `F8` or Pause Menu Button | Instantly toggle floating damage numbers ON/OFF to maximize FPS |
@@ -192,8 +192,8 @@ Upgrade rarity tiers roll with authentic 1/4 drop rates: **Common** (~75.3%), **
 
 ### ⟳ Scrap Card Reroll System
 Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh set of upgrades!
-* **Base Cost**: Initial reroll starts at **100 Scrap**.
-* **Exponential Scaling**: The cost doubles every time a reroll is used during your run (**100 → 200 → 400 → 800 → 1,600...**), resetting back to 100 on a new run.
+* **Base Cost**: Initial reroll starts at **500 Scrap**.
+* **Exponential Scaling**: The cost doubles every time a reroll is used during your run (**500 → 1,000 → 2,000 → 4,000 → 8,000...**), resetting back to 500 on a new run.
 * **Smart Pool Protection**: Rerolling excludes currently presented cards whenever alternative eligible perks remain in the pool.
 * **Controls**: Click the gold **`⟳ REROLL`** button at the bottom of the card panel (keyboard hotkey `R` removed to prevent accidental rerolls during combat).
 * **Shared Squad Economy**: In co-op multiplayer, rerolls synchronize with the squad's shared Scrap pool.
@@ -302,7 +302,7 @@ Hordes scale progressively to challenge late-game builds:
 
 * **Nanite XP Crystals** *(Green/Cyan)*: Magnetize to the player and fill the squad Level Up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 Health (drops more often when HP is low).
-* **Scrap Currency** *(Gold)*: Collect golden currency from kills, chests, and wave bonuses to fund Upgrade Card Rerolls (starts at 100 Scrap, doubling every use).
+* **Scrap Currency** *(Gold)*: Collect golden currency from kills, chests, and wave bonuses to fund Upgrade Card Rerolls (starts at 500 Scrap, doubling every use).
 * **Loot Caches (Chests)**: Dropped every 2 waves with an aerial beacon light beam. Press `E` to open for bonus loot and a **free upgrade pick**!
 * **4 Aerial Jump Pads**: Step on any glowing pad to launch high above the arena for aerial combat.
 * **Floating 3D Damage Numbers**: Billboarding damage indicators popping up above hit enemies with yellow/red styling for critical hits.

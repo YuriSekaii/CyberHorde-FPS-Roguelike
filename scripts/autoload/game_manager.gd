@@ -31,7 +31,7 @@ var player_level: int = 1
 var player_xp: int = 0
 var xp_to_next_level: int = 100
 var scrap: int = 0
-var reroll_cost: int = 100
+var reroll_cost: int = 500
 var rerolls_used: int = 0
 var current_wave: int = 1
 var enemies_killed: int = 0
@@ -399,7 +399,7 @@ func reset_game() -> void:
 	player_xp = 0
 	xp_to_next_level = 100
 	scrap = 0
-	reroll_cost = 100
+	reroll_cost = 500
 	rerolls_used = 0
 	current_wave = 1
 	enemies_killed = 0
