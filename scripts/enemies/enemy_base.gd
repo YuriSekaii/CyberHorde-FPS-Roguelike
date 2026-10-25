@@ -90,8 +90,8 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
-	# Abyss kill check: if an enemy falls below the arena into the abyss, kill it immediately
-	if global_position.y < -10.0:
+	# Abyss instant elimination: if an enemy falls below the arena floor, kill it instantly
+	if global_position.y < -2.0:
 		die()
 		return
 	
@@ -109,6 +109,14 @@ func _physics_process(delta: float) -> void:
 			slow_multiplier = 1.0
 	
 	_behave(delta)
+	
+	# Arena perimeter containment: prevent enemies from ever escaping or falling off the arena bounds
+	if absf(global_position.x) > 30.0:
+		global_position.x = clampf(global_position.x, -30.0, 30.0)
+		velocity.x = 0.0
+	if absf(global_position.z) > 30.0:
+		global_position.z = clampf(global_position.z, -30.0, 30.0)
+		velocity.z = 0.0
 
 func _behave(_delta: float) -> void:
 	# Overridden in child classes

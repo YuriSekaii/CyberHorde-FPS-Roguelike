@@ -48,17 +48,17 @@ roughness = 0.5
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall_z"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(64, 8, 2)
+size = Vector3(66, 8, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_z"]
-size = Vector3(64, 8, 2)
+size = Vector3(66, 8, 2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall_x"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(2, 8, 64)
+size = Vector3(2, 8, 66)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_x"]
-size = Vector3(2, 8, 64)
+size = Vector3(2, 8, 66)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_barrier_z"]
 size = Vector3(66, 40, 2)
