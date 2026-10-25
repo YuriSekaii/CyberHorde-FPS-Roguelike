@@ -78,10 +78,12 @@ func _process(delta: float) -> void:
 		return
 	
 	if is_wave_active:
-		# Queue up new enemy telegraphs only if active count is within concurrent capacity
+		# Queue up new enemy telegraphs only if active count is within concurrent capacity.
+		# In Final Boss battle (current_wave >= FINAL_WAVE), enemies spawn infinitely until the Boss is defeated!
 		_clean_dead_enemies()
 		var current_active = active_enemies.size() + pending_spawns.size()
-		if enemies_left_to_spawn > 0 and current_active < MAX_CONCURRENT_ENEMIES:
+		var can_spawn: bool = (current_wave >= FINAL_WAVE or enemies_left_to_spawn > 0)
+		if can_spawn and current_active < MAX_CONCURRENT_ENEMIES:
 			spawn_timer -= delta
 			if spawn_timer <= 0.0:
 				spawn_timer = spawn_interval
@@ -102,14 +104,19 @@ func _process(delta: float) -> void:
 		
 		# Check wave completion
 		_clean_dead_enemies()
-		var alive_count = active_enemies.size() + pending_spawns.size() + enemies_left_to_spawn
+		var alive_count = active_enemies.size() + pending_spawns.size()
+		if current_wave < FINAL_WAVE:
+			alive_count += enemies_left_to_spawn
 		if NetworkManager.is_multiplayer:
 			rpc_wave_progress.rpc(alive_count, total_enemies_in_wave)
 		else:
 			wave_progress.emit(alive_count, total_enemies_in_wave)
 		
-		if alive_count <= 0 and enemies_left_to_spawn <= 0 and pending_spawns.is_empty():
-			_complete_wave()
+		# Regular waves complete when all enemies are slain.
+		# Final Boss battle ONLY completes when the Boss is defeated (_on_boss_defeated)!
+		if current_wave < FINAL_WAVE:
+			if alive_count <= 0 and enemies_left_to_spawn <= 0 and pending_spawns.is_empty():
+				_complete_wave()
 
 func start_intermission(duration: float = 4.0) -> void:
 	is_intermission = true
@@ -122,8 +129,12 @@ func _start_wave(wave_num: int) -> void:
 	is_wave_active = true
 	boss_spawned_for_wave = false
 	
-	total_enemies_in_wave = 10 + wave_num * 6
-	enemies_left_to_spawn = total_enemies_in_wave
+	if current_wave >= FINAL_WAVE:
+		total_enemies_in_wave = -1
+		enemies_left_to_spawn = -1
+	else:
+		total_enemies_in_wave = 10 + wave_num * 6
+		enemies_left_to_spawn = total_enemies_in_wave
 	spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
 	spawn_timer = 0.5
 	
@@ -148,7 +159,8 @@ func _spawn_one_enemy() -> void:
 	if not is_instance_valid(ref_player):
 		return
 	
-	enemies_left_to_spawn -= 1
+	if current_wave < FINAL_WAVE:
+		enemies_left_to_spawn -= 1
 	enemy_counter += 1
 	var enemy_name = "Enemy_%d_%d" % [current_wave, enemy_counter]
 	
@@ -355,7 +367,9 @@ func _clean_dead_enemies() -> void:
 
 func _on_enemy_killed(_type: String) -> void:
 	_clean_dead_enemies()
-	var alive_count = active_enemies.size() + pending_spawns.size() + enemies_left_to_spawn
+	var alive_count = active_enemies.size() + pending_spawns.size()
+	if current_wave < FINAL_WAVE:
+		alive_count += enemies_left_to_spawn
 	if NetworkManager.is_multiplayer and NetworkManager.is_server:
 		rpc_wave_progress.rpc(alive_count, total_enemies_in_wave)
 	else:
@@ -376,6 +390,14 @@ func _on_boss_defeated() -> void:
 				else:
 					e.queue_free()
 		active_enemies.clear()
+		# Also kill any escort or minion enemies in the scene
+		var remaining_enemies = get_tree().get_nodes_in_group("enemies")
+		for e in remaining_enemies:
+			if is_instance_valid(e) and not e.is_queued_for_deletion():
+				if e.has_method("die"):
+					e.die()
+				else:
+					e.queue_free()
 		_complete_wave()
 
 func _complete_wave() -> void:

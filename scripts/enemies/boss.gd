@@ -2,9 +2,9 @@ extends "res://scripts/enemies/enemy_base.gd"
 
 ## Apex Overlord - Wave 50 Final Boss
 ## Multi-Stage Climactic Battle:
-## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg) & occasional long-range cannon fire (low dmg).
-## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg).
-## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a massive bullet-hell barrage from both hands and both wings simultaneously with wide spread (65 m/s, 6 projectiles/volley). Ends with a giant slow mega orb, enters 3s exhaustion cooldown, then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s). Loops until death.
+## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg, 14.25m radius) & occasional long-range cannon fire (low dmg).
+## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg, 6.75m AoE), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg, 15.75m AoE).
+## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a massive bullet-hell barrage from both hands and both wings simultaneously with tighter focused spread (65 m/s, 6 projectiles/volley). Ends with a giant slow mega orb (18.0m AoE), enters 8s exhaustion cooldown (increased by 5s), then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s, 17.25m AoE). Loops until death.
 
 enum BossStage {
 	STAGE_1,
@@ -45,7 +45,7 @@ var cannon_cooldown: float = 2.0
 var is_charging_slam: bool = false
 var slam_charge_timer: float = 0.0
 const SLAM_CHARGE_DURATION: float = 0.85
-const SLAM_RADIUS: float = 9.5
+const SLAM_RADIUS: float = 14.25
 
 var s2_shots_fired: int = 0
 var s3_machine_shots: int = 0
@@ -134,9 +134,9 @@ func _apply_wave_scaling() -> void:
 	max_health = 4444444.0
 	current_health = max_health
 	
-	# Attack damage scaling
+	# Attack damage scaling (doubled base dmg: 40.0 -> 80.0, cap: 180.0 -> 360.0)
 	var dmg_scale = pow(1.05, float(maxi(0, wave_num - 1)))
-	attack_damage = clampf(40.0 * dmg_scale, 40.0, 180.0)
+	attack_damage = clampf(80.0 * dmg_scale, 80.0, 360.0)
 	
 	# Speed and damage reduction
 	var speed_tier: int = int(wave_num / 10)
@@ -458,7 +458,7 @@ func _process_stage_2(delta: float) -> void:
 			
 			# Check impact with ground or target point
 			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 2.5 or is_on_floor():
-				_execute_dive_impact(10.5, 2.2)
+				_execute_dive_impact(15.75, 2.2)
 				s2_state = Stage2SubState.IMPACT_RECOVERY
 				state_timer = 0.0
 		
@@ -489,7 +489,7 @@ func _fire_stage2_bomb() -> void:
 	var proj = PROJECTILE_SCENE.instantiate()
 	get_parent().add_child(proj)
 	proj.global_position = muzzle_pos
-	proj.setup(dir, attack_damage * 0.85, 13.0, true, 4.5, attack_damage * 0.85)
+	proj.setup(dir, attack_damage * 0.85, 13.0, true, 6.75, attack_damage * 0.85)
 	proj.set_projectile_visual(Color(1.0, 0.45, 0.05), Vector3(1.35, 1.35, 1.35))
 	SoundManager.play("shoot_plasma", 0.15, -2.0)
 
@@ -512,7 +512,7 @@ func _trigger_stage2_lock_on() -> void:
 	active_indicator = LOCK_INDICATOR_SCENE.instantiate()
 	get_parent().add_child(active_indicator)
 	active_indicator.global_position = locked_impact_pos
-	active_indicator.setup(10.5, 1.2)
+	active_indicator.setup(15.75, 1.2)
 
 func _execute_dive_impact(blast_radius: float, dmg_multiplier: float) -> void:
 	if active_indicator:
@@ -596,7 +596,8 @@ func _process_stage_3(delta: float) -> void:
 			if core_light:
 				core_light.light_energy = 2.0 + sin(Time.get_ticks_msec() * 0.015) * 1.5
 			
-			if state_timer >= 3.0:
+			# Exhaustion cooldown increased by 5s (3.0s -> 8.0s)
+			if state_timer >= 8.0:
 				s3_state = Stage3SubState.POST_EXHAUST_LOCK_ON
 				state_timer = 0.0
 				_trigger_stage3_lock_on()
@@ -622,7 +623,7 @@ func _process_stage_3(delta: float) -> void:
 			move_and_slide()
 			
 			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 3.0 or is_on_floor():
-				_execute_dive_impact(11.5, 2.5)
+				_execute_dive_impact(17.25, 2.5)
 				s3_state = Stage3SubState.IMPACT_RECOVERY
 				state_timer = 0.0
 		
@@ -646,14 +647,14 @@ func _process_stage_3(delta: float) -> void:
 func _fire_stage3_machine_gun() -> void:
 	var target_center = target_player.global_position + Vector3(0.0, 0.85, 0.0)
 	
-	# Fires from both hands and both massive wings simultaneously with wide spread
+	# Fires from both hands and both massive wings simultaneously with 50% tighter spread
 	var muzzles = [
-		{"node": left_hand_muzzle, "h_spread": randf_range(-0.14, 0.04), "v_spread": randf_range(-0.06, 0.06)},
-		{"node": right_hand_muzzle, "h_spread": randf_range(-0.04, 0.14), "v_spread": randf_range(-0.06, 0.06)},
-		{"node": left_wing_muzzle1, "h_spread": randf_range(-0.46, -0.16), "v_spread": randf_range(-0.10, 0.10)},
-		{"node": left_wing_muzzle2, "h_spread": randf_range(-0.28, -0.06), "v_spread": randf_range(-0.08, 0.08)},
-		{"node": right_wing_muzzle1, "h_spread": randf_range(0.16, 0.46), "v_spread": randf_range(-0.10, 0.10)},
-		{"node": right_wing_muzzle2, "h_spread": randf_range(0.06, 0.28), "v_spread": randf_range(-0.08, 0.08)}
+		{"node": left_hand_muzzle, "h_spread": randf_range(-0.07, 0.02), "v_spread": randf_range(-0.03, 0.03)},
+		{"node": right_hand_muzzle, "h_spread": randf_range(-0.02, 0.07), "v_spread": randf_range(-0.03, 0.03)},
+		{"node": left_wing_muzzle1, "h_spread": randf_range(-0.23, -0.08), "v_spread": randf_range(-0.05, 0.05)},
+		{"node": left_wing_muzzle2, "h_spread": randf_range(-0.14, -0.03), "v_spread": randf_range(-0.04, 0.04)},
+		{"node": right_wing_muzzle1, "h_spread": randf_range(0.08, 0.23), "v_spread": randf_range(-0.05, 0.05)},
+		{"node": right_wing_muzzle2, "h_spread": randf_range(0.03, 0.14), "v_spread": randf_range(-0.04, 0.04)}
 	]
 	
 	for m_data in muzzles:
@@ -683,7 +684,7 @@ func _fire_stage3_mega_projectile() -> void:
 	var proj = PROJECTILE_SCENE.instantiate()
 	get_parent().add_child(proj)
 	proj.global_position = muzzle_pos
-	proj.setup(dir, attack_damage * 2.8, 7.5, true, 12.0, attack_damage * 2.8)
+	proj.setup(dir, attack_damage * 2.8, 7.5, true, 18.0, attack_damage * 2.8)
 	proj.set_projectile_visual(Color(0.9, 0.05, 0.45), Vector3(3.6, 3.6, 3.6))
 	SoundManager.play("shoot_plasma", 0.2, -3.5)
 
@@ -706,7 +707,7 @@ func _trigger_stage3_lock_on() -> void:
 	active_indicator = LOCK_INDICATOR_SCENE.instantiate()
 	get_parent().add_child(active_indicator)
 	active_indicator.global_position = locked_impact_pos
-	active_indicator.setup(11.5, 1.2)
+	active_indicator.setup(17.25, 1.2)
 
 # ----------------- DEATH SEQUENCE -----------------
 

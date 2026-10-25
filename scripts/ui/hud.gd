@@ -163,7 +163,10 @@ func _on_boss_defeated() -> void:
 	boss_container.visible = false
 
 func _on_wave_progress(alive_count: int, _total: int) -> void:
-	enemies_label.text = "ENEMIES: %d" % alive_count
+	if GameManager.current_wave >= 50 or GameManager.is_boss_battle_mode:
+		enemies_label.text = "ENEMIES: %d (∞)" % alive_count
+	else:
+		enemies_label.text = "ENEMIES: %d" % alive_count
 
 func _on_intermission_tick(sec_left: int) -> void:
 	intermission_label.visible = true

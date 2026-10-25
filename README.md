@@ -132,7 +132,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 
 ### 3. Scalable Engine Optimization
 * **Static Entity Caching**: Replaced frequent `get_tree().get_nodes_in_group("enemies")` calls with `EnemyBase.all_enemies` static registry, saving hundreds of heap array allocations per second.
-* **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas (e.g. all 310 enemies in Wave 50).
+* **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas in standard waves, and continuously replenishing an infinite horde in the Wave 50 Final Boss battle.
 * **Frictionless Enemy Physics**: Set enemy `collision_mask = 5` (world + player), eliminating expensive pairwise enemy-on-enemy collision solving loops.
 
 ### 4. Damage Number Toggle & Concurrency Limiting
@@ -254,7 +254,7 @@ When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk act
 
 ### Wave Progression & Scaling
 Hordes scale progressively to challenge late-game builds:
-* **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies, Wave 50 = 310 enemies).
+* **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies). In **Wave 50 (Final Boss Battle)**, enemy spawning becomes **Infinite (∞)**, continuously replenishing until the Apex Overlord is slain.
 * **Spawn Interval Acceleration**: Time between enemy spawns accelerates from 1.9s down to a rapid 0.4s cap ($\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$).
 * **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
@@ -272,7 +272,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~4.0% – 4.25%** (Wave 11+, Halved from ~8.0% – 8.5%) |
 | **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | High-altitude flight (8.5m), Enlarged Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **0.25%** (Wave 20+, Reduced by 1/2 then 1/4) |
 | **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick). **Direct bullet hits only** (Immune to ricochet, AoE/explosive, and chain lightning) | Spawned by Void Spawner Portal |
-| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 50 Exclusive |
+| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | **80.0 → 360.0 (Cap)** (Doubled Base) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE (14.25m), Red Aura Lock-On, Hyper Dive (15.75m), Machine Gun (50% Tighter Spread), Mega Orb (18.0m AoE), & Supersonic Dive (17.25m) | Wave 50 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites. Weight decays by 5% multiplicatively every 5 waves ($\times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
@@ -283,26 +283,30 @@ Hordes scale progressively to challenge late-game builds:
 6. **Cyber Spawnlings**: Fragile aerial interceptors with fluttering wings, a rear flaming thruster booster, and two hanging talons. Its body is a high-speed spinning drill bit. Possessing the **lowest health in the game (14 base HP)**, it homes directly onto players and deals small rapid continuous damage (2.5 damage every 0.15s) with intense grinding sparks when connected. **Precision Requirement**: Cyber Spawnlings **strictly require a direct hit from a bullet** to take damage; they are **completely immune** to all damage from ricochet, AoE (explosive rounds / plasma detonation), and chain lightning, requiring players to aim directly at them rather than relying on collateral splash or chain damage.
 
 ### 👑 Wave 50 Final Boss: Apex Overlord & Multi-Stage Escalation
-**Wave 50 is the climactic Final Wave**. Reaching Wave 50 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
+**Wave 50 is the climactic Final Wave**. Reaching Wave 50 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding an **infinite escalation horde** with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
+* **Infinite Enemy Horde**: Unlike standard waves, Wave 50 has an infinite wave quota (`ENEMIES: X (∞)`). Minions continuously replenish up to 40 concurrent enemies until the boss is defeated.
+* **Boss-Tethered Victory Protocol**: The wave **cannot be won by clearing minions**—players only win after the **Apex Overlord is defeated**. Upon death, its unstable reactor triggers a cascading EMP meltdown, annihilating all remaining horde units and achieving **MISSION ACCOMPLISHED**!
+* **Doubled Base Damage**: All boss attacks have **double base damage** (`attack_damage = 80.0` base, scaling cap increased from 180.0 to 360.0).
+* **+50% AoE Radius Expansion**: Every AoE attack has had its explosion/shockwave radius expanded by **50%** across all stages.
 * **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's evolving aerial and ground attacks.
 * **Stage 1 (100% – 66% HP) — Armored Ground Juggernaut**:
   * **Movement**: Heavy, lumbering ground pursuit.
-  * **Near Attack (Close Range ≤ 8.5m)**: Winds up and executes a devastating **Slam AoE** that hits nearby players with high damage (`attack_damage × 1.6`) and launches them skyward with vertical knockup!
+  * **Near Attack (Close Range ≤ 8.5m)**: Winds up and executes a devastating **Slam AoE** hitting an expanded **14.25m radius** (+50% from 9.5m) with high damage (`attack_damage × 1.6`) and launches them skyward with vertical knockup!
   * **Far Attack (Long Range > 8.5m)**: Alternates firing dual plasma cannons for low damage (`attack_damage × 0.45`) to pressure players from afar.
   * Patterns loop continuously until the boss drops below 66% HP.
 * **Stage 2 (66% – 33% HP) — Aerial Bombardier & Hyper Dive**:
   * **Transformation**: The armor shifts and unfolds into massive mechanical wings with glowing amber energy blades; thrusters ignite as the boss ascends into the sky (Y ≈ 14m).
-  * **Aerial Bombardment**: Hovers stationary in the air, firing slow-moving plasma bomb projectiles that detonate upon hitting the ground or player, causing medium AoE explosive damage (`attack_damage × 0.85`).
-  * **Energy Charge & Red Aura Lock-On**: After several shots, halts and charges energy as its core flares. Upon full charge, **flashes a brilliant Red Aura** and locks onto your exact position (0.7s telegraph), dropping a holographic red impact zone warning beacon. Players must sprint and evacuate the zone immediately!
-  * **Extreme Speed Dive**: Plunges from the sky at extreme speed (60 m/s) straight into the locked position, causing a massive 10.5m **AoE Shockwave** (`attack_damage × 2.2` massive damage + knockup).
+  * **Aerial Bombardment**: Hovers stationary in the air, firing slow-moving plasma bomb projectiles that detonate upon hitting the ground or player, causing medium **6.75m AoE** explosive damage (+50% from 4.5m, `attack_damage × 0.85`).
+  * **Energy Charge & Red Aura Lock-On**: After several shots, halts and charges energy as its core flares. Upon full charge, **flashes a brilliant Red Aura** and locks onto your exact position (0.7s telegraph), dropping an expanded **15.75m** holographic red impact zone warning beacon (+50% from 10.5m). Players must sprint and evacuate the zone immediately!
+  * **Extreme Speed Dive**: Plunges from the sky at extreme speed (60 m/s) straight into the locked position, causing a massive **15.75m AoE Shockwave** (+50% from 10.5m, `attack_damage × 2.2` massive damage + knockup).
   * **Loop**: Recovers on the ground, rockets back into the sky, and repeats the pattern until 33% HP.
 * **Stage 3 (< 33% HP) — Solid Metal Fallen Angel (Massive Wings & Bullet Hell)**:
   * **Transformation**: Detonates its entire outer armor shell to reveal a terrifying **Solid Metal Fallen Angel with massive spread wings**—featuring a solid sculpted dark steel cuirass, metallic legs, dark halo crown, and giant metallic feathered wings spreading over 12m wide!
-  * **Simultaneous Hands & Wings Bullet Hell**: Sweeps across the sky at high speed (32 m/s) while firing simultaneously from **both hands and both massive wings** (6 muzzles active at once), unleashing an intense, dense bullet-hell curtain of ~550 crimson needles over 6.0s with huge lateral and vertical spread (65 m/s, `attack_damage × 0.09` per needle).
-  * **Cataclysmic Mega Projectile**: Halts and channels catastrophic power into its exposed heart, launching a giant, slow-moving mega sphere that causes a gargantuan 12m explosion on impact with massive damage (`attack_damage × 2.8`).
-  * **Exhaustion Cooldown**: The boss visibly weakens and sags in the sky as its core dims and flickers, entering an exhaustion cooldown for 3 seconds—providing a prime vulnerability window for players to lay down massive DPS!
-  * **Post-Exhaustion Supersonic Dive**: Surges back to life, flashes its crimson red aura, locks your position with the exact same 0.70s warning window as Stage 2, and dives with supersonic hyper speed (105 m/s) into the ground, causing an 11.5m shockwave (`attack_damage × 2.5` massive damage).
+  * **Simultaneous Hands & Wings Bullet Hell (50% Tighter Spread)**: Sweeps across the sky at high speed (32 m/s) while firing simultaneously from **both hands and both massive wings** (6 muzzles active at once). Projectile spread has been **reduced by 50%**, concentrating ~550 crimson needles into a tightly focused, high-lethality curtain of fire (65 m/s, `attack_damage × 0.09` per needle).
+  * **Cataclysmic Mega Projectile**: Halts and channels catastrophic power into its exposed heart, launching a giant, slow-moving mega sphere that causes a gargantuan **18.0m AoE explosion** (+50% from 12.0m) on impact with massive damage (`attack_damage × 2.8`).
+  * **Exhaustion Cooldown (+5s Vulnerability)**: The boss visibly weakens and sags in the sky as its core dims and flickers, entering an exhaustion cooldown for **8.0 seconds** (increased by 5.0s from 3.0s)—providing a prime vulnerability window for players to lay down massive DPS!
+  * **Post-Exhaustion Supersonic Dive**: Surges back to life, flashes its crimson red aura, locks your position with an expanded **17.25m warning circle** (0.70s telegraph, +50% from 11.5m), and dives with supersonic hyper speed (105 m/s) into the ground, causing a devastating **17.25m shockwave** (+50% from 11.5m, `attack_damage × 2.5` massive damage).
   * **Loop**: Rockets back into the sky and loops the Stage 3 pattern until defeated.
 * **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
 * **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 49? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 50 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.
