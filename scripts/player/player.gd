@@ -47,6 +47,16 @@ var null_barrier_ready: bool = true
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
+# Dash Skill (Legendary Perk: Quantum Dash)
+const DASH_TOTAL_DISTANCE: float = 15.0
+const DASH_DURATION: float = 0.15
+const DASH_COOLDOWN: float = 25.0
+var is_dashing: bool = false
+var dash_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var dash_ready: bool = true
+var dash_direction: Vector3 = Vector3.ZERO
+
 # Head Bobbing & Shake
 var bob_time: float = 0.0
 var shake_intensity: float = 0.0
@@ -139,6 +149,8 @@ func _ready() -> void:
 	target_net_rot_y = rotation.y
 
 func setup_peer(id: int) -> void:
+	if not is_node_ready():
+		await ready
 	peer_id = id
 	set_multiplayer_authority(id)
 	target_net_pos = global_position
@@ -275,6 +287,9 @@ func _update_stats() -> void:
 	if GameManager.null_barrier_unlocked and null_barrier_timer <= 0.0:
 		null_barrier_ready = true
 	
+	if GameManager.dash_unlocked and dash_cooldown_timer <= 0.0:
+		dash_ready = true
+	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
 	if active_weapon_idx < weapons.size():
@@ -343,6 +358,15 @@ func _physics_process(delta: float) -> void:
 			if is_local_player:
 				SoundManager.play("upgrade_select", 0.05, 1.8)
 	
+	# Dash cooldown timer (25s cooldown)
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer -= delta
+		if dash_cooldown_timer <= 0.0:
+			dash_cooldown_timer = 0.0
+			dash_ready = true
+			if is_local_player and GameManager.dash_unlocked:
+				SoundManager.play("upgrade_select", 0.05, 1.8)
+	
 	# Remote player interpolation
 	if not is_local_player:
 		global_position = global_position.lerp(target_net_pos, 18.0 * delta)
@@ -392,6 +416,24 @@ func _handle_downed_state(delta: float) -> void:
 	move_and_slide()
 
 func _handle_movement(delta: float) -> void:
+	# Active dash state execution
+	if is_dashing:
+		dash_timer -= delta
+		velocity = dash_direction * (DASH_TOTAL_DISTANCE / DASH_DURATION)
+		move_and_slide()
+		if dash_timer <= 0.0:
+			_end_dash()
+		return
+	
+	# Check Dash activation (Skill: Q)
+	if GameManager.dash_unlocked and not is_downed:
+		if Input.is_action_just_pressed("skill_dash"):
+			if dash_ready and dash_cooldown_timer <= 0.0 and not is_dashing:
+				_start_dash()
+				return
+			elif not is_dashing:
+				SoundManager.play("empty_ammo", 0.1, -6.0)
+	
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
 		coyote_timer -= delta
@@ -675,7 +717,7 @@ func _handle_drone(delta: float) -> void:
 
 func _handle_head_bob_and_shake(delta: float) -> void:
 	is_aiming = Input.is_action_pressed("aim")
-	var target_fov = 65.0 if is_aiming else 85.0
+	var target_fov = 65.0 if is_aiming else (98.0 if is_dashing else 85.0)
 	camera.fov = lerpf(camera.fov, target_fov, 14.0 * delta)
 	
 	var base_pos = ADS_POSITION if is_aiming else HIP_POSITION
@@ -766,7 +808,7 @@ func trigger_invulnerability(duration: float) -> void:
 	invulnerable_timer = maxf(invulnerable_timer, duration)
 
 func take_damage(amount: float) -> void:
-	if is_invulnerable:
+	if is_invulnerable or is_dashing:
 		return
 	
 	# Epic perk: Null Barrier (Every 10s, nullifies next instance of damage)
@@ -920,3 +962,93 @@ func rpc_revive() -> void:
 	rpc_set_downed(false)
 	trigger_invulnerability(3.0)
 	SoundManager.play("level_up", 0.2, 1.5)
+
+# ==============================================================================
+# DASH SKILL PROTOCOL (LEGENDARY PERK: QUANTUM DASH)
+# ==============================================================================
+
+func _start_dash() -> void:
+	is_dashing = true
+	dash_ready = false
+	dash_timer = DASH_DURATION
+	dash_cooldown_timer = DASH_COOLDOWN
+	
+	# Look direction: aim vector in 3D (allows dashing into sky, ground, or air)
+	var dir = -camera.global_transform.basis.z.normalized()
+	if dir.length_squared() < 0.001:
+		dir = -transform.basis.z.normalized()
+	dash_direction = dir
+	
+	if dash_direction.y > 0.05:
+		coyote_timer = 0.0
+		jump_buffer_timer = 0.0
+	
+	# While Dash, invulnerable (and remains invulnerable through dash + 0.5s after)
+	trigger_invulnerability(DASH_DURATION + 0.5)
+	
+	# High-speed FOV warp kick
+	camera.fov = minf(camera.fov + 15.0, 105.0)
+	
+	SoundManager.play("dash", 0.08, 0.0)
+	_create_dash_effect(global_position, dash_direction)
+	
+	if NetworkManager.is_multiplayer:
+		rpc_trigger_dash.rpc(global_position, dash_direction)
+	
+	velocity = dash_direction * (DASH_TOTAL_DISTANCE / DASH_DURATION)
+	move_and_slide()
+
+func _end_dash() -> void:
+	is_dashing = false
+	# After Dash, gain 0.5s invulnerable
+	trigger_invulnerability(0.5)
+	var exit_speed = BASE_WALK_SPEED * GameManager.speed_mult
+	velocity = dash_direction * exit_speed
+
+func _create_dash_effect(pos: Vector3, dir: Vector3) -> void:
+	var scene_root = get_tree().current_scene if get_tree() else get_parent()
+	if not scene_root:
+		return
+	
+	var p = CPUParticles3D.new()
+	p.emitting = false
+	p.one_shot = true
+	p.explosiveness = 0.95
+	p.lifetime = 0.35
+	p.amount = 24
+	
+	var mat = StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = Color(1.0, 0.85, 0.2, 1.0)
+	
+	var mesh = BoxMesh.new()
+	mesh.size = Vector3(0.08, 0.08, 0.35)
+	mesh.material = mat
+	p.mesh = mesh
+	
+	p.direction = -dir
+	p.spread = 45.0
+	p.initial_velocity_min = 6.0
+	p.initial_velocity_max = 14.0
+	
+	scene_root.add_child(p)
+	p.global_position = pos + Vector3(0, 0.9, 0)
+	p.emitting = true
+	
+	var light = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.2)
+	light.light_energy = 3.5
+	light.omni_range = 6.0
+	scene_root.add_child(light)
+	light.global_position = pos + Vector3(0, 0.9, 0)
+	var tw = get_tree().create_tween()
+	tw.tween_property(light, "light_energy", 0.0, 0.25)
+	tw.tween_callback(light.queue_free)
+	
+	get_tree().create_timer(0.45).timeout.connect(p.queue_free)
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_trigger_dash(pos: Vector3, dir: Vector3) -> void:
+	if not is_local_player:
+		_create_dash_effect(pos, dir)
+		SoundManager.play("dash", 0.08, -3.0)

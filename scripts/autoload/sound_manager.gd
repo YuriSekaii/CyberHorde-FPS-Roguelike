@@ -300,3 +300,12 @@ func _generate_all_sounds() -> void:
 		var glitch = (randf() * 2.0 - 1.0) * exp(-t * 25.0) * 0.3
 		return (tone * 0.65 + sparkle + glitch) * env * 0.8
 	)
+	
+	# 26. Dash / Quantum Warp whoosh
+	sounds["dash"] = _create_wav(0.24, func(t, d):
+		var env = exp(-t * 12.0)
+		var freq = 320.0 + (1.0 - (t / d)) * 1100.0
+		var tone = sin(TAU * freq * t + sin(t * 80.0) * 0.3)
+		var whoosh = (randf() * 2.0 - 1.0) * 0.5 * exp(-t * 8.0)
+		return (tone * 0.6 + whoosh) * env * 0.85
+	)

@@ -73,6 +73,7 @@ var null_barrier_unlocked: bool = false
 var second_wind_unlocked: bool = false
 var second_wind_available: bool = false
 var second_wind_cooldown_waves: int = 0
+var dash_unlocked: bool = false
 var greed_mult: float = 1.0
 
 # Active Upgrades tracker: id -> count
@@ -208,6 +209,14 @@ var upgrade_database: Dictionary = {
 		"color": Color(1.0, 0.9, 0.2),
 		"max_stacks": 1
 	},
+	"quantum_dash": {
+		"id": "quantum_dash",
+		"name": "Quantum Dash",
+		"desc": "Unlock skill (Q): Dash 15m in aim direction (sky/air capable). Invulnerable during dash + 0.5s after. 25s cooldown.",
+		"rarity": "Legendary",
+		"color": Color(1.0, 0.9, 0.2),
+		"max_stacks": 1
+	},
 	"vital_plating": {
 		"id": "vital_plating",
 		"name": "Vital Plating",
@@ -318,6 +327,7 @@ func _setup_inputs() -> void:
 	_bind_mouse("shoot", MOUSE_BUTTON_LEFT)
 	_bind_mouse("aim", MOUSE_BUTTON_RIGHT)
 	_bind_key("reload", KEY_R)
+	_bind_key("skill_dash", KEY_Q)
 	_bind_key("interact", KEY_E)
 	_bind_key("interact", KEY_F)
 	_bind_key("weapon_1", KEY_1)
@@ -436,6 +446,7 @@ func reset_game() -> void:
 	second_wind_unlocked = false
 	second_wind_available = false
 	second_wind_cooldown_waves = 0
+	dash_unlocked = false
 	greed_mult = 1.0
 	
 	active_upgrades.clear()
@@ -648,6 +659,8 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 			second_wind_unlocked = true
 			second_wind_available = true
 			second_wind_cooldown_waves = 0
+		"quantum_dash":
+			dash_unlocked = true
 		"vital_plating":
 			max_health_bonus += 25.0
 		"hardened_alloy":

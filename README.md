@@ -86,6 +86,7 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 | **Switch Weapons** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
+| **Dash (Skill)** | Q | Legendary Perk *Quantum Dash*: Dash 15m in aim direction (sky & mid-air capable) with invulnerability |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
 | **Reroll Upgrade Cards** | `Click` | Reroll 3 cards using Scrap (starts at 500 Scrap, doubling with each reroll) |
 | **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, toggle Damage Numbers, or restart |
@@ -182,7 +183,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 > ### 📍 Where to Add or Modify Perks
 > * **Perk Catalog & Definitions**: [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) — Edit the `upgrade_database` dictionary to change names, descriptions, max stacks, rarities, or add new perk entries.
 > * **Perk Application & Stats**: [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) — Handle stat increases and unlock flags inside `apply_upgrade()` and `reset_game()`.
-> * **Defensive & Player Perks**: [`scripts/player/player.gd`](scripts/player/player.gd) — Implements health, shields, invulnerability, and defensive cooldowns (e.g. *Null Barrier*, *Reactive Phase-Shield*, *Emergency Defibrillator*).
+> * **Defensive & Player Perks**: [`scripts/player/player.gd`](scripts/player/player.gd) — Implements health, shields, invulnerability, and defensive cooldowns (e.g. *Null Barrier*, *Reactive Phase-Shield*, *Emergency Defibrillator*, *Quantum Dash*).
 > * **Projectile & Weapon Perks**: [`scripts/projectiles/bullet.gd`](scripts/projectiles/bullet.gd) — Implements bullet modifications (e.g. *Explosive Payload*, *Ricochet*, *Tesla Arc Emitter*, *Hyper-Penetrator*, *Cryo Rounds*).
 > * **Loot & Economy Perks**: [`scripts/loot/loot_pickup.gd`](scripts/loot/loot_pickup.gd) — Implements pickup mechanics (e.g. *Nanite Magnet* radius, *Nanite Scavenger* drops).
 > * See the [Perk Developer Guide](#2-how-to-add-or-modify-perks-upgrades) below for step-by-step instructions.
@@ -223,6 +224,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce (Max 2 stacks). |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick (Max 3 stacks). |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage, gaining **5s of invulnerability**. Automatically **recharges after surviving 10 waves**! |
+| **Quantum Dash** | Legendary (Gold) | Unlock active skill (Q): Dash 15m in aim direction (sky & mid-air capable). Invulnerable during dash + 0.5s after. 25s cooldown. (Max 1 stack). |
 
 ---
 
@@ -350,7 +352,7 @@ Game/
 │   │   ├── network_manager.gd        # ENet high-level multiplayer squad manager
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM audio engine
 │   ├── player/
-│   │   ├── player.gd                 # ★ DEFENSIVE & COMBAT PERKS: Null Barrier, Shields, Invulnerability, HP
+│   │   ├── player.gd                 # ★ DEFENSIVE & COMBAT PERKS: Null Barrier, Shields, Invulnerability, HP, Quantum Dash
 │   │   └── drone.gd                  # Companion drone perk AI
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (health, multi-target, damage)

@@ -20,6 +20,7 @@ extends CanvasLayer
 @onready var boss_bar: ProgressBar = $BossContainer/BossBar
 @onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
 @onready var null_barrier_label: Label = get_node_or_null("BottomLeft/NullBarrierLabel")
+@onready var dash_label: Label = get_node_or_null("BottomLeft/DashLabel")
 
 var local_player: Node = null
 var hitmarker_timer: float = 0.0
@@ -92,6 +93,24 @@ func _process(delta: float) -> void:
 					null_barrier_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
 		else:
 			null_barrier_label.visible = false
+	
+	if dash_label:
+		if GameManager.dash_unlocked:
+			dash_label.visible = true
+			if local_player and is_instance_valid(local_player):
+				if local_player.get("is_dashing") == true:
+					dash_label.text = "[Q - DASH: ACTIVE]"
+					dash_label.modulate = Color(0.3, 1.0, 0.5, 1.0)
+				elif local_player.get("dash_ready") == true:
+					dash_label.text = "[Q - DASH: READY]"
+					dash_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+				else:
+					var timer_val = local_player.get("dash_cooldown_timer")
+					var sec_left: float = float(timer_val) if timer_val != null else 0.0
+					dash_label.text = "[Q - DASH: %.1fs]" % sec_left
+					dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
+		else:
+			dash_label.visible = false
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp
