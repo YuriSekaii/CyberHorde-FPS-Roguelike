@@ -140,8 +140,9 @@ func _apply_wave_scaling() -> void:
 	
 	# Speed and damage reduction
 	var speed_tier: int = int(wave_num / 10)
-	var speed_factor: float = 1.0 + (float(speed_tier) * 0.05)
+	var speed_factor: float = pow(1.05, float(speed_tier))
 	speed = 3.2 * speed_factor
+	wave_speed_mult = speed_factor
 	attack_speed_mult = speed_factor
 	
 	var reduction_tier: int = int(wave_num / 10)
@@ -331,7 +332,7 @@ func _process_stage_1(delta: float) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 		move_and_slide()
-		if slam_charge_timer >= SLAM_CHARGE_DURATION:
+		if slam_charge_timer >= (SLAM_CHARGE_DURATION / attack_speed_mult):
 			_execute_tremor_stomp()
 		return
 	
@@ -418,7 +419,7 @@ func _process_stage_2(delta: float) -> void:
 			velocity = Vector3.ZERO
 			
 			if attack_timer <= 0.0:
-				attack_timer = 0.85
+				attack_timer = 0.85 / attack_speed_mult
 				_fire_stage2_bomb()
 				s2_shots_fired += 1
 				if s2_shots_fired >= 4:
@@ -453,7 +454,7 @@ func _process_stage_2(delta: float) -> void:
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
 			
-			velocity = dive_dir * 60.0
+			velocity = dive_dir * (60.0 * wave_speed_mult)
 			move_and_slide()
 			
 			# Check impact with ground or target point
@@ -560,12 +561,12 @@ func _process_stage_3(delta: float) -> void:
 			flight_orbit_angle += delta * 2.8
 			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 20.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 20.0)
 			var flight_dir = (target_flight_pos - global_position).normalized()
-			velocity = flight_dir * 32.0
+			velocity = flight_dir * (32.0 * wave_speed_mult)
 			move_and_slide()
 			
 			# Bullet hell barrage from both hands and both wings simultaneously
 			if attack_timer <= 0.0:
-				attack_timer = 0.065
+				attack_timer = 0.065 / attack_speed_mult
 				_fire_stage3_machine_gun()
 				s3_machine_shots += 1
 			
@@ -619,7 +620,7 @@ func _process_stage_3(delta: float) -> void:
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
 			
-			velocity = dive_dir * 105.0
+			velocity = dive_dir * (105.0 * wave_speed_mult)
 			move_and_slide()
 			
 			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 3.0 or is_on_floor():

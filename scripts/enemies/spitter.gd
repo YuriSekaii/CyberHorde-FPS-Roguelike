@@ -10,7 +10,7 @@ const PROJECTILE_SCENE = preload("res://scenes/projectiles/enemy_projectile.tscn
 func _ready() -> void:
 	super._ready()
 	strafe_dir = 1.0 if randf() > 0.5 else -1.0
-	shoot_timer = randf_range(1.0, 2.0)
+	shoot_timer = randf_range(1.0, 2.0) / attack_speed_mult
 
 func _behave(delta: float) -> void:
 	shoot_timer -= delta

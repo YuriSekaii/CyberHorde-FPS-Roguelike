@@ -15,6 +15,7 @@ var slow_timer: float = 0.0
 var slow_multiplier: float = 1.0
 var retarget_timer: float = 0.0
 var attack_speed_mult: float = 1.0
+var wave_speed_mult: float = 1.0
 var damage_reduction: float = 0.0
 var _is_flashing: bool = false
 static var _last_hit_sound_msec: int = 0
@@ -49,10 +50,11 @@ func _apply_wave_scaling() -> void:
 	max_health = current_health
 	attack_damage = attack_damage * dmg_factor
 	
-	# 2. Every 10 waves: 5% more Attack SPD and Movement SPD
+	# 2. Every 10 waves: 5% more Attack SPD and Movement SPD (compounding per 10-wave tier)
 	var speed_tier: int = int(wave_num / 10)
-	var speed_mult: float = 1.0 + (float(speed_tier) * 0.05)
+	var speed_mult: float = pow(1.05, float(speed_tier))
 	speed *= speed_mult
+	wave_speed_mult = speed_mult
 	attack_speed_mult = speed_mult
 	
 	# 3. Every 10 waves: 10% dmg reduction (capped at 50% in Wave 50)

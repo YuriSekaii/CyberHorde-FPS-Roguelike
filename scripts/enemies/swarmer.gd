@@ -6,7 +6,7 @@ const ATTACK_RANGE: float = 1.6
 
 func _ready() -> void:
 	super._ready()
-	attack_cooldown = 0.5
+	attack_cooldown = 0.5 / attack_speed_mult
 
 func _behave(delta: float) -> void:
 	if not is_on_floor():

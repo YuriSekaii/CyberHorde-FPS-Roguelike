@@ -15,7 +15,7 @@ const CONNECT_RANGE: float = 1.45
 
 func _ready() -> void:
 	super._ready()
-	attack_timer = 0.05
+	attack_timer = 0.05 / attack_speed_mult
 	if contact_sparks:
 		contact_sparks.emitting = false
 

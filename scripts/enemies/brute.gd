@@ -12,7 +12,7 @@ const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
 func _ready() -> void:
 	super._ready()
-	slam_cooldown = 1.0
+	slam_cooldown = 1.0 / attack_speed_mult
 	if slam_indicator:
 		slam_indicator.visible = false
 
@@ -32,7 +32,8 @@ func _behave(delta: float) -> void:
 		velocity.x = 0
 		velocity.z = 0
 		move_and_slide()
-		if charge_timer >= SLAM_CHARGE_TIME:
+		var eff_slam_charge_time = SLAM_CHARGE_TIME / attack_speed_mult
+		if charge_timer >= eff_slam_charge_time:
 			_execute_slam()
 		return
 	

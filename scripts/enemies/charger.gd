@@ -35,7 +35,7 @@ var red_horn_mat: StandardMaterial3D
 
 func _ready() -> void:
 	super._ready()
-	charge_cooldown = randf_range(1.0, 2.0)
+	charge_cooldown = randf_range(1.0, 2.0) / attack_speed_mult
 	if charge_light:
 		charge_light.visible = false
 	if stun_particles:
@@ -127,6 +127,9 @@ func _process_windup(delta: float) -> void:
 		mesh_root.position.x = randf_range(-0.06, 0.06)
 		mesh_root.position.z = randf_range(-0.06, 0.06)
 	
+	var eff_windup = WINDUP_TIME / attack_speed_mult
+	var eff_lock = LOCK_TIME / attack_speed_mult
+	
 	# Face player until lock moment
 	if not is_locked:
 		var to_player = target_player.global_position - global_position
@@ -136,10 +139,10 @@ func _process_windup(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, target_rot, 12.0 * delta)
 		
 		# Lock location & flash bright red near the end of windup
-		if state_timer >= (WINDUP_TIME - LOCK_TIME):
+		if state_timer >= (eff_windup - eff_lock):
 			_lock_charge(dir)
 	
-	if state_timer >= WINDUP_TIME:
+	if state_timer >= eff_windup:
 		_start_charge()
 
 func _lock_charge(dir: Vector3) -> void:
@@ -172,7 +175,7 @@ func _start_charge() -> void:
 func _process_charging(delta: float) -> void:
 	state_timer += delta
 	
-	var effective_charge_speed = CHARGE_SPEED * slow_multiplier
+	var effective_charge_speed = CHARGE_SPEED * wave_speed_mult * slow_multiplier
 	velocity.x = charge_direction.x * effective_charge_speed
 	velocity.z = charge_direction.z * effective_charge_speed
 	
@@ -266,7 +269,7 @@ func _process_stunned(delta: float) -> void:
 
 func _recover_from_stun() -> void:
 	current_state = State.STALKING
-	charge_cooldown = CHARGE_COOLDOWN_TIME
+	charge_cooldown = CHARGE_COOLDOWN_TIME / attack_speed_mult
 	
 	if stun_particles:
 		stun_particles.emitting = false

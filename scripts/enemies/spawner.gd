@@ -23,7 +23,8 @@ const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 func _ready() -> void:
 	super._ready()
 	strafe_dir = 1.0 if randf() > 0.5 else -1.0
-	spawn_timer = randf_range(1.0, 1.75) if GameManager.current_wave >= 50 else randf_range(2.0, 3.5)
+	var base_init_delay = randf_range(1.0, 1.75) if GameManager.current_wave >= 50 else randf_range(2.0, 3.5)
+	spawn_timer = base_init_delay / attack_speed_mult
 	# Spawner spawns directly in the sky at preferred aerial altitude
 	if global_position.y < PREFERRED_HEIGHT * 0.7:
 		global_position.y = PREFERRED_HEIGHT
