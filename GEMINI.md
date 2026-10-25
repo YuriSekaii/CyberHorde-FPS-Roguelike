@@ -1,5 +1,10 @@
 # Project Guidelines & AI Assistant Rules
 
+## Core Rules & Prerequisites
+
+1. **Read [`README.md`](README.md) First**
+   - Always read and consult [`README.md`](README.md) first before undertaking tasks, making changes, or answering questions. It serves as the single source of truth for the project's game mechanics, system architecture, perk catalogs, weapon stats, and conventions.
+
 ## Mandatory Post-Change Workflow
 
 Whenever any feature, perk, balance change, mechanic, bug fix, or update is implemented in this codebase, always follow these rules:
