@@ -158,6 +158,7 @@ const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 
 func _ready() -> void:
+	collision_mask |= 16 # Collide with invisible boundary barrier (Layer 5)
 	add_to_group("player")
 	_setup_weapons()
 	_update_stats()

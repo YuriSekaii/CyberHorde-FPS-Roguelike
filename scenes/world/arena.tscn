@@ -48,19 +48,25 @@ roughness = 0.5
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall_z"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(66, 32, 2)
+size = Vector3(64, 8, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_z"]
-size = Vector3(66, 48, 2)
+size = Vector3(64, 8, 2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall_x"]
 material = SubResource("StandardMaterial3D_wall")
-size = Vector3(2, 32, 66)
+size = Vector3(2, 8, 64)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_x"]
-size = Vector3(2, 48, 66)
+size = Vector3(2, 8, 64)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_barrier_z"]
+size = Vector3(66, 40, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_barrier_x"]
+size = Vector3(2, 40, 66)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_barrier_ceiling"]
 size = Vector3(66, 2, 66)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_platform"]
@@ -88,7 +94,7 @@ size = Vector3(2.5, 12, 2.5)
 environment = SubResource("Environment_1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 45, 0)
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 25, 0)
 light_color = Color(1, 0.97, 0.9, 1)
 light_energy = 2.4
 shadow_enabled = true
@@ -106,50 +112,80 @@ mesh = SubResource("BoxMesh_floor")
 shape = SubResource("BoxShape3D_floor")
 
 [node name="WallNorth" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -32)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -32)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/WallNorth"]
 mesh = SubResource("BoxMesh_wall_z")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallNorth"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 shape = SubResource("BoxShape3D_wall_z")
 
 [node name="WallSouth" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 32)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 32)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/WallSouth"]
 mesh = SubResource("BoxMesh_wall_z")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallSouth"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 shape = SubResource("BoxShape3D_wall_z")
 
 [node name="WallEast" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 4, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/WallEast"]
 mesh = SubResource("BoxMesh_wall_x")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallEast"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 shape = SubResource("BoxShape3D_wall_x")
 
 [node name="WallWest" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 16, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 4, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/WallWest"]
 mesh = SubResource("BoxMesh_wall_x")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/WallWest"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 shape = SubResource("BoxShape3D_wall_x")
 
-[node name="Ceiling" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 48, 0)
+[node name="BarrierNorth" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 28, -32)
+collision_layer = 16
+collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Ceiling"]
-shape = SubResource("BoxShape3D_ceiling")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BarrierNorth"]
+shape = SubResource("BoxShape3D_barrier_z")
+
+[node name="BarrierSouth" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 28, 32)
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BarrierSouth"]
+shape = SubResource("BoxShape3D_barrier_z")
+
+[node name="BarrierEast" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 28, 0)
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BarrierEast"]
+shape = SubResource("BoxShape3D_barrier_x")
+
+[node name="BarrierWest" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 28, 0)
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BarrierWest"]
+shape = SubResource("BoxShape3D_barrier_x")
+
+[node name="BarrierCeiling" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 48, 0)
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/BarrierCeiling"]
+shape = SubResource("BoxShape3D_barrier_ceiling")
 
 [node name="CenterPlatform" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)

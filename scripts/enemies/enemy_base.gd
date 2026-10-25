@@ -34,6 +34,7 @@ const DAMAGE_TYPE_CHAIN_LIGHTNING: int = 3
 var _last_immune_feedback_msec: int = 0
 
 func _ready() -> void:
+	collision_mask |= 16 # Collide with invisible boundary barrier (Layer 5)
 	all_enemies.append(self)
 	add_to_group("enemies")
 	_apply_wave_scaling()
