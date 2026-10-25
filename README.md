@@ -255,7 +255,7 @@ When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk act
 ### Wave Progression & Scaling
 Hordes scale progressively to challenge late-game builds:
 * **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies). In **Wave 50 (Final Boss Battle)**, enemy spawning becomes **Infinite (∞)**, continuously replenishing until the Apex Overlord is slain.
-* **Spawn Interval Acceleration**: Time between enemy spawns accelerates from 1.9s down to a rapid 0.4s cap ($\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$).
+* **Spawn Interval Acceleration**: Time between enemy spawns accelerates from 1.9s down to a rapid 0.4s cap ($\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$). In **Wave 50 (Final Boss Battle)**, the spawn interval is halved to **0.2s** (doubled spawn rate).
 * **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
 * **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **50%** max reduction in Wave 50). Floating damage indicators accurately reflect reduced damage values.
@@ -272,7 +272,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~4.0% – 4.25%** (Wave 11+, Halved from ~8.0% – 8.5%) |
 | **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | High-altitude flight (8.5m), Enlarged Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **0.25%** (Wave 20+, Reduced by 1/2 then 1/4) |
 | **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick). **Direct bullet hits only** (Immune to ricochet, AoE/explosive, and chain lightning) | Spawned by Void Spawner Portal |
-| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | **80.0 → 360.0 (Cap)** (Doubled Base) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE (14.25m), Red Aura Lock-On, Hyper Dive (15.75m), Machine Gun (50% Tighter Spread), Mega Orb (18.0m AoE), & Supersonic Dive (17.25m) | Wave 50 Exclusive |
+| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | **120.0 → 540.0 (Cap)** (+50% Boosted Base & Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE (14.25m), Red Aura Lock-On, Hyper Dive (15.75m), Machine Gun (50% Tighter Spread), Mega Orb (18.0m AoE), & Supersonic Dive (17.25m) | Wave 50 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites. Weight decays by 5% multiplicatively every 5 waves ($\times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
@@ -285,9 +285,9 @@ Hordes scale progressively to challenge late-game builds:
 ### 👑 Wave 50 Final Boss: Apex Overlord & Multi-Stage Escalation
 **Wave 50 is the climactic Final Wave**. Reaching Wave 50 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding an **infinite escalation horde** with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
-* **Infinite Enemy Horde**: Unlike standard waves, Wave 50 has an infinite wave quota (`ENEMIES: X (∞)`). Minions continuously replenish up to 40 concurrent enemies until the boss is defeated.
+* **Infinite Enemy Horde (Doubled Spawn Rate)**: Unlike standard waves, Wave 50 has an infinite wave quota (`ENEMIES: X (∞)`). Minions spawn with **double spawn rate (half the spawn interval: 0.2s)** and continuously replenish up to 40 concurrent enemies until the boss is defeated.
 * **Boss-Tethered Victory Protocol**: The wave **cannot be won by clearing minions**—players only win after the **Apex Overlord is defeated**. Upon death, its unstable reactor triggers a cascading EMP meltdown, annihilating all remaining horde units and achieving **MISSION ACCOMPLISHED**!
-* **Doubled Base Damage**: All boss attacks have **double base damage** (`attack_damage = 80.0` base, scaling cap increased from 180.0 to 360.0).
+* **+50% Boosted Attack Damage**: All boss attacks deal **+50% more damage** (`attack_damage = 120.0` base, scaling cap increased from 360.0 to **540.0**).
 * **+50% AoE Radius Expansion**: Every AoE attack has had its explosion/shockwave radius expanded by **50%** across all stages.
 * **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's evolving aerial and ground attacks.
 * **Stage 1 (100% – 66% HP) — Armored Ground Juggernaut**:

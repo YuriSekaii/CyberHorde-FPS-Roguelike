@@ -134,9 +134,9 @@ func _apply_wave_scaling() -> void:
 	max_health = 4444444.0
 	current_health = max_health
 	
-	# Attack damage scaling (doubled base dmg: 40.0 -> 80.0, cap: 180.0 -> 360.0)
+	# Attack damage scaling (+50% attack across all attacks: base 80.0 -> 120.0, cap: 360.0 -> 540.0)
 	var dmg_scale = pow(1.05, float(maxi(0, wave_num - 1)))
-	attack_damage = clampf(80.0 * dmg_scale, 80.0, 360.0)
+	attack_damage = clampf(120.0 * dmg_scale, 120.0, 540.0)
 	
 	# Speed and damage reduction
 	var speed_tier: int = int(wave_num / 10)

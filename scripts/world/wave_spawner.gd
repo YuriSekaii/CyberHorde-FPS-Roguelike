@@ -132,11 +132,14 @@ func _start_wave(wave_num: int) -> void:
 	if current_wave >= FINAL_WAVE:
 		total_enemies_in_wave = -1
 		enemies_left_to_spawn = -1
+		# Final Boss Fight: all enemies have double spawn rate (half spawn interval: 0.4s -> 0.2s)
+		spawn_interval = 0.2
+		spawn_timer = 0.2
 	else:
 		total_enemies_in_wave = 10 + wave_num * 6
 		enemies_left_to_spawn = total_enemies_in_wave
-	spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
-	spawn_timer = 0.5
+		spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
+		spawn_timer = 0.5
 	
 	pending_spawns.clear()
 	_clean_all_indicators()

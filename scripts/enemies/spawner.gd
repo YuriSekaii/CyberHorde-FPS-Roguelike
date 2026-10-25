@@ -23,7 +23,7 @@ const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 func _ready() -> void:
 	super._ready()
 	strafe_dir = 1.0 if randf() > 0.5 else -1.0
-	spawn_timer = randf_range(2.0, 3.5)
+	spawn_timer = randf_range(1.0, 1.75) if GameManager.current_wave >= 50 else randf_range(2.0, 3.5)
 
 func _behave(delta: float) -> void:
 	wing_timer += delta
@@ -82,7 +82,8 @@ func _behave(delta: float) -> void:
 	# Minion spawning logic
 	spawn_timer -= delta
 	if spawn_timer <= 0.0:
-		spawn_timer = SPAWN_INTERVAL / attack_speed_mult
+		var eff_interval = (SPAWN_INTERVAL * 0.5) if GameManager.current_wave >= 50 else SPAWN_INTERVAL
+		spawn_timer = eff_interval / attack_speed_mult
 		_attempt_spawn_minion()
 
 func _attempt_spawn_minion() -> void:
