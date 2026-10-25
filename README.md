@@ -292,6 +292,7 @@ Hordes scale progressively to challenge late-game builds:
 ### 👑 Wave 50 Final Boss: Apex Overlord & Multi-Stage Escalation
 **Wave 50 is the climactic Final Wave**. Reaching Wave 50 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding an **infinite escalation horde** with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
+* **Stage Center Emergence**: Spawns directly at the center of the elevated stage platform (`Vector3(0.0, 3.9, 0.0)`) with a 4.0-second holographic warning beacon on the platform floor, ensuring clean arena presence without spawning underneath geometry.
 * **Infinite Enemy Horde (Doubled Spawn Rate)**: Unlike standard waves, Wave 50 has an infinite wave quota (`ENEMIES: X (∞)`). Minions spawn with **double spawn rate (half the spawn interval: 0.2s)** and continuously replenish up to 40 concurrent enemies until the boss is defeated.
 * **Boss-Tethered Victory Protocol**: The wave **cannot be won by clearing minions**—players only win after the **Apex Overlord is defeated**. Upon death, its unstable reactor triggers a cascading EMP meltdown, annihilating all remaining horde units and achieving **MISSION ACCOMPLISHED**!
 * **+50% Boosted Attack Damage**: All boss attacks deal **+50% more damage** (`attack_damage = 120.0` base, scaling cap increased from 360.0 to **540.0**).

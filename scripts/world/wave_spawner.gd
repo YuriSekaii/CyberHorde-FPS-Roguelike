@@ -176,7 +176,8 @@ func _spawn_one_enemy() -> void:
 	if current_wave >= FINAL_WAVE and not boss_spawned_for_wave:
 		boss_spawned_for_wave = true
 		type_id = 3
-		spawn_pos = Vector3(0.0, 0.5, -12.0)
+		# Spawn at center of the elevated stage platform (top surface at y = 3.9)
+		spawn_pos = Vector3(0.0, 3.9, 0.0)
 		delay = 4.0
 	else:
 		type_id = _select_enemy_type(current_wave)

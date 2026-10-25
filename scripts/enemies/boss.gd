@@ -280,7 +280,7 @@ func _summon_escort(type_ids: Array) -> void:
 		var spawn_pos = global_position + offset
 		spawn_pos.x = clampf(spawn_pos.x, -26.0, 26.0)
 		spawn_pos.z = clampf(spawn_pos.z, -26.0, 26.0)
-		spawn_pos.y = 0.5
+		spawn_pos.y = 3.9 if (absf(spawn_pos.x) <= 9.0 and absf(spawn_pos.z) <= 9.0) else 0.5
 		
 		var scn = SWARMER_SCENE if t_id == 0 else SPITTER_SCENE
 		var escort = scn.instantiate()
@@ -505,7 +505,8 @@ func _trigger_stage2_lock_on() -> void:
 	SoundManager.play("spawn_telegraph", 0.05, 4.0)
 	
 	locked_impact_pos = target_player.global_position
-	locked_impact_pos.y = 0.0 # Align to arena floor
+	# Align to stage surface (3.9) if player is on the elevated platform, otherwise ground floor (0.0)
+	locked_impact_pos.y = 3.9 if target_player.global_position.y >= 2.0 else 0.0
 	
 	if active_indicator:
 		active_indicator.queue_free()
@@ -700,7 +701,8 @@ func _trigger_stage3_lock_on() -> void:
 	SoundManager.play("spawn_telegraph", 0.05, 5.0)
 	
 	locked_impact_pos = target_player.global_position
-	locked_impact_pos.y = 0.0
+	# Align to stage surface (3.9) if player is on the elevated platform, otherwise ground floor (0.0)
+	locked_impact_pos.y = 3.9 if target_player.global_position.y >= 2.0 else 0.0
 	
 	if active_indicator:
 		active_indicator.queue_free()
