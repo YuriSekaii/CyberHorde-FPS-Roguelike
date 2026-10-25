@@ -160,4 +160,4 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_reroll_disabled")
 theme_override_styles/hover = SubResource("StyleBoxFlat_reroll_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_reroll_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_reroll_pressed")
-text = "⟳ REROLL [R]  (100 Scrap)"
+text = "⟳ REROLL  (100 Scrap)"

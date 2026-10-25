@@ -27,8 +27,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_card(1)
 		elif event.physical_keycode == KEY_3 and current_options.size() >= 3:
 			_select_card(2)
-		elif event.physical_keycode == KEY_R:
-			_on_reroll_pressed()
 
 func _on_level_up(_lvl: int) -> void:
 	open_menu()
@@ -64,11 +62,11 @@ func _update_reroll_ui() -> void:
 		reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.7)
 	elif cur_scrap >= cost:
 		reroll_btn.disabled = false
-		reroll_btn.text = "⟳ REROLL [R]  (%d Scrap)" % cost
+		reroll_btn.text = "⟳ REROLL  (%d Scrap)" % cost
 		reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	else:
 		reroll_btn.disabled = true
-		reroll_btn.text = "⟳ REROLL [R]  (Need %d Scrap)" % cost
+		reroll_btn.text = "⟳ REROLL  (Need %d Scrap)" % cost
 		reroll_btn.modulate = Color(0.8, 0.5, 0.5, 0.8)
 
 func _on_reroll_pressed() -> void:

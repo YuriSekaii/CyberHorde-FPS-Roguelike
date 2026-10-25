@@ -87,7 +87,7 @@ Team up with your squad in fast-paced online horde survival using Godot 4 high-l
 | **Open Loot Cache** | `E` | Opens floating caches for bonus loot & free upgrade pick |
 | **Revive Teammate** | `E` (hold) | Stand within 3m of downed squadmate to revive them! |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Select 1 of 3 cards on Level Up or Cache open |
-| **Reroll Upgrade Cards** | `R` or `Click` | Reroll 3 cards using Scrap (starts at 100 Scrap, doubling with each reroll) |
+| **Reroll Upgrade Cards** | `Click` | Reroll 3 cards using Scrap (starts at 100 Scrap, doubling with each reroll) |
 | **Pause Menu** | `Escape` | Pause mission, adjust Master Sound, SFX Volume, Mouse Sensitivity, toggle Window/Fullscreen, toggle Damage Numbers, or restart |
 | **Toggle Window / Fullscreen** | `F11`, `Alt + Enter`, `M` (in menus), or Menu Button | Instantly toggle between Windowed and Borderless Fullscreen display modes |
 | **Toggle Damage Numbers** | `F8` or Pause Menu Button | Instantly toggle floating damage numbers ON/OFF to maximize FPS |
@@ -195,7 +195,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 * **Base Cost**: Initial reroll starts at **100 Scrap**.
 * **Exponential Scaling**: The cost doubles every time a reroll is used during your run (**100 → 200 → 400 → 800 → 1,600...**), resetting back to 100 on a new run.
 * **Smart Pool Protection**: Rerolling excludes currently presented cards whenever alternative eligible perks remain in the pool.
-* **Controls**: Press **`R`** on your keyboard or click the gold **`⟳ REROLL [R]`** button at the bottom of the card panel.
+* **Controls**: Click the gold **`⟳ REROLL`** button at the bottom of the card panel (keyboard hotkey `R` removed to prevent accidental rerolls during combat).
 * **Shared Squad Economy**: In co-op multiplayer, rerolls synchronize with the squad's shared Scrap pool.
 
 | Upgrade | Rarity | Effect |
