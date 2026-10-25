@@ -115,10 +115,18 @@ class Weapon:
 	var sound_name: String
 	var base_crit_chance: float = 0.10
 	var charge_time: float = 0.0
+	var cooldown: float = 0.0
 
 var weapons: Array[Weapon] = []
 var active_weapon_idx: int = 0
-var fire_cooldown: float = 0.0
+var equip_cooldown: float = 0.0
+var fire_cooldown: float:
+	get:
+		var cur_cd = weapons[active_weapon_idx].cooldown if (active_weapon_idx >= 0 and active_weapon_idx < weapons.size()) else 0.0
+		return maxf(equip_cooldown, cur_cd)
+	set(val):
+		if active_weapon_idx >= 0 and active_weapon_idx < weapons.size():
+			weapons[active_weapon_idx].cooldown = val
 var reload_timer: float = 0.0
 var is_reloading: bool = false
 var is_charging: bool = false
@@ -543,8 +551,13 @@ func _handle_movement(delta: float) -> void:
 	move_and_slide()
 
 func _handle_weapons(delta: float) -> void:
+	if equip_cooldown > 0.0:
+		equip_cooldown = maxf(0.0, equip_cooldown - delta)
+	for weapon in weapons:
+		if weapon.cooldown > 0.0:
+			weapon.cooldown = maxf(0.0, weapon.cooldown - delta)
+	
 	var w = weapons[active_weapon_idx]
-	fire_cooldown -= delta
 	_update_plasma_core_visual()
 	
 	if is_reloading:
@@ -627,7 +640,7 @@ func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
 	var slayer_fr_mult = 4.0 if is_slayer_active else 1.0
 	var effective_cooldown = maxf(0.02, w.fire_rate / (GameManager.fire_rate_mult * slayer_fr_mult))
-	fire_cooldown = effective_cooldown
+	w.cooldown = effective_cooldown
 	_update_plasma_core_visual()
 	if not is_slayer_active:
 		w.current_ammo -= 1
@@ -715,13 +728,15 @@ func _start_reload() -> void:
 	ammo_changed.emit(w.current_ammo, w.max_ammo, true)
 
 func _switch_weapon(new_idx: int) -> void:
+	if new_idx < 0 or new_idx >= weapons.size():
+		return
 	if is_charging:
 		_cancel_charge()
 	if new_idx == active_weapon_idx and not is_reloading:
 		return
 	active_weapon_idx = new_idx
 	is_reloading = false
-	fire_cooldown = 0.1
+	equip_cooldown = 0.1
 	
 	var w = weapons[active_weapon_idx]
 	gun_model_rifle.visible = (active_weapon_idx == 0)
@@ -738,7 +753,7 @@ func _update_plasma_core_visual() -> void:
 		return
 	
 	var w = weapons[2]
-	var can_shoot = (fire_cooldown <= 0.0 and not is_reloading and w.current_ammo > 0)
+	var can_shoot = (w.cooldown <= 0.0 and not is_reloading and w.current_ammo > 0)
 	
 	if is_charging:
 		var p = clampf(1.0 - (charge_timer / maxf(0.001, charge_duration)), 0.0, 1.0)
@@ -1188,6 +1203,9 @@ func _activate_gunner_skill() -> void:
 		reload_timer = 0.0
 	if is_charging:
 		_cancel_charge()
+	equip_cooldown = 0.0
+	for w in weapons:
+		w.cooldown = 0.0
 	for d in active_drones:
 		if is_instance_valid(d):
 			d.is_reloading = false

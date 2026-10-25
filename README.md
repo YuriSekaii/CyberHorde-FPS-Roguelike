@@ -92,6 +92,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 ### Weapon Mechanics Notes
 * **Plasma Core Charge Cycle**: Requires holding `LMB` for at least 0.18s before releasing to fire. Releasing early cancels without ammo cost or cooldown. The core glow shifts to Warning Red during cooldown/reload, popping to Neon Purple when ready.
+* **Independent Cooldown Tracking**: Weapons track fire cooldowns independently across swaps. Holstered weapons continue cooling down in the background, preventing quick-swap cooldown bypass exploits on heavy weapons like the Plasma Core.
 * **Tesla Arc Emitter Synergy**: When firing the Plasma Core with Tesla Arc Emitter, a radial lightning bolt strikes **every enemy** in the explosive radius before detonation, and each bolt then chains outward up to 8.5m.
 
 ---
