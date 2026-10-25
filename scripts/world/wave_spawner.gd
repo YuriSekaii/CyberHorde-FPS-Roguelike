@@ -285,6 +285,10 @@ func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vecto
 				if d < min_p_dist:
 					min_p_dist = d
 		
+		# Avoid spawning inside or overlapping the 4 solid arena pillars at (±14, ±14)
+		if absf(absf(candidate.x) - 14.0) < 2.2 and absf(absf(candidate.z) - 14.0) < 2.2:
+			continue
+		
 		if min_p_dist >= 10.0:
 			return candidate
 		
@@ -303,6 +307,9 @@ func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vecto
 	fallback.x = clampf(fallback.x, -27.0, 27.0)
 	fallback.z = clampf(fallback.z, -27.0, 27.0)
 	fallback.y = 0.5
+	# If fallback is inside a pillar, shift it safely away
+	if absf(absf(fallback.x) - 14.0) < 2.2 and absf(absf(fallback.z) - 14.0) < 2.2:
+		fallback.x += 4.0 if fallback.x >= 0.0 else -4.0
 	return fallback
 
 func _create_spawn_indicator(type_id: int, spawn_pos: Vector3, net_name: String, delay: float) -> void:
@@ -370,6 +377,13 @@ func _clean_dead_enemies() -> void:
 	var valid_list: Array[Node] = []
 	for e in active_enemies:
 		if is_instance_valid(e) and not e.is_queued_for_deletion():
+			# Instant failsafe elimination if any enemy somehow got out of the arena
+			if e.has_method("is_out_of_arena") and e.is_out_of_arena():
+				if e.has_method("die"):
+					e.die()
+				else:
+					e.queue_free()
+				continue
 			valid_list.append(e)
 	active_enemies = valid_list
 

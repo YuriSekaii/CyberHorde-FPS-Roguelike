@@ -192,7 +192,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 ## 💎 Pickups & Arena Elements
 
 * **Arena Walls & Non-Intrusive Sky Barriers**: Standard 8m visible perimeter walls preserve the open-sky horizon. An invisible upper barrier (Layer 5, up to 48m) blocks operatives and enemies from dashing or flying into the abyss while letting all weapon projectiles pass freely through into the sky without exploding or ricocheting.
-* **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Enemies are clamped within the arena boundaries, and if any unit ever drops below stage level ($Y < -2\text{m}$), it is instantly eliminated with drops safely placed on the arena floor.
+* **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Any enemy unit that somehow ends up out of the arena (beyond perimeter walls $|X|, |Z| > 31.5\text{m}$, below floor $Y < -1.0\text{m}$, or above sky boundary $Y > 45.0\text{m}$) is instantly eliminated with all loot drops safely placed onto the arena floor.
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 HP. Drops more frequently at low health.
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.

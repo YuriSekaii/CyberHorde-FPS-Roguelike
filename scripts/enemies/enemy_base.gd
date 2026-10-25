@@ -90,8 +90,8 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
-	# Abyss instant elimination: if an enemy falls below the arena floor, kill it instantly
-	if global_position.y < -2.0:
+	# Out-of-bounds instant elimination: any enemy outside arena boundaries is eliminated immediately
+	if is_out_of_arena():
 		die()
 		return
 	
@@ -110,13 +110,19 @@ func _physics_process(delta: float) -> void:
 	
 	_behave(delta)
 	
-	# Arena perimeter containment: prevent enemies from ever escaping or falling off the arena bounds
-	if absf(global_position.x) > 30.0:
-		global_position.x = clampf(global_position.x, -30.0, 30.0)
-		velocity.x = 0.0
-	if absf(global_position.z) > 30.0:
-		global_position.z = clampf(global_position.z, -30.0, 30.0)
-		velocity.z = 0.0
+	# Re-check out-of-bounds after movement: eliminate immediately if pushed or moved out of the arena
+	if is_out_of_arena():
+		die()
+		return
+
+func is_out_of_arena() -> bool:
+	# Arena floor is 64x64 (X: [-32, 32], Z: [-32, 32]), enclosed by 4 perimeter walls (inner faces at |X, Z| = 31.0).
+	# Floor surface is at Y = 0.0, ceiling boundary is at Y = 48.0m.
+	if absf(global_position.x) > 31.5 or absf(global_position.z) > 31.5:
+		return true
+	if global_position.y < -1.0 or global_position.y > 45.0:
+		return true
+	return false
 
 func _behave(_delta: float) -> void:
 	# Overridden in child classes
@@ -210,9 +216,9 @@ func _drop_loot() -> void:
 	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
 	var loot_mult: float = 4.0 if is_rogue_kill else 1.0 # 300% more = 4x value
 	
-	# Clamp loot spawn to safe arena ground level so pickups are never lost in abyss
+	# Clamp loot spawn to safe arena ground level so pickups are never lost outside the arena or in the abyss
 	var drop_pos = global_position
-	if drop_pos.y < 0.2:
+	if drop_pos.y < 0.2 or drop_pos.y > 15.0 or absf(drop_pos.x) > 28.0 or absf(drop_pos.z) > 28.0:
 		drop_pos.x = clampf(drop_pos.x, -28.0, 28.0)
 		drop_pos.z = clampf(drop_pos.z, -28.0, 28.0)
 		drop_pos.y = 0.5
