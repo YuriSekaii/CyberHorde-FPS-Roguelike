@@ -290,3 +290,13 @@ func _generate_all_sounds() -> void:
 		var harmonic = sin(TAU * (sweep * 1.5) * t) * 0.4
 		return (tone + harmonic) * env * 0.7
 	)
+	
+	# 25. Upgrade card reroll (cybernetic electronic shimmer shuffle)
+	sounds["reroll"] = _create_wav(0.22, func(t, d):
+		var env = exp(-t * 9.0)
+		var sweep = 350.0 + (t / d) * 750.0 + sin(TAU * 40.0 * t) * 60.0
+		var tone = sin(TAU * sweep * t)
+		var sparkle = sin(TAU * sweep * 2.0 * t) * 0.35
+		var glitch = (randf() * 2.0 - 1.0) * exp(-t * 25.0) * 0.3
+		return (tone * 0.65 + sparkle + glitch) * env * 0.8
+	)

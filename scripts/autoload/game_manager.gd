@@ -31,6 +31,8 @@ var player_level: int = 1
 var player_xp: int = 0
 var xp_to_next_level: int = 100
 var scrap: int = 0
+var reroll_cost: int = 100
+var rerolls_used: int = 0
 var current_wave: int = 1
 var enemies_killed: int = 0
 var total_damage_dealt: float = 0.0
@@ -397,6 +399,8 @@ func reset_game() -> void:
 	player_xp = 0
 	xp_to_next_level = 100
 	scrap = 0
+	reroll_cost = 100
+	rerolls_used = 0
 	current_wave = 1
 	enemies_killed = 0
 	total_damage_dealt = 0.0
@@ -460,6 +464,28 @@ func add_scrap(amount: int) -> void:
 func rpc_add_scrap(amount: int) -> void:
 	add_scrap(amount)
 
+func can_afford_reroll() -> bool:
+	return scrap >= reroll_cost
+
+func use_reroll() -> bool:
+	if not can_afford_reroll() or not has_available_upgrades():
+		return false
+	if NetworkManager.is_multiplayer:
+		rpc_sync_reroll.rpc(reroll_cost)
+	else:
+		_apply_reroll(reroll_cost)
+	return true
+
+func _apply_reroll(cost: int) -> void:
+	scrap = maxi(0, scrap - cost)
+	rerolls_used += 1
+	reroll_cost *= 2
+	scrap_changed.emit(scrap)
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_sync_reroll(cost: int) -> void:
+	_apply_reroll(cost)
+
 func record_damage(dmg: float, is_crit: bool) -> void:
 	total_damage_dealt += dmg
 	hitmarker_triggered.emit(is_crit)
@@ -475,6 +501,14 @@ func prompt_upgrade_menu() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	upgrade_requested.emit()
 
+func has_available_upgrades() -> bool:
+	for id in upgrade_database:
+		var item = upgrade_database[id]
+		var cur = active_upgrades.get(id, 0)
+		if cur < item["max_stacks"]:
+			return true
+	return false
+
 # Higher rarity tier is 1/4 probability of lower rarity tier:
 # Common = 64, Rare = 16 (1/4 of Common), Epic = 4 (1/4 of Rare), Legendary = 1 (1/4 of Epic)
 const RARITY_TIER_WEIGHTS: Dictionary = {
@@ -484,7 +518,7 @@ const RARITY_TIER_WEIGHTS: Dictionary = {
 	"Legendary": 1.0
 }
 
-func get_upgrade_options(count: int = 3) -> Array[Dictionary]:
+func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Array[Dictionary]:
 	# Group available items by rarity
 	var by_rarity: Dictionary = {
 		"Common": [],
@@ -492,14 +526,20 @@ func get_upgrade_options(count: int = 3) -> Array[Dictionary]:
 		"Epic": [],
 		"Legendary": []
 	}
+	var total_candidates: int = 0
 	for id in upgrade_database:
 		var item = upgrade_database[id]
 		var cur = active_upgrades.get(id, 0)
-		if cur < item["max_stacks"]:
+		if cur < item["max_stacks"] and not exclude_ids.has(id):
 			var r = item.get("rarity", "Common")
 			if not by_rarity.has(r):
 				by_rarity[r] = []
 			by_rarity[r].append(item)
+			total_candidates += 1
+	
+	# If excluding IDs leaves too few choices, fallback to including them
+	if total_candidates < count and not exclude_ids.is_empty():
+		return get_upgrade_options(count, [])
 	
 	var result: Array[Dictionary] = []
 	var max_available = 0

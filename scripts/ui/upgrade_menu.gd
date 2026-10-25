@@ -2,6 +2,8 @@ extends CanvasLayer
 
 @onready var container: HBoxContainer = $Panel/CardContainer
 @onready var title_label: Label = $Panel/TitleLabel
+@onready var scrap_label: Label = $Panel/BottomBar/ScrapLabel
+@onready var reroll_btn: Button = $Panel/BottomBar/RerollBtn
 
 var current_options: Array[Dictionary] = []
 
@@ -10,6 +12,9 @@ func _ready() -> void:
 	visible = false
 	GameManager.level_up.connect(_on_level_up)
 	GameManager.upgrade_requested.connect(open_menu)
+	GameManager.scrap_changed.connect(_on_scrap_changed)
+	if reroll_btn:
+		reroll_btn.pressed.connect(_on_reroll_pressed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -22,6 +27,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_card(1)
 		elif event.physical_keycode == KEY_3 and current_options.size() >= 3:
 			_select_card(2)
+		elif event.physical_keycode == KEY_R:
+			_on_reroll_pressed()
 
 func _on_level_up(_lvl: int) -> void:
 	open_menu()
@@ -37,6 +44,50 @@ func open_menu() -> void:
 	visible = true
 	title_label.text = "LEVEL UP! CHOOSE AN UPGRADE"
 	_populate_cards()
+	_update_reroll_ui()
+
+func _on_scrap_changed(_new_scrap: int) -> void:
+	if visible:
+		_update_reroll_ui()
+
+func _update_reroll_ui() -> void:
+	if not scrap_label or not reroll_btn:
+		return
+	
+	var cur_scrap = GameManager.scrap
+	var cost = GameManager.reroll_cost
+	scrap_label.text = "SCRAP: %d" % cur_scrap
+	
+	if not GameManager.has_available_upgrades():
+		reroll_btn.disabled = true
+		reroll_btn.text = "MAX UPGRADES REACHED"
+		reroll_btn.modulate = Color(0.6, 0.6, 0.6, 0.7)
+	elif cur_scrap >= cost:
+		reroll_btn.disabled = false
+		reroll_btn.text = "⟳ REROLL [R]  (%d Scrap)" % cost
+		reroll_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	else:
+		reroll_btn.disabled = true
+		reroll_btn.text = "⟳ REROLL [R]  (Need %d Scrap)" % cost
+		reroll_btn.modulate = Color(0.8, 0.5, 0.5, 0.8)
+
+func _on_reroll_pressed() -> void:
+	if not visible:
+		return
+	
+	if not GameManager.can_afford_reroll() or not GameManager.has_available_upgrades():
+		SoundManager.play("empty_ammo")
+		return
+	
+	var current_ids: Array[String] = []
+	for opt in current_options:
+		current_ids.append(opt["id"])
+	
+	if GameManager.use_reroll():
+		SoundManager.play("reroll")
+		current_options = GameManager.get_upgrade_options(3, current_ids)
+		_populate_cards()
+		_update_reroll_ui()
 
 func _populate_cards() -> void:
 	for child in container.get_children():
