@@ -28,7 +28,7 @@ static var last_ricochet_sound_msec: int = 0
 static var beam_pool: Array[MeshInstance3D] = []
 static var shared_beam_mesh: CylinderMesh = null
 static var shared_beam_mat: StandardMaterial3D = null
-const MAX_BEAM_POOL: int = 24
+const MAX_BEAM_POOL: int = 48
 
 # Static shared resources for plasma projectiles (Zero heap allocations per shot)
 static var plasma_outer_mesh: SphereMesh = null
@@ -498,8 +498,9 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 	var secondary_hits: int = 0
 	var chain_rad_sq = 8.5 * 8.5
 	
+	var max_secondary = maxi(6, GameManager.chain_lightning_targets * 2)
 	for entry in primary_targets:
-		if secondary_hits >= 6:
+		if secondary_hits >= max_secondary:
 			break
 		var from_pos: Vector3 = entry["pos"]
 		var src_enemy: Node = entry["node"]
@@ -543,30 +544,76 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 	if secondary_hits > 0 and hit_count == 0:
 		SoundManager.play("hitmarker", 0.15, 6.0)
 
-func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, ignore_enemy: Node) -> void:
+func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, initial_enemy: Node) -> void:
+	var total_chains = GameManager.chain_lightning_targets
+	if total_chains <= 0:
+		total_chains = 2
+	
 	var enemies = EnemyBase.all_enemies
-	var hit_count = 0
-	var range_sq = 8.5 * 8.5
-	for enemy in enemies:
-		if is_instance_valid(enemy) and not enemy.is_dead and enemy != ignore_enemy:
-			var epos = enemy.global_position
-			if absf(epos.x - origin_pos.x) > 8.5 or absf(epos.z - origin_pos.z) > 8.5:
+	var current_node: Node = initial_enemy
+	var current_pos: Vector3 = origin_pos
+	if is_instance_valid(current_node) and current_node is Node3D:
+		current_pos = current_node.global_position + Vector3(0, 0.6, 0)
+	
+	var chain_hit_counts: Dictionary = {}
+	if current_node != null:
+		# Initial enemy already took direct bullet impact damage; mark 1 so unhit enemies are prioritized
+		chain_hit_counts[current_node] = 1
+	
+	var hit_count: int = 0
+	var range_sq: float = 8.5 * 8.5
+	
+	for _step in range(total_chains):
+		var best_cand: Node = null
+		var best_score: float = INF
+		var best_cand_pos: Vector3 = Vector3.ZERO
+		
+		for enemy in enemies:
+			if not is_instance_valid(enemy) or enemy.is_dead:
 				continue
-			var d_sq = origin_pos.distance_squared_to(epos)
-			if d_sq < range_sq:
-				var is_crit = randf() < crit_chance
-				var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
-				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-					enemy.rpc_take_damage.rpc(final_dmg, is_crit, origin_pos)
-				elif enemy.has_method("take_damage"):
-					enemy.take_damage(final_dmg, is_crit, origin_pos)
-				GameManager.record_damage(final_dmg, is_crit)
-				if GameManager.cryo_slow and enemy.has_method("apply_slow"):
-					enemy.apply_slow(0.3, 2.0)
-				_create_lightning_beam(origin_pos, epos + Vector3(0, 0.6, 0))
-				hit_count += 1
-				if hit_count >= 2:
-					break
+			if enemy.get("current_health") != null and enemy.get("current_health") <= 0.0:
+				continue
+			# It MUST chain to another enemy (cannot chain to the current node)
+			if enemy == current_node:
+				continue
+			
+			var epos: Vector3 = enemy.global_position
+			if absf(epos.x - current_pos.x) > 8.5 or absf(epos.z - current_pos.z) > 8.5:
+				continue
+			var d_sq = current_pos.distance_squared_to(epos)
+			if d_sq <= range_sq:
+				var times_hit = chain_hit_counts.get(enemy, 0)
+				# Prioritize enemies with fewer chain hits, then closest distance
+				var score = float(times_hit) * 1000.0 + d_sq
+				if score < best_score:
+					best_score = score
+					best_cand = enemy
+					best_cand_pos = epos + Vector3(0, 0.6, 0)
+		
+		# If no other valid enemy in range, chain terminates
+		if best_cand == null:
+			break
+		
+		# Apply chain hit
+		chain_hit_counts[best_cand] = chain_hit_counts.get(best_cand, 0) + 1
+		_create_lightning_beam(current_pos, best_cand_pos)
+		
+		var is_crit = randf() < crit_chance
+		var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
+		if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+			best_cand.rpc_take_damage.rpc(final_dmg, is_crit, current_pos)
+		elif best_cand.has_method("take_damage"):
+			best_cand.take_damage(final_dmg, is_crit, current_pos)
+		GameManager.record_damage(final_dmg, is_crit)
+		
+		if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
+			best_cand.apply_slow(0.3, 2.0)
+		
+		hit_count += 1
+		# Advance chain
+		current_node = best_cand
+		current_pos = best_cand_pos
+	
 	if hit_count > 0:
 		SoundManager.play("hitmarker", 0.15, 6.0)
 

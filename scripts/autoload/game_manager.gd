@@ -58,6 +58,7 @@ var explosion_radius: float = 3.5
 var bouncing_bullets: bool = false
 var bounce_count: int = 0
 var chain_lightning: bool = false
+var chain_lightning_targets: int = 0
 var vampiric_heal: float = 0.0
 var shield_max: float = 0.0
 var current_shield: float = 0.0
@@ -178,10 +179,10 @@ var upgrade_database: Dictionary = {
 	"chain_lightning": {
 		"id": "chain_lightning",
 		"name": "Tesla Arc Emitter",
-		"desc": "Bullet hits arc chain lightning to 2 targets. Plasma Core casts lightning to EVERY enemy in blast radius before detonating, which then chain outward!",
+		"desc": "Bullet hits arc chain lightning up to 2 targets (+2 per stack, max 4 stacks). Chains between enemies and can bounce back to previous targets. Plasma Core casts lightning to EVERY enemy in blast radius before detonating, which then chain outward!",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 2
+		"max_stacks": 4
 	},
 	"ricochet": {
 		"id": "ricochet",
@@ -420,6 +421,7 @@ func reset_game() -> void:
 	bouncing_bullets = false
 	bounce_count = 0
 	chain_lightning = false
+	chain_lightning_targets = 0
 	vampiric_heal = 0.0
 	shield_max = 0.0
 	current_shield = 0.0
@@ -636,6 +638,7 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 			cryo_slow = true
 		"chain_lightning":
 			chain_lightning = true
+			chain_lightning_targets += 2
 		"ricochet":
 			bouncing_bullets = true
 			bounce_count += 2

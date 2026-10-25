@@ -123,7 +123,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 
 ### 2. Streamlined Explosion & GPU Particle Pipeline
 * **GPU Particle Offloading**: Converted explosions to `GPUParticles3D` with `ParticleProcessMaterial` and GPU compute shaders, transferring particle simulation off the CPU directly to the graphics hardware.
-* **Static Explosion & Lightning Pooling**: Replaced runtime dynamic scene tree instantiations with a static pre-allocated pool (24 reusable explosions and 24 reusable beam meshes), eliminating heap allocation stalls and node garbage collection spikes during dense combat volleys.
+* **Static Explosion & Lightning Pooling**: Replaced runtime dynamic scene tree instantiations with a static pre-allocated pool (24 reusable explosions and 48 reusable beam meshes), eliminating heap allocation stalls and node garbage collection spikes during dense combat volleys.
 * **Instantaneous Single-Pass AoE**: Replaced redundant physics Area3D collision sweeps and overlapping body queries with an instant synchronous calculation pass using static spatial caches (`EnemyBase.all_enemies`).
 * **Rapid AABB Pre-Filtering**: Checks 2D horizontal bounding box distance (`absf(dx) > r or absf(dz) > r`) to instantly discard ~95% of non-applicable enemies before computing squared distance, completely eliminating expensive `sqrt()` operations.
 * **Disabled Physics Area Monitoring**: Explosions and Bullets set `monitoring = false` and `monitorable = false`, removing hundreds of broadphase collision pairs from Godot's PhysicsServer.
@@ -219,7 +219,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets) (Max 2 stacks). |
-| **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets. **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
+| **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets (+2 targets per stack, max 4 stacks: up to 8 targets). Chains sequentially between enemies within 8.5m and can bounce back and forth between previously chained targets! **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce (Max 2 stacks). |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick (Max 3 stacks). |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage, gaining **5s of invulnerability**. Automatically **recharges after surviving 10 waves**! |
@@ -233,8 +233,16 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 * **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
 * **No Enemy Stunlock**: All player weapon, projectile, explosion, and lightning knockback on enemies has been removed. Enemies maintain their momentum and pursuit trajectories when damaged, preventing infinite stunlock exploits.
 
+### ⚡ Sequential Chain Lightning & Ping-Pong Bouncing
+With the **Tesla Arc Emitter** perk:
+* **Perk Stacking (Max 4 Stacks)**: Starts with 2 chain targets at Stack 1, adding +2 targets per stack up to a maximum of **8 chain targets** at Stack 4.
+* **Sequential Node-to-Node Arcs**: Lightning arcs sequentially from target to target within 8.5m rather than spreading as a flat radial fork.
+* **Must Chain to Another Enemy**: At every hop, the lightning bolt must target a different alive enemy (it cannot strike the current host twice consecutively).
+* **Previous Target Ping-Pong Bouncing**: The lightning is explicitly capable of arcing back to previously chained targets. If only 2 enemies (e.g. Boss and Minion, or two tough elites) are present, the lightning will bounce back and forth between them (A → B → A → B...) for the full target count!
+* **Crowd Prioritization**: In dense hordes, candidates with fewer chain hits are prioritized first before bouncing back to previously hit targets, ensuring optimal crowd dispersal while retaining focused single-target damage against small groups.
+
 ### ⚡ Plasma Core Exclusive: Tesla Supercharge Sequence
-When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk active, the weapon bypasses the standard 2-target limit with a unique 4-phase detonation sequence:
+When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk active, the weapon enhances lightning chaining with a unique 4-phase detonation sequence:
 1. **Plasma Impact**: The orb strikes a target or surface environment.
 2. **Radial Lightning Burst**: One lightning bolt is fired from the impact center to **EVERY** enemy inside the explosive blast radius (**5.0m base**, **7.5m with *Explosive Payload***). If 10 enemies are inside the radius, 10 lightning bolts fire simultaneously! This triggers **before** explosive AoE damage to maximize initial lightning targets.
 3. **Plasma AoE Detonation**: Direct hit and full Area-of-Effect explosive damage are dealt to the impact point and surrounding blast radius, eliminating weaker horde units.
