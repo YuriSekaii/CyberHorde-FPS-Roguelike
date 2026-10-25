@@ -13,7 +13,7 @@ var walk_anim_timer: float = 0.0
 const ATTACK_RANGE: float = 14.0
 const WINDUP_TIME: float = 0.85
 const LOCK_TIME: float = 0.28
-const CHARGE_SPEED: float = 24.0
+const CHARGE_SPEED: float = 30.0
 const STUN_DURATION: float = 3.5
 const CHARGE_COOLDOWN_TIME: float = 2.5
 const HIT_RADIUS: float = 2.2
@@ -181,7 +181,7 @@ func _process_charging(delta: float) -> void:
 	velocity.z = charge_direction.z * effective_charge_speed
 	
 	# Fast leg scramble
-	walk_anim_timer += delta * 24.0
+	walk_anim_timer += delta * effective_charge_speed
 	var leg_swing = sin(walk_anim_timer) * 35.0
 	if leg_fl: leg_fl.rotation_degrees.x = leg_swing
 	if leg_fr: leg_fr.rotation_degrees.x = -leg_swing

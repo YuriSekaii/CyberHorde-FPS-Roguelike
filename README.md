@@ -176,7 +176,7 @@ The HUD features custom cyberpunk vector icons positioned at the bottom-left dir
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m 3D sphere, $\le 1.8$m height) | ~45–55% | Decays every 5 waves |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing orb (25.0m) | 30.0% | Wave 3+, decays every 5 waves |
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
-| **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 24 m/s rush attack | ~4.0–4.25% | Wave 11+, wall crash causes 3.5s self-stun |
+| **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 30 m/s rush attack | ~4.0–4.25% | Wave 11+, wall crash causes 3.5s self-stun |
 | **Void Spawner** | 4,000.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns Spawnlings | 0.25% | Wave 20+, drops Loot Cache on defeat |
 | **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only** |
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
