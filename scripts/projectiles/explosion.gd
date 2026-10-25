@@ -20,9 +20,9 @@ const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 @onready var particles: GPUParticles3D = get_node_or_null("GPUParticles3D")
 @onready var light: OmniLight3D = get_node_or_null("OmniLight3D")
 
-static func spawn_explosion(parent: Node, pos: Vector3, dmg: float, rad: float) -> void:
+static func spawn_explosion(parent: Node, pos: Vector3, dmg: float, rad: float, attacker: Node = null) -> void:
 	# Deal instant synchronous damage via static cache
-	_deal_static_damage(pos, dmg, rad)
+	_deal_static_damage(pos, dmg, rad, attacker)
 	
 	# Find available pooled explosion visual
 	var exp_inst: Node = null
@@ -77,7 +77,7 @@ func _exit_tree() -> void:
 		active_explosion_lights = maxi(0, active_explosion_lights - 1)
 	explosion_pool.erase(self)
 
-static func _deal_static_damage(pos: Vector3, dmg: float, rad: float) -> void:
+static func _deal_static_damage(pos: Vector3, dmg: float, rad: float, attacker: Node = null) -> void:
 	if dmg <= 0.0:
 		return
 	var rad_sq = rad * rad
@@ -91,10 +91,11 @@ static func _deal_static_damage(pos: Vector3, dmg: float, rad: float) -> void:
 			continue
 		if pos.distance_squared_to(epos) <= rad_sq:
 			var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
+			var is_from_rogue = (attacker != null and attacker.get("player_class") == "rogue")
 			if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				enemy.rpc_take_damage.rpc(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
+				enemy.rpc_take_damage.rpc(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE, is_from_rogue)
 			elif enemy.has_method("take_damage"):
-				enemy.take_damage(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
+				enemy.take_damage(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE, attacker)
 			if not is_immune:
 				GameManager.record_damage(dmg, false)
 

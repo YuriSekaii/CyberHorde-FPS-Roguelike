@@ -47,15 +47,39 @@ var null_barrier_ready: bool = true
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
-# Dash Skill (Legendary Perk: Quantum Dash)
+# Class & Skill Specializations (Medic, Rogue, Gunner)
+var player_class: String = "medic"
+const MEDIC_COOLDOWN: float = 25.0
+const ROGUE_COOLDOWN: float = 10.0
+const GUNNER_COOLDOWN: float = 60.0
+const GUNNER_ACTIVE_DURATION: float = 5.0
+
+var skill_cooldown_timer: float = 0.0
+var skill_ready: bool = true
+
+# Rogue Active: Quantum Dash
 const DASH_TOTAL_DISTANCE: float = 15.0
 const DASH_DURATION: float = 0.15
-const DASH_COOLDOWN: float = 25.0
+const DASH_COOLDOWN: float = 10.0
 var is_dashing: bool = false
 var dash_timer: float = 0.0
-var dash_cooldown_timer: float = 0.0
-var dash_ready: bool = true
 var dash_direction: Vector3 = Vector3.ZERO
+var dash_cooldown_timer: float:
+	get: return skill_cooldown_timer
+	set(v): skill_cooldown_timer = v
+var dash_ready: bool:
+	get: return skill_ready
+	set(v): skill_ready = v
+
+# Gunner Active: Berserk Overdrive
+var is_gunner_active: bool = false
+var gunner_timer: float = 0.0
+var is_slayer_active: bool:
+	get: return is_gunner_active
+	set(v): is_gunner_active = v
+var slayer_timer: float:
+	get: return gunner_timer
+	set(v): gunner_timer = v
 
 # Head Bobbing & Shake
 var bob_time: float = 0.0
@@ -148,7 +172,7 @@ func _ready() -> void:
 	target_net_pos = global_position
 	target_net_rot_y = rotation.y
 
-func setup_peer(id: int) -> void:
+func setup_peer(id: int, p_class: String = "") -> void:
 	if not is_node_ready():
 		await ready
 	peer_id = id
@@ -161,6 +185,11 @@ func setup_peer(id: int) -> void:
 		is_me = true
 	elif id == multiplayer.get_unique_id():
 		is_me = true
+	
+	if not p_class.is_empty():
+		player_class = p_class
+	elif is_me:
+		player_class = GameManager.player_class
 	
 	if is_me:
 		is_local_player = true
@@ -177,9 +206,15 @@ func setup_peer(id: int) -> void:
 		third_person_model.visible = true
 		overhead_ui.visible = true
 		
-		# Set player armor colors
-		var p_color = Color(0, 0.95, 1.0) if id == 1 else Color(1.0, 0.5, 0.08)
-		name_label.text = "P1 [HOST]" if id == 1 else "P2 [ALLY]"
+		# Set player armor colors based on operative class
+		var p_color = Color(0.0, 1.0, 0.7) # Medic: mint green
+		if player_class == "rogue":
+			p_color = Color(1.0, 0.75, 0.1) # Rogue: gold/amber
+		elif player_class == "gunner" or player_class == "slayer":
+			p_color = Color(1.0, 0.2, 0.25) # Gunner: crimson
+		
+		var role_tag = "HOST" if id == 1 else "ALLY"
+		name_label.text = "P%d [%s • %s]" % [id, role_tag, player_class.to_upper()]
 		name_label.modulate = p_color
 		
 		var neon_mat = StandardMaterial3D.new()
@@ -287,8 +322,8 @@ func _update_stats() -> void:
 	if GameManager.null_barrier_unlocked and null_barrier_timer <= 0.0:
 		null_barrier_ready = true
 	
-	if GameManager.dash_unlocked and dash_cooldown_timer <= 0.0:
-		dash_ready = true
+	if skill_cooldown_timer <= 0.0:
+		skill_ready = true
 	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
@@ -358,14 +393,26 @@ func _physics_process(delta: float) -> void:
 			if is_local_player:
 				SoundManager.play("upgrade_select", 0.05, 1.8)
 	
-	# Dash cooldown timer (25s cooldown)
-	if dash_cooldown_timer > 0.0:
-		dash_cooldown_timer -= delta
-		if dash_cooldown_timer <= 0.0:
-			dash_cooldown_timer = 0.0
-			dash_ready = true
-			if is_local_player and GameManager.dash_unlocked:
+	# Class Skill cooldown timer
+	if skill_cooldown_timer > 0.0:
+		skill_cooldown_timer -= delta
+		if skill_cooldown_timer <= 0.0:
+			skill_cooldown_timer = 0.0
+			skill_ready = true
+			if is_local_player:
 				SoundManager.play("upgrade_select", 0.05, 1.8)
+	
+	# Slayer active duration timer (5s)
+	if is_slayer_active:
+		slayer_timer -= delta
+		if slayer_timer <= 0.0:
+			_end_slayer_skill()
+	
+	# Medic Passive: 5 HP/s regeneration across all players per active Medic (Stackable)
+	if not is_downed and current_health < max_health:
+		var total_medic_regen = _get_total_medic_regen()
+		if total_medic_regen > 0.0:
+			heal(total_medic_regen * delta)
 	
 	# Remote player interpolation
 	if not is_local_player:
@@ -416,7 +463,7 @@ func _handle_downed_state(delta: float) -> void:
 	move_and_slide()
 
 func _handle_movement(delta: float) -> void:
-	# Active dash state execution
+	# Active dash state execution (Rogue)
 	if is_dashing:
 		dash_timer -= delta
 		velocity = dash_direction * (DASH_TOTAL_DISTANCE / DASH_DURATION)
@@ -425,13 +472,13 @@ func _handle_movement(delta: float) -> void:
 			_end_dash()
 		return
 	
-	# Check Dash activation (Skill: Q)
-	if GameManager.dash_unlocked and not is_downed:
-		if Input.is_action_just_pressed("skill_dash"):
-			if dash_ready and dash_cooldown_timer <= 0.0 and not is_dashing:
-				_start_dash()
+	# Check Class Active Skill activation (Skill: Q)
+	if not is_downed:
+		if Input.is_action_just_pressed("skill_dash") or Input.is_action_just_pressed("skill_active"):
+			if skill_ready and skill_cooldown_timer <= 0.0 and not is_dashing and not is_slayer_active:
+				_activate_class_skill()
 				return
-			elif not is_dashing:
+			elif not is_dashing and not is_slayer_active:
 				SoundManager.play("empty_ammo", 0.1, -6.0)
 	
 	if not is_on_floor():
@@ -446,7 +493,10 @@ func _handle_movement(delta: float) -> void:
 		jump_buffer_timer -= delta
 	
 	if jump_buffer_timer > 0.0 and coyote_timer > 0.0:
-		velocity.y = JUMP_VELOCITY * (1.0 + (GameManager.speed_mult - 1.0) * 0.5)
+		var jump_spd = JUMP_VELOCITY * (1.0 + (GameManager.speed_mult - 1.0) * 0.5)
+		if player_class == "rogue":
+			jump_spd *= 1.25 # Rogue Passive: +25% MORE jump speed
+		velocity.y = jump_spd
 		coyote_timer = 0.0
 		jump_buffer_timer = 0.0
 	
@@ -458,6 +508,8 @@ func _handle_movement(delta: float) -> void:
 	
 	var is_sprinting = Input.is_action_pressed("sprint")
 	var target_speed = BASE_WALK_SPEED * GameManager.speed_mult
+	if player_class == "rogue":
+		target_speed *= 1.25 # Rogue Passive: +25% MORE movement speed
 	if is_sprinting:
 		target_speed *= SPRINT_MULTIPLIER
 	
@@ -522,11 +574,11 @@ func _handle_weapons(delta: float) -> void:
 				_fire_active_weapon()
 			return
 	
-	var wants_fire = Input.is_action_pressed("shoot") if (w.is_auto or w.charge_time > 0.0) else Input.is_action_just_pressed("shoot")
+	var wants_fire = Input.is_action_pressed("shoot") if (is_slayer_active or w.is_auto or w.charge_time > 0.0) else Input.is_action_just_pressed("shoot")
 	if wants_fire:
-		if w.current_ammo > 0:
+		if w.current_ammo > 0 or is_slayer_active:
 			if fire_cooldown <= 0.0:
-				if w.charge_time > 0.0:
+				if w.charge_time > 0.0 and not is_slayer_active:
 					_start_charge(w)
 				else:
 					_fire_active_weapon()
@@ -553,10 +605,12 @@ func _cancel_charge() -> void:
 
 func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
-	var effective_cooldown = maxf(0.05, w.fire_rate / GameManager.fire_rate_mult)
+	var slayer_fr_mult = 4.0 if is_slayer_active else 1.0
+	var effective_cooldown = maxf(0.02, w.fire_rate / (GameManager.fire_rate_mult * slayer_fr_mult))
 	fire_cooldown = effective_cooldown
 	_update_plasma_core_visual()
-	w.current_ammo -= 1
+	if not is_slayer_active:
+		w.current_ammo -= 1
 	ammo_changed.emit(w.current_ammo, w.max_ammo, false)
 	
 	SoundManager.play(w.sound_name, 0.08)
@@ -605,7 +659,8 @@ func _fire_active_weapon() -> void:
 		var spread_y = randf_range(-spread_angle, spread_angle)
 		var bullet_dir = (base_dir + camera.global_transform.basis.x * spread_x + camera.global_transform.basis.y * spread_y).normalized()
 		
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2, w.base_crit_chance)
+		var crit_bonus = 0.25 if (player_class == "gunner" or player_class == "slayer") else 0.0
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2, w.base_crit_chance + crit_bonus, self)
 	
 	# Notify squad of gunfire visual & sound
 	if NetworkManager.is_multiplayer:
@@ -811,6 +866,10 @@ func take_damage(amount: float) -> void:
 	if is_invulnerable or is_dashing:
 		return
 	
+	# Gunner Passive: take 10% more damage from all sources
+	if player_class == "gunner" or player_class == "slayer":
+		amount *= 1.10
+	
 	# Epic perk: Null Barrier (Every 10s, nullifies next instance of damage)
 	if GameManager.null_barrier_unlocked and null_barrier_ready:
 		null_barrier_ready = false
@@ -964,14 +1023,73 @@ func rpc_revive() -> void:
 	SoundManager.play("level_up", 0.2, 1.5)
 
 # ==============================================================================
-# DASH SKILL PROTOCOL (LEGENDARY PERK: QUANTUM DASH)
+# CLASS ACTIVE SKILLS & SPECIALIZATIONS
 # ==============================================================================
 
+func _get_total_medic_regen() -> float:
+	var medic_count: int = 0
+	var players = get_tree().get_nodes_in_group("player")
+	for p in players:
+		if is_instance_valid(p) and p.get("is_downed") == false and p.get("player_class") == "medic":
+			medic_count += 1
+	return float(medic_count) * 5.0
+
+func _spawn_floating_text(text_msg: String, color: Color) -> void:
+	var scene_root = get_tree().current_scene if get_tree() else get_parent()
+	if scene_root:
+		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
+		scene_root.add_child(dnum)
+		dnum.global_position = global_position + Vector3(0, 1.8, 0)
+		dnum.setup_text(text_msg, color)
+
+func _activate_class_skill() -> void:
+	match player_class:
+		"medic":
+			_activate_medic_skill()
+		"rogue":
+			_start_dash()
+		"gunner", "slayer":
+			_activate_gunner_skill()
+
+# --- MEDIC ACTIVE: EMERGENCY OVERDRIVE (25s cd) ---
+func _activate_medic_skill() -> void:
+	var cd = MEDIC_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_cooldown_timer = cd
+	skill_ready = false
+	if NetworkManager.is_multiplayer:
+		rpc_medic_active.rpc()
+	else:
+		_apply_medic_heal_all()
+	SoundManager.play("pickup_health", 0.2, 0.5)
+	SoundManager.play("shield_hit", 0.15, 2.0)
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_medic_active() -> void:
+	_apply_medic_heal_all()
+
+func _apply_medic_heal_all() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	for p in players:
+		if is_instance_valid(p):
+			if p.get("is_downed") == true and p.has_method("rpc_revive"):
+				p.rpc_revive()
+			else:
+				var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
+				p.heal(max_hp * 0.25)
+				if GameManager.shield_max > 0.0:
+					var s_add = GameManager.shield_max * 0.25
+					p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
+					GameManager.current_shield = p.current_shield
+					p.shield_changed.emit(p.current_shield, GameManager.shield_max)
+	_spawn_floating_text("+25% HP & SHIELD", Color(0.2, 1.0, 0.6))
+
+# --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
 	is_dashing = true
-	dash_ready = false
+	skill_ready = false
 	dash_timer = DASH_DURATION
-	dash_cooldown_timer = DASH_COOLDOWN
+	var cd = DASH_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_cooldown_timer = cd
 	
 	# Look direction: aim vector in 3D (allows dashing into sky, ground, or air)
 	var dir = -camera.global_transform.basis.z.normalized()
@@ -1004,6 +1122,45 @@ func _end_dash() -> void:
 	trigger_invulnerability(0.5)
 	var exit_speed = BASE_WALK_SPEED * GameManager.speed_mult
 	velocity = dash_direction * exit_speed
+
+# --- GUNNER ACTIVE: BERSERK OVERDRIVE (60s cd, 5s duration) ---
+func _activate_gunner_skill() -> void:
+	is_gunner_active = true
+	gunner_timer = GUNNER_ACTIVE_DURATION
+	var cd = GUNNER_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_cooldown_timer = cd
+	skill_ready = false
+	
+	if is_reloading:
+		is_reloading = false
+		reload_timer = 0.0
+	if is_charging:
+		_cancel_charge()
+	
+	SoundManager.play("level_up", 0.25, 0.6)
+	shake_intensity = 0.22
+	_spawn_floating_text("BERSERK OVERDRIVE!", Color(1.0, 0.2, 0.2))
+	
+	var cur_w = weapons[active_weapon_idx]
+	ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)
+
+func _end_gunner_skill() -> void:
+	is_gunner_active = false
+	gunner_timer = 0.0
+	# Reload all weapons after skill ends
+	for w in weapons:
+		w.current_ammo = w.max_ammo
+	is_reloading = false
+	reload_timer = 0.0
+	SoundManager.play("reload", 0.15, 0.0)
+	var cur_w = weapons[active_weapon_idx]
+	ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)
+
+func _activate_slayer_skill() -> void:
+	_activate_gunner_skill()
+
+func _end_slayer_skill() -> void:
+	_end_gunner_skill()
 
 func _create_dash_effect(pos: Vector3, dir: Vector3) -> void:
 	var scene_root = get_tree().current_scene if get_tree() else get_parent()

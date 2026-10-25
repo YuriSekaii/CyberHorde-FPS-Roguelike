@@ -76,8 +76,8 @@ func is_immune_to(damage_type: int) -> bool:
 	# Immune to ricochet, AoE (explosive), and chain lightning.
 	return damage_type != DAMAGE_TYPE_DIRECT
 
-func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
 	if damage_type != DAMAGE_TYPE_DIRECT:
 		_on_immune_hit(from_pos)
 		return
-	super.take_damage(amount, is_crit, from_pos, damage_type)
+	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)

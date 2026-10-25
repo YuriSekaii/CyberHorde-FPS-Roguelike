@@ -111,7 +111,7 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		if fire_cooldown <= 0.0 and not is_reloading:
 			if current_ammo > 0:
 				fire_cooldown = effective_cooldown
-				_fire_weapon(enemy_aim_pos, cur_weapon, assigned_weapon_idx == 2)
+				_fire_weapon(enemy_aim_pos, cur_weapon, assigned_weapon_idx == 2, player_ref)
 			else:
 				_start_reload(cur_weapon)
 	else:
@@ -149,7 +149,7 @@ func _find_target() -> void:
 				best = e
 	target_enemy = best
 
-func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
+func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null) -> void:
 	var aim_dir = (target_pos - global_position).normalized()
 	
 	# Consume magazine ammo
@@ -198,7 +198,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool) -> void:
 		# - Multi-Barrel Splitter (extra projectiles)
 		# - Extended Mag (same magazine capacity)
 		# - Rapid Loader (same reload speed)
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance, p_owner)
 	
 	if current_ammo <= 0:
 		_start_reload(w)

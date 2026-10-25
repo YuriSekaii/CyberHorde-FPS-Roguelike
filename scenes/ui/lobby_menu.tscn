@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
 
@@ -93,6 +93,114 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0, 0.6, 0.8, 0.3)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_medic"]
+bg_color = Color(0.03, 0.09, 0.07, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.95, 0.65, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_rogue"]
+bg_color = Color(0.09, 0.07, 0.03, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.8, 0.15, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_gunner"]
+bg_color = Color(0.1, 0.04, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.28, 0.35, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_medic"]
+bg_color = Color(0.06, 0.25, 0.17, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 1, 0.6, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_medic_hover"]
+bg_color = Color(0.1, 0.38, 0.24, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 1, 0.7, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_rogue"]
+bg_color = Color(0.24, 0.17, 0.04, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.82, 0.2, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_rogue_hover"]
+bg_color = Color(0.36, 0.25, 0.06, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.3, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_gunner"]
+bg_color = Color(0.25, 0.07, 0.1, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.3, 0.4, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_gunner_hover"]
+bg_color = Color(0.38, 0.1, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.45, 0.55, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -243,6 +351,35 @@ theme_override_font_sizes/font_size = 13
 text = "SQUAD MEMBERS (1):
  • Player 1 (Host) - READY"
 
+[node name="ClassContainer" type="HBoxContainer" parent="Panel/VBoxContainer/HostContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="ClassTitle" type="Label" parent="Panel/VBoxContainer/HostContainer/ClassContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "YOUR CLASS: "
+
+[node name="HostMedicBtn" type="Button" parent="Panel/VBoxContainer/HostContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✚ MEDIC"
+
+[node name="HostRogueBtn" type="Button" parent="Panel/VBoxContainer/HostContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚡ ROGUE"
+
+[node name="HostGunnerBtn" type="Button" parent="Panel/VBoxContainer/HostContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💀 GUNNER"
+
 [node name="StartSquadBtn" type="Button" parent="Panel/VBoxContainer/HostContainer"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -291,6 +428,35 @@ custom_minimum_size = Vector2(100, 36)
 layout_mode = 2
 text = "7777"
 alignment = 1
+
+[node name="ClassContainer" type="HBoxContainer" parent="Panel/VBoxContainer/JoinContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="ClassTitle" type="Label" parent="Panel/VBoxContainer/JoinContainer/ClassContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "YOUR CLASS: "
+
+[node name="JoinMedicBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "✚ MEDIC"
+
+[node name="JoinRogueBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚡ ROGUE"
+
+[node name="JoinGunnerBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer/ClassContainer"]
+custom_minimum_size = Vector2(85, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💀 GUNNER"
 
 [node name="ConnectBtn" type="Button" parent="Panel/VBoxContainer/JoinContainer"]
 custom_minimum_size = Vector2(0, 44)
@@ -463,6 +629,264 @@ theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
 theme_override_font_sizes/font_size = 13
 text = "← BACK TO MAIN MENU"
 
+[node name="ClassSelectContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ClassHeader" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "SELECT YOUR OPERATIVE CLASS"
+horizontal_alignment = 1
+
+[node name="ClassSubheader" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "Choose your combat specialty before deployment (Press 1, 2, or 3)"
+horizontal_alignment = 1
+
+[node name="CardsHBox" type="HBoxContainer" parent="Panel/VBoxContainer/ClassSelectContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="MedicCard" type="PanelContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox"]
+custom_minimum_size = Vector2(250, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_medic")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 22
+text = "✚ MEDIC"
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.9, 0.7, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ SQUAD SUPPORT & SUSTAIN ]"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="PassiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "PASSIVE: Nano-Regen"
+
+[node name="PassiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 0.9, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• All players have 5 HP/s regeneration.
+• Stackable across squad Medics (+5 HP/s per Medic in co-op)."
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="ActiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "ACTIVE [Q]: Cellular Restore (25s)"
+
+[node name="ActiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.95, 0.9, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• Instantly recovers 25% Shield and 25% HP to ALL players.
+• Revives downed squadmates.
+• 25s cooldown (12.5s with Cooldown Reduction)."
+autowrap_mode = 2
+
+[node name="MedicSelectBtn" type="Button" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 1, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_medic")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_medic_hover")
+text = "DEPLOY MEDIC (1)"
+
+[node name="RogueCard" type="PanelContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox"]
+custom_minimum_size = Vector2(250, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_rogue")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.15, 1)
+theme_override_font_sizes/font_size = 22
+text = "⚡ ROGUE"
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.5, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ MOBILITY & BOUNTY HARVEST ]"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="PassiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "PASSIVE: Bounty & Agility"
+
+[node name="PassiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.85, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• Enemies killed by me drop +300% more XP & Scrap (4× yield).
+• Gain +25% MORE movement speed and jump speed."
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="ActiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "ACTIVE [Q]: Quantum Dash (10s)"
+
+[node name="ActiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.95, 0.95, 0.85, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• Dash 15m in aim direction (sky/air capable).
+• Full invulnerability during dash + 0.5s after.
+• Rapid 10s cooldown (5s with Cooldown Reduction)."
+autowrap_mode = 2
+
+[node name="RogueSelectBtn" type="Button" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_rogue")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_rogue_hover")
+text = "DEPLOY ROGUE (2)"
+
+[node name="GunnerCard" type="PanelContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox"]
+custom_minimum_size = Vector2(250, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_gunner")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.35, 1)
+theme_override_font_sizes/font_size = 22
+text = "💀 GUNNER"
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 0.55, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ ASSAULT & CARNAGE DPS ]"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="PassiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "PASSIVE: Reckless Assault"
+
+[node name="PassiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.88, 0.88, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• +25% Critical Strike Chance across all weapons.
+• Suffer +10% more incoming damage from all sources."
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="ActiveTitle" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "ACTIVE [Q]: Berserk Protocol (60s)"
+
+[node name="ActiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.95, 0.88, 0.88, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• 5s: +300% Fire Rate & infinite ammo.
+• All weapons become fully automatic (hold to fire).
+• Plasma Core fires instantly without charging.
+• All weapons reload when skill ends. 60s cooldown (30s with CD perk)."
+autowrap_mode = 2
+
+[node name="GunnerSelectBtn" type="Button" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_gunner")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_gunner_hover")
+text = "DEPLOY GUNNER (3)"
+
+[node name="ClassBackBtn" type="Button" parent="Panel/VBoxContainer/ClassSelectContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
 [node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -498,3 +922,13 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossSoloBtn" to="." method="_on_deploy_boss_solo_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossHostBtn" to="." method="_on_deploy_boss_host_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/BossContainer/BossBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/MedicCard/Margin/VBox/MedicSelectBtn" to="." method="_on_medic_selected"]
+[connection signal="pressed" from="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox/RogueSelectBtn" to="." method="_on_rogue_selected"]
+[connection signal="pressed" from="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox/GunnerSelectBtn" to="." method="_on_gunner_selected"]
+[connection signal="pressed" from="Panel/VBoxContainer/ClassSelectContainer/ClassBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HostContainer/ClassContainer/HostMedicBtn" to="." method="_on_host_medic_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HostContainer/ClassContainer/HostRogueBtn" to="." method="_on_host_rogue_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HostContainer/ClassContainer/HostGunnerBtn" to="." method="_on_host_gunner_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinMedicBtn" to="." method="_on_join_medic_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinRogueBtn" to="." method="_on_join_rogue_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinGunnerBtn" to="." method="_on_join_gunner_pressed"]

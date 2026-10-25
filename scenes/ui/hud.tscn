@@ -413,6 +413,6 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(1, 1, 1, 0.45)
 theme_override_font_sizes/font_size = 12
-text = "[WASD] Move | [SPACE] Jump | [SHIFT] Sprint | [LMB] Shoot | [RMB] Aim | [R] Reload | [1-3] Switch | [E] Cache | [ESC] Menu"
+text = "[WASD] Move | [SPACE] Jump | [SHIFT] Sprint | [LMB] Shoot | [RMB] Aim | [R] Reload | [Q] Skill | [1-3] Switch | [E] Cache | [ESC] Menu"
 mouse_filter = 2
 horizontal_alignment = 1

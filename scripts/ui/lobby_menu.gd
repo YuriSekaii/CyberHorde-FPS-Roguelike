@@ -2,11 +2,24 @@ extends CanvasLayer
 
 signal mission_started()
 
+@onready var panel: Panel = $Panel
 @onready var main_buttons: VBoxContainer = $Panel/VBoxContainer/MainButtons
 @onready var host_container: VBoxContainer = $Panel/VBoxContainer/HostContainer
 @onready var join_container: VBoxContainer = $Panel/VBoxContainer/JoinContainer
 @onready var update_container: VBoxContainer = $Panel/VBoxContainer/UpdateContainer
 @onready var boss_container: VBoxContainer = $Panel/VBoxContainer/BossContainer
+@onready var class_select_container: VBoxContainer = $Panel/VBoxContainer/ClassSelectContainer
+
+@onready var host_class_medic: Button = get_node_or_null("Panel/VBoxContainer/HostContainer/ClassContainer/HostMedicBtn")
+@onready var host_class_rogue: Button = get_node_or_null("Panel/VBoxContainer/HostContainer/ClassContainer/HostRogueBtn")
+@onready var host_class_gunner: Button = get_node_or_null("Panel/VBoxContainer/HostContainer/ClassContainer/HostGunnerBtn")
+
+@onready var join_class_medic: Button = get_node_or_null("Panel/VBoxContainer/JoinContainer/ClassContainer/JoinMedicBtn")
+@onready var join_class_rogue: Button = get_node_or_null("Panel/VBoxContainer/JoinContainer/ClassContainer/JoinRogueBtn")
+@onready var join_class_gunner: Button = get_node_or_null("Panel/VBoxContainer/JoinContainer/ClassContainer/JoinGunnerBtn")
+
+enum ClassSelectTarget { SOLO, BOSS_SOLO }
+var pending_class_target: ClassSelectTarget = ClassSelectTarget.SOLO
 
 @onready var status_label: Label = $Panel/VBoxContainer/StatusLabel
 @onready var host_ip_label: Label = $Panel/VBoxContainer/HostContainer/HostIPLabel
@@ -44,6 +57,7 @@ func _ready() -> void:
 	NetworkManager.connection_status_changed.connect(_on_status_changed)
 	NetworkManager.peer_connected_signal.connect(_on_peers_updated)
 	NetworkManager.peer_disconnected_signal.connect(_on_peers_updated)
+	NetworkManager.peer_class_updated.connect(_on_peer_class_updated)
 	
 	UpdateManager.check_completed.connect(_on_update_check_completed)
 	UpdateManager.update_completed.connect(_on_update_completed)
@@ -60,6 +74,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible and event is InputEventKey and event.pressed and not event.echo:
 		var focus_owner = get_viewport().gui_get_focus_owner()
 		if not (focus_owner is LineEdit or focus_owner is TextEdit):
+			if class_select_container and class_select_container.visible:
+				if event.keycode == KEY_1 or event.physical_keycode == KEY_1:
+					_on_medic_selected()
+					get_viewport().set_input_as_handled()
+					return
+				elif event.keycode == KEY_2 or event.physical_keycode == KEY_2:
+					_on_rogue_selected()
+					get_viewport().set_input_as_handled()
+					return
+				elif event.keycode == KEY_3 or event.physical_keycode == KEY_3:
+					_on_gunner_selected()
+					get_viewport().set_input_as_handled()
+					return
+				elif event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE:
+					_on_back_pressed()
+					get_viewport().set_input_as_handled()
+					return
+			
 			if event.keycode == KEY_M or event.physical_keycode == KEY_M:
 				_on_window_mode_pressed()
 				get_viewport().set_input_as_handled()
@@ -68,21 +100,40 @@ func _update_footer_version() -> void:
 	if version_footer:
 		version_footer.text = "CyberHorde • Build %s • branch: %s" % [UpdateManager.current_commit_hash, UpdateManager.current_branch_name]
 
+func _set_panel_width(w: float) -> void:
+	if panel:
+		panel.custom_minimum_size.x = w
+		panel.offset_left = -w * 0.5
+		panel.offset_right = w * 0.5
+
 func _show_main_view() -> void:
+	_set_panel_width(520.0)
 	main_buttons.visible = true
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = false
 	if boss_container:
 		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = false
 	status_label.text = "Select deployment mode."
 	_update_footer_version()
 
+func _show_class_select(target: ClassSelectTarget) -> void:
+	pending_class_target = target
+	main_buttons.visible = false
+	host_container.visible = false
+	join_container.visible = false
+	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = true
+	_set_panel_width(840.0)
+	status_label.text = "Select your operative combat specialty before deploying into the CyberHorde."
+
 func _on_solo_pressed() -> void:
-	GameManager.reset_game()
-	NetworkManager.start_singleplayer()
-	visible = false
-	mission_started.emit()
+	_show_class_select(ClassSelectTarget.SOLO)
 
 func _on_host_menu_pressed() -> void:
 	GameManager.reset_game()
@@ -92,11 +143,15 @@ func _on_host_menu_pressed() -> void:
 	update_container.visible = false
 	if boss_container:
 		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = false
+	_set_panel_width(520.0)
 	
 	var local_ip = NetworkManager.get_local_ip()
 	host_ip_label.text = "YOUR LOCAL IP: %s" % local_ip
 	var port = int(host_port_input.text) if host_port_input.text.is_valid_int() else 7777
 	NetworkManager.start_host(port)
+	_update_class_button_highlights()
 	_update_peer_list()
 
 func _on_join_menu_pressed() -> void:
@@ -107,6 +162,10 @@ func _on_join_menu_pressed() -> void:
 	update_container.visible = false
 	if boss_container:
 		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = false
+	_set_panel_width(520.0)
+	_update_class_button_highlights()
 	status_label.text = "Enter Host IP and Port, then click Connect."
 
 func _on_connect_pressed() -> void:
@@ -242,10 +301,7 @@ func _on_deploy_boss_solo_pressed() -> void:
 		boss_status_label.set("theme_override_colors/font_color", Color(0.2, 1.0, 0.5))
 		boss_status_label.text = "✓ ACCESS GRANTED! PREPARING APEX OVERLORD BATTLE..."
 		SoundManager.play("level_up", 0.2, 0.0)
-		GameManager.setup_boss_battle_mode()
-		NetworkManager.start_singleplayer()
-		visible = false
-		mission_started.emit()
+		_show_class_select(ClassSelectTarget.BOSS_SOLO)
 	else:
 		boss_status_label.set("theme_override_colors/font_color", Color(1.0, 0.3, 0.3))
 		boss_status_label.text = "❌ ACCESS DENIED: INVALID AUTHORIZATION KEY"
@@ -284,15 +340,77 @@ func _update_peer_list() -> void:
 	var peers = NetworkManager.connected_peers
 	var text = "SQUAD MEMBERS (%d):\n" % peers.size()
 	for p in peers:
+		var c = NetworkManager.get_player_class(p).to_upper()
 		if p == 1:
-			text += " • Player 1 (Host) - READY\n"
+			text += " • Player 1 (Host) [%s] - READY\n" % c
 		else:
-			text += " • Player %d (Ally) - CONNECTED\n" % p
+			text += " • Player %d (Ally) [%s] - CONNECTED\n" % [p, c]
 	peer_list_label.text = text
 	
 	if NetworkManager.is_server:
 		start_squad_btn.disabled = false
 		start_squad_btn.text = "LAUNCH SQUAD MISSION (%d PLAYERS)" % peers.size()
+
+func _on_medic_selected() -> void:
+	_select_and_launch("medic")
+
+func _on_rogue_selected() -> void:
+	_select_and_launch("rogue")
+
+func _on_gunner_selected() -> void:
+	_select_and_launch("gunner")
+
+func _select_and_launch(chosen_class: String) -> void:
+	NetworkManager.set_local_class(chosen_class)
+	SoundManager.play("upgrade_select", 0.1, 0.0)
+	visible = false
+	if pending_class_target == ClassSelectTarget.BOSS_SOLO:
+		GameManager.setup_boss_battle_mode()
+	else:
+		GameManager.reset_game()
+	NetworkManager.start_singleplayer()
+	mission_started.emit()
+
+func _on_host_medic_pressed() -> void:
+	NetworkManager.set_local_class("medic")
+	_update_class_button_highlights()
+	_update_peer_list()
+
+func _on_host_rogue_pressed() -> void:
+	NetworkManager.set_local_class("rogue")
+	_update_class_button_highlights()
+	_update_peer_list()
+
+func _on_host_gunner_pressed() -> void:
+	NetworkManager.set_local_class("gunner")
+	_update_class_button_highlights()
+	_update_peer_list()
+
+func _on_join_medic_pressed() -> void:
+	NetworkManager.set_local_class("medic")
+	_update_class_button_highlights()
+
+func _on_join_rogue_pressed() -> void:
+	NetworkManager.set_local_class("rogue")
+	_update_class_button_highlights()
+
+func _on_join_gunner_pressed() -> void:
+	NetworkManager.set_local_class("gunner")
+	_update_class_button_highlights()
+
+func _on_peer_class_updated(_peer_id: int, _new_class: String) -> void:
+	_update_peer_list()
+	_update_class_button_highlights()
+
+func _update_class_button_highlights() -> void:
+	var cur_class = GameManager.player_class
+	var dim = Color(0.65, 0.65, 0.65, 0.8)
+	if host_class_medic: host_class_medic.modulate = Color(0.2, 1.0, 0.7) if cur_class == "medic" else dim
+	if host_class_rogue: host_class_rogue.modulate = Color(1.0, 0.85, 0.2) if cur_class == "rogue" else dim
+	if host_class_gunner: host_class_gunner.modulate = Color(1.0, 0.35, 0.4) if (cur_class == "gunner" or cur_class == "slayer") else dim
+	if join_class_medic: join_class_medic.modulate = Color(0.2, 1.0, 0.7) if cur_class == "medic" else dim
+	if join_class_rogue: join_class_rogue.modulate = Color(1.0, 0.85, 0.2) if cur_class == "rogue" else dim
+	if join_class_gunner: join_class_gunner.modulate = Color(1.0, 0.35, 0.4) if (cur_class == "gunner" or cur_class == "slayer") else dim
 
 func _update_window_mode_btn() -> void:
 	if window_mode_btn:

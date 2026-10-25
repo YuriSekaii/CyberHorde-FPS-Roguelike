@@ -17,6 +17,7 @@ var bounces_left: int = 0
 var already_hit: Array[Node] = []
 var crit_chance: float = 0.10
 var is_ricochet: bool = false
+var shooter: Node = null
 
 # Dynamic bullet visual threshold tracking
 static var active_bullets: Array[Node] = []
@@ -206,11 +207,12 @@ func _setup_plasma_visuals() -> void:
 			active_bullet_lights += 1
 			has_light = true
 
-func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10) -> void:
+func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10, p_shooter: Node = null) -> void:
 	direction = dir.normalized()
 	base_damage = dmg
 	is_explosive = explosive or GameManager.explosive_rounds
 	is_plasma = from_plasma
+	shooter = p_shooter
 	crit_chance = base_crit + (GameManager.crit_chance - 0.10)
 	if is_plasma:
 		speed = PLASMA_SPEED
@@ -339,11 +341,12 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		else:
 			var hit_dmg_type = EnemyBase.DAMAGE_TYPE_RICOCHET if is_ricochet else EnemyBase.DAMAGE_TYPE_DIRECT
 			var is_immune = collider.has_method("is_immune_to") and collider.is_immune_to(hit_dmg_type)
+			var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 			
 			if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position, hit_dmg_type)
+				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position, hit_dmg_type, is_from_rogue)
 			elif collider.has_method("take_damage"):
-				collider.take_damage(final_dmg, is_crit, global_position, hit_dmg_type)
+				collider.take_damage(final_dmg, is_crit, global_position, hit_dmg_type, shooter)
 			
 			if not is_immune:
 				GameManager.record_damage(final_dmg, is_crit)
@@ -447,7 +450,7 @@ func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 		var aoe_dmg = initial_hit_dmg if is_plasma else (initial_hit_dmg * 0.8)
 		var parent = get_parent()
 		if parent:
-			ExplosionScript.spawn_explosion(parent, pos, aoe_dmg, rad)
+			ExplosionScript.spawn_explosion(parent, pos, aoe_dmg, rad, shooter)
 
 func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct_enemy: Node, is_direct_crit: bool) -> void:
 	var explode_rad = 5.0 * (1.5 if GameManager.explosive_rounds else 1.0)
@@ -472,10 +475,11 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 				var is_crit = randf() < crit_chance
 				var bolt_dmg = chain_base_dmg * (GameManager.crit_damage if is_crit else 1.0)
 				var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+				var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-					enemy.rpc_take_damage.rpc(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+					enemy.rpc_take_damage.rpc(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, is_from_rogue)
 				elif enemy.has_method("take_damage"):
-					enemy.take_damage(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+					enemy.take_damage(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, shooter)
 				
 				if not is_immune:
 					GameManager.record_damage(bolt_dmg, is_crit)
@@ -545,10 +549,11 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 			var chain_is_crit = randf() < crit_chance
 			var chain_dmg = chain_base_dmg * (GameManager.crit_damage if chain_is_crit else 1.0)
 			var is_target_immune = best_cand.has_method("is_immune_to") and best_cand.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+			var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 			if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				best_cand.rpc_take_damage.rpc(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+				best_cand.rpc_take_damage.rpc(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, is_from_rogue)
 			elif best_cand.has_method("take_damage"):
-				best_cand.take_damage(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+				best_cand.take_damage(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, shooter)
 			
 			if not is_target_immune:
 				GameManager.record_damage(chain_dmg, chain_is_crit)
@@ -618,10 +623,11 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, init
 		var is_crit = randf() < crit_chance
 		var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
 		var is_target_immune = best_cand.has_method("is_immune_to") and best_cand.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+		var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 		if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-			best_cand.rpc_take_damage.rpc(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+			best_cand.rpc_take_damage.rpc(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, is_from_rogue)
 		elif best_cand.has_method("take_damage"):
-			best_cand.take_damage(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+			best_cand.take_damage(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING, shooter)
 		
 		if not is_target_immune:
 			GameManager.record_damage(final_dmg, is_crit)

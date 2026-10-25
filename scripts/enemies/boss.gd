@@ -147,12 +147,12 @@ func _apply_wave_scaling() -> void:
 	var reduction_tier: int = int(wave_num / 10)
 	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.50)
 
-func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT) -> void:
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
 	# Damage mitigation during cinematic transitions
 	if current_stage == BossStage.STAGE_2_TRANSITION or current_stage == BossStage.STAGE_3_TRANSITION:
 		amount *= 0.25
 	
-	super.take_damage(amount, is_crit, from_pos, damage_type)
+	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 	
 	if not is_dead:
 		GameManager.boss_health_updated.emit(current_health, max_health)
@@ -736,8 +736,10 @@ func die() -> void:
 	death_exp.setup(0.0, 10.0)
 	
 	# Generous rewards
-	GameManager.add_xp(800)
-	GameManager.add_scrap(500)
+	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
+	var loot_mult: float = 4.0 if is_rogue_kill else 1.0
+	GameManager.add_xp(int(800 * loot_mult))
+	GameManager.add_scrap(int(500 * loot_mult))
 	GameManager.record_kill(enemy_name)
 	
 	for i in range(4):

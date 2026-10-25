@@ -17,6 +17,7 @@ var retarget_timer: float = 0.0
 var attack_speed_mult: float = 1.0
 var wave_speed_mult: float = 1.0
 var damage_reduction: float = 0.0
+var last_hit_by_rogue: bool = false
 var _is_flashing: bool = false
 static var _last_hit_sound_msec: int = 0
 static var all_enemies: Array[Node] = []
@@ -122,12 +123,18 @@ func _on_immune_hit(_from_pos: Vector3) -> void:
 		dnum.setup_text("IMMUNE", Color(0.3, 0.85, 1.0))
 
 @rpc("any_peer", "call_local", "reliable")
-func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
-	take_damage(amount, is_crit, from_pos, damage_type)
+func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT, is_rogue_src: bool = false) -> void:
+	take_damage(amount, is_crit, from_pos, damage_type, is_rogue_src)
 
-func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
 	if is_dead:
 		return
+	
+	if killer_source != null:
+		if killer_source is Node:
+			last_hit_by_rogue = (killer_source.get("player_class") == "rogue")
+		elif killer_source is bool:
+			last_hit_by_rogue = killer_source
 	
 	if is_immune_to(damage_type):
 		_on_immune_hit(from_pos)
@@ -186,18 +193,27 @@ func die() -> void:
 	queue_free()
 
 func _drop_loot() -> void:
+	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
+	var loot_mult: float = 4.0 if is_rogue_kill else 1.0 # 300% more = 4x value
+	
+	if is_rogue_kill and GameManager.show_damage_numbers:
+		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
+		get_parent().call_deferred("add_child", dnum)
+		dnum.global_position = global_position + Vector3(0, 1.8, 0)
+		dnum.setup_text("+300% BOUNTY", Color(1.0, 0.85, 0.1))
+	
 	# 1. Drop XP Gem
 	var xp = LOOT_SCENE.instantiate()
 	get_parent().call_deferred("add_child", xp)
 	xp.global_position = global_position + Vector3(0, 0.5, 0)
-	xp.setup(0, xp_reward)
+	xp.setup(0, int(xp_reward * loot_mult))
 	
 	# 2. Chance of Scrap
-	if randf() < 0.45:
+	if randf() < 0.45 or is_rogue_kill:
 		var scrap = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", scrap)
 		scrap.global_position = global_position + Vector3(0, 0.5, 0)
-		scrap.setup(2, scrap_reward)
+		scrap.setup(2, int(scrap_reward * loot_mult))
 	
 	# 3. Chance of Health Stim
 	var health_chance = 0.12

@@ -6,6 +6,7 @@ extends Node
 signal connection_status_changed(status_text: String)
 signal peer_connected_signal(peer_id: int)
 signal peer_disconnected_signal(peer_id: int)
+signal peer_class_updated(peer_id: int, new_class: String)
 signal game_started()
 signal game_reset_signal()
 signal mission_toast(message: String)
@@ -45,7 +46,7 @@ func start_singleplayer() -> void:
 	is_server = true
 	local_peer_id = 1
 	connected_peers = [1]
-	players_info[1] = {"name": "Player 1", "color": Color(0, 0.95, 1.0)}
+	players_info[1] = {"name": "Player 1", "color": Color(0, 0.95, 1.0), "class": GameManager.player_class}
 
 func start_host(port: int = 7777) -> Error:
 	cleanup_network()
@@ -63,7 +64,7 @@ func start_host(port: int = 7777) -> Error:
 	is_server = true
 	local_peer_id = 1
 	connected_peers = [1]
-	players_info[1] = {"name": "Host (P1)", "color": Color(0, 0.95, 1.0)}
+	players_info[1] = {"name": "Host (P1)", "color": Color(0, 0.95, 1.0), "class": GameManager.player_class}
 	
 	var local_ip = get_local_ip()
 	connection_status_changed.emit("Hosting co-op on %s:%d. Waiting for teammates..." % [local_ip, server_port])
@@ -106,8 +107,13 @@ func _on_peer_connected(peer_id: int) -> void:
 	var p_name = "Player %d" % peer_id if peer_id != 1 else "Host"
 	players_info[peer_id] = {
 		"name": p_name,
-		"color": Color(1.0, 0.5, 0.08) if peer_id != 1 else Color(0, 0.95, 1.0)
+		"color": Color(1.0, 0.5, 0.08) if peer_id != 1 else Color(0, 0.95, 1.0),
+		"class": "medic"
 	}
+	
+	# Broadcast own class to new peer
+	if is_multiplayer:
+		rpc_set_player_class.rpc(local_peer_id, GameManager.player_class)
 	
 	connection_status_changed.emit("Player %d joined the squad!" % peer_id)
 	peer_connected_signal.emit(peer_id)
@@ -144,3 +150,28 @@ func rpc_start_game() -> void:
 @rpc("call_local", "reliable")
 func rpc_toast(message: String) -> void:
 	mission_toast.emit(message)
+
+func set_local_class(p_class: String) -> void:
+	GameManager.player_class = p_class
+	if not players_info.has(local_peer_id):
+		players_info[local_peer_id] = {}
+	players_info[local_peer_id]["class"] = p_class
+	peer_class_updated.emit(local_peer_id, p_class)
+	if is_multiplayer:
+		rpc_set_player_class.rpc(local_peer_id, p_class)
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_set_player_class(peer_id: int, p_class: String) -> void:
+	if not players_info.has(peer_id):
+		players_info[peer_id] = {}
+	players_info[peer_id]["class"] = p_class
+	peer_class_updated.emit(peer_id, p_class)
+
+func get_player_class(peer_id: int) -> String:
+	return players_info.get(peer_id, {}).get("class", GameManager.player_class)
+
+func get_all_classes() -> Dictionary:
+	var res: Dictionary = {}
+	for p_id in connected_peers:
+		res[p_id] = get_player_class(p_id)
+	return res

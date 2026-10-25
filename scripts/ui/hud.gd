@@ -21,6 +21,7 @@ extends CanvasLayer
 @onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
 @onready var null_barrier_label: Label = get_node_or_null("BottomLeft/NullBarrierLabel")
 @onready var dash_label: Label = get_node_or_null("BottomLeft/DashLabel")
+var class_label: Label = null
 
 var local_player: Node = null
 var hitmarker_timer: float = 0.0
@@ -43,9 +44,28 @@ func _ready() -> void:
 	_update_xp_display(GameManager.player_xp, GameManager.xp_to_next_level)
 	_update_level_display(GameManager.player_level)
 	_update_scrap_display(GameManager.scrap)
+	
+	var bottom_left = get_node_or_null("BottomLeft")
+	if bottom_left:
+		class_label = Label.new()
+		class_label.name = "ClassLabel"
+		class_label.set("theme_override_font_sizes/font_size", 13)
+		class_label.text = "[CLASS: %s]" % GameManager.player_class.to_upper()
+		bottom_left.add_child(class_label)
+		bottom_left.move_child(class_label, 0)
 
 func connect_player(player: Node) -> void:
 	local_player = player
+	if class_label and is_instance_valid(player):
+		var p_cls_val = player.get("player_class")
+		var c_name = String(p_cls_val if p_cls_val != null else "medic").to_upper()
+		class_label.text = "[CLASS: %s]" % c_name
+		if c_name == "MEDIC":
+			class_label.modulate = Color(0.2, 1.0, 0.7)
+		elif c_name == "ROGUE":
+			class_label.modulate = Color(1.0, 0.85, 0.2)
+		elif c_name == "GUNNER" or c_name == "SLAYER":
+			class_label.modulate = Color(1.0, 0.3, 0.35)
 	if player.has_signal("health_changed"):
 		player.health_changed.connect(_on_health_changed)
 	if player.has_signal("shield_changed"):
@@ -95,22 +115,46 @@ func _process(delta: float) -> void:
 			null_barrier_label.visible = false
 	
 	if dash_label:
-		if GameManager.dash_unlocked:
-			dash_label.visible = true
-			if local_player and is_instance_valid(local_player):
-				if local_player.get("is_dashing") == true:
-					dash_label.text = "[Q - DASH: ACTIVE]"
-					dash_label.modulate = Color(0.3, 1.0, 0.5, 1.0)
-				elif local_player.get("dash_ready") == true:
-					dash_label.text = "[Q - DASH: READY]"
-					dash_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
-				else:
-					var timer_val = local_player.get("dash_cooldown_timer")
-					var sec_left: float = float(timer_val) if timer_val != null else 0.0
-					dash_label.text = "[Q - DASH: %.1fs]" % sec_left
-					dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
-		else:
-			dash_label.visible = false
+		dash_label.visible = true
+		if local_player and is_instance_valid(local_player):
+			var p_cls_val = local_player.get("player_class")
+			var p_class = String(p_cls_val if p_cls_val != null else "medic").to_lower()
+			var timer_val = local_player.get("skill_cooldown_timer")
+			var sec_left: float = float(timer_val) if timer_val != null else 0.0
+			var is_ready = (local_player.get("skill_ready") == true) and (sec_left <= 0.0)
+			
+			match p_class:
+				"medic":
+					if is_ready:
+						dash_label.text = "[Q - RESTORE: READY]"
+						dash_label.modulate = Color(0.2, 1.0, 0.7, 1.0)
+					else:
+						dash_label.text = "[Q - RESTORE: %.1fs]" % sec_left
+						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
+				"rogue":
+					if local_player.get("is_dashing") == true:
+						dash_label.text = "[Q - DASH: ACTIVE]"
+						dash_label.modulate = Color(0.3, 1.0, 0.5, 1.0)
+					elif is_ready:
+						dash_label.text = "[Q - DASH: READY]"
+						dash_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
+					else:
+						dash_label.text = "[Q - DASH: %.1fs]" % sec_left
+						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
+				"gunner", "slayer":
+					if local_player.get("is_gunner_active") == true or local_player.get("is_slayer_active") == true:
+						var dur_val = local_player.get("gunner_timer")
+						if dur_val == null:
+							dur_val = local_player.get("slayer_timer")
+						var dur_left: float = float(dur_val) if dur_val != null else 0.0
+						dash_label.text = "[Q - BERSERK: %.1fs ACTIVE]" % dur_left
+						dash_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
+					elif is_ready:
+						dash_label.text = "[Q - BERSERK: READY]"
+						dash_label.modulate = Color(1.0, 0.45, 0.3, 1.0)
+					else:
+						dash_label.text = "[Q - BERSERK: %.1fs]" % sec_left
+						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp
@@ -124,6 +168,11 @@ func _on_shield_changed(current: float, max_shield: float) -> void:
 	shield_label.text = "SHIELD: %d / %d" % [int(current), int(max_shield)]
 
 func _on_ammo_changed(current: int, max_mag: int, is_reloading: bool) -> void:
+	if local_player and is_instance_valid(local_player) and (local_player.get("is_gunner_active") == true or local_player.get("is_slayer_active") == true):
+		ammo_label.text = "∞ / ∞"
+		ammo_label.modulate = Color(1.0, 0.3, 0.3)
+		reload_label.visible = false
+		return
 	ammo_label.text = "%d / %d" % [current, max_mag]
 	reload_label.visible = is_reloading
 	if is_reloading:

@@ -63,7 +63,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
 | **Revive Ally** | `E` (hold 2s) | Within 3m of downed squadmate |
-| **Quantum Dash** | `Q` | 15m directional dash with invulnerability (requires perk, 25s cd) |
+| **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
 | **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
 | **Pause Menu** | `Escape` | Audio volume, mouse sensitivity, display options |
@@ -93,6 +93,21 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 ### Weapon Mechanics Notes
 * **Plasma Core Charge Cycle**: Requires holding `LMB` for at least 0.18s before releasing to fire. Releasing early cancels without ammo cost or cooldown. The core glow shifts to Warning Red during cooldown/reload, popping to Neon Purple when ready.
 * **Tesla Arc Emitter Synergy**: When firing the Plasma Core with Tesla Arc Emitter, a radial lightning bolt strikes **every enemy** in the explosive radius before detonation, and each bolt then chains outward up to 8.5m.
+
+---
+
+## 🎖️ Operative Classes & Specializations
+
+When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses 1 of 3 combat classes featuring distinct passives and active abilities triggered via `Q`:
+
+| Class | Accent | Role | Passive Specialization | Active Skill (`Q`) |
+| :--- | :---: | :--- | :--- | :--- |
+| **Medic** | Neon Mint | Support & Sustain | **Nano-Regen**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). | **Cellular Restore** (25s cd): Instantly recovers 25% Max Shield and 25% Max HP to ALL players, and revives downed squadmates. |
+| **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed and jump speed**. | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer). Sky/air capable. |
+| **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **+300% MORE fire rate** and **unlimited magazine**. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons reload to full magazine when the skill ends. |
+
+> [!NOTE]
+> The Legendary perk **Cooldown Reduction** reduces your class active skill cooldown by **50%** (Medic: 12.5s, Rogue: 5.0s, Gunner: 30.0s). In co-op, players can pick identical or complementary classes; multiple Medics stack HP/s aura regeneration for the entire squad.
 
 ---
 
@@ -132,7 +147,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion & chain lightning per bounce | 2 |
 | **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 fire rate, inherits perks) | 3 |
 | **Emergency Defibrillator**| `Legendary`| Prevents fatal damage + 5s invulnerability. Recharges every 10 waves | 1 |
-| **Quantum Dash** | `Legendary`| Unlocks `Q` active skill: 15m directional dash with invulnerability (+0.5s buffer), 25s cd | 1 |
+| **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
 
 ---
 
