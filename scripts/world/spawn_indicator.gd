@@ -109,6 +109,13 @@ func _apply_theme() -> void:
 		var cyl = pillar.mesh.duplicate() as CylinderMesh
 		cyl.top_radius = base_radius
 		cyl.bottom_radius = base_radius
+		if type_id == 5:
+			# Void Spawner spawns in the sky: extend holographic beacon from ground to sky portal
+			cyl.height = 9.0
+			pillar.position.y = -4.25
+		else:
+			cyl.height = 3.5
+			pillar.position.y = 1.75
 		pillar.mesh = cyl
 	
 	if ring_mat:

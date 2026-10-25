@@ -28,7 +28,8 @@ func _ready() -> void:
 				return
 	
 	active_pickups.append(self)
-	initial_y = global_position.y
+	# If dropped from high in the sky (e.g. flying Void Spawner), tumble down to arena ground
+	initial_y = 0.5 if global_position.y > 4.5 else global_position.y
 	bob_timer = randf() * TAU
 	velocity = Vector3(
 		randf_range(-2.0, 2.0),

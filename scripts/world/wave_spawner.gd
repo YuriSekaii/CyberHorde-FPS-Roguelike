@@ -181,6 +181,9 @@ func _spawn_one_enemy() -> void:
 	else:
 		type_id = _select_enemy_type(current_wave)
 		spawn_pos = _find_valid_spawn_pos(ref_player, players)
+		if type_id == 5:
+			# Void Spawner spawns directly in the sky at high altitude
+			spawn_pos.y = 8.5
 	
 	# Enqueue pending spawn
 	pending_spawns.append({
@@ -330,6 +333,7 @@ func _instantiate_enemy(type_id: int, spawn_pos: Vector3, net_name: String) -> v
 	
 	var enemy = enemy_scene.instantiate()
 	enemy.name = net_name
+	enemy.position = spawn_pos
 	get_parent().add_child(enemy)
 	enemy.global_position = spawn_pos
 	active_enemies.append(enemy)

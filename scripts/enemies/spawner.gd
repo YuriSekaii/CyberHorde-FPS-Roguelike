@@ -24,6 +24,9 @@ func _ready() -> void:
 	super._ready()
 	strafe_dir = 1.0 if randf() > 0.5 else -1.0
 	spawn_timer = randf_range(1.0, 1.75) if GameManager.current_wave >= 50 else randf_range(2.0, 3.5)
+	# Spawner spawns directly in the sky at preferred aerial altitude
+	if global_position.y < PREFERRED_HEIGHT * 0.7:
+		global_position.y = PREFERRED_HEIGHT
 
 func _behave(delta: float) -> void:
 	wing_timer += delta
