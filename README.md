@@ -147,7 +147,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 | Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag Size | Reload Time | Base Crit | AoE / Effect |
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
-| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Close-quarters shotgun spread |
+| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters shotgun spread (0.0825 spread) |
 | **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30 shot/s (3.33s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
@@ -155,7 +155,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
    - 32-round magazine, 0.12s fire rate (8.3 shots/sec), 22.0 base damage, 10% base crit chance, crisp suppressive fire.
 2. **Scatter Cannon (`Key 2`)**:
    - Heavy close-quarters shotgun blasting 12 pellets simultaneously with punchy recoil and screen kick.
-   - 18.0 damage per pellet (216 base burst damage), 8-round magazine, 0.65s fire rate, 5% base crit chance.
+   - 18.0 damage per pellet (216 base burst damage), 8-round magazine, 0.65s fire rate, 5% base crit chance, wide 0.0825 spread cone (+10% wider dispersion).
 3. **Plasma Core (`Key 3`)**:
    - High-yield heavy energy launcher firing concentrated plasma orbs.
    - **0.30 shot/s Fire Rate with Hold-to-Charge & Release-to-Fire Mechanic**:
