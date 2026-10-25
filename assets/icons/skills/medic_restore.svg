@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="medicBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#081816"/>
+      <stop offset="100%" stop-color="#030b0a"/>
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#33ffc2"/>
+      <stop offset="50%" stop-color="#00e699"/>
+      <stop offset="100%" stop-color="#00a86b"/>
+    </linearGradient>
+    <linearGradient id="glowRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffb3" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#008055" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base Plate -->
+  <rect width="128" height="128" rx="22" fill="url(#medicBg)"/>
+  <rect width="124" height="124" x="2" y="2" rx="20" fill="none" stroke="#00ffb3" stroke-width="2" stroke-opacity="0.6"/>
+
+  <!-- Tech Corner Accents -->
+  <path d="M 12 28 L 12 16 L 28 16" fill="none" stroke="#00ffb3" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 116 28 L 116 16 L 100 16" fill="none" stroke="#00ffb3" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 12 100 L 12 112 L 28 112" fill="none" stroke="#00ffb3" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 116 100 L 116 112 L 100 112" fill="none" stroke="#00ffb3" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Outer Tech Reticle Arc Segments -->
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#00e6a8" stroke-width="2" stroke-dasharray="24 14" opacity="0.45"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="#00ffb3" stroke-width="1.5" stroke-dasharray="6 22" opacity="0.3"/>
+
+  <!-- Glowing Health Cross Base -->
+  <g filter="url(#glow)">
+    <!-- Vertical Bar -->
+    <rect x="52" y="24" width="24" height="80" rx="6" fill="url(#crossGrad)"/>
+    <!-- Horizontal Bar -->
+    <rect x="24" y="52" width="80" height="24" rx="6" fill="url(#crossGrad)"/>
+    <!-- Cross Inner Highlight Core -->
+    <rect x="56" y="28" width="16" height="72" rx="4" fill="#aaffea" opacity="0.35"/>
+    <rect x="28" y="56" width="72" height="16" rx="4" fill="#aaffea" opacity="0.35"/>
+  </g>
+
+  <!-- Central Energy Core Diamond -->
+  <polygon points="64,46 82,64 64,82 46,64" fill="#ffffff" opacity="0.95"/>
+  <polygon points="64,52 76,64 64,76 52,64" fill="#00ffb3"/>
+
+  <!-- Nanite Pulse Heartbeat Wave -->
+  <path d="M 20 64 L 42 64 L 50 48 L 58 80 L 66 52 L 74 74 L 82 64 L 108 64" 
+        fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
+
+  <!-- Subtle Nanite Sparks -->
+  <circle cx="34" cy="34" r="2.5" fill="#00ffb3" opacity="0.8"/>
+  <circle cx="94" cy="34" r="2.5" fill="#00ffb3" opacity="0.8"/>
+  <circle cx="34" cy="94" r="2.5" fill="#00ffb3" opacity="0.8"/>
+  <circle cx="94" cy="94" r="2.5" fill="#00ffb3" opacity="0.8"/>
+</svg>

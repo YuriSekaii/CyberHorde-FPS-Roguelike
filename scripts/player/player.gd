@@ -59,7 +59,16 @@ const GUNNER_COOLDOWN: float = 60.0
 const GUNNER_ACTIVE_DURATION: float = 5.0
 
 var skill_cooldown_timer: float = 0.0
+var skill_max_cooldown: float = 10.0
 var skill_ready: bool = true
+
+func get_skill_max_cooldown() -> float:
+	var mult = GameManager.get_skill_cooldown_mult()
+	match player_class:
+		"medic": return MEDIC_COOLDOWN * mult
+		"rogue": return DASH_COOLDOWN * mult
+		"gunner", "slayer": return GUNNER_COOLDOWN * mult
+		_: return 10.0 * mult
 
 # Rogue Active: Quantum Dash
 const DASH_TOTAL_DISTANCE: float = 15.0
@@ -307,6 +316,7 @@ func _update_stats() -> void:
 	if current_shield < GameManager.current_shield:
 		current_shield = GameManager.current_shield
 	current_shield = minf(current_shield, GameManager.shield_max)
+	skill_max_cooldown = get_skill_max_cooldown()
 	
 	var rogue_reload_mult: float = 1.25 if player_class == "rogue" else 1.0
 	for w in weapons:
@@ -1074,6 +1084,7 @@ func _activate_class_skill() -> void:
 # --- MEDIC ACTIVE: CELLULAR RESTORE (20s cd) ---
 func _activate_medic_skill() -> void:
 	var cd = MEDIC_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
 	skill_ready = false
 	if NetworkManager.is_multiplayer:
@@ -1109,6 +1120,7 @@ func _start_dash() -> void:
 	skill_ready = false
 	dash_timer = DASH_DURATION
 	var cd = DASH_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
 	
 	# Rogue Active: Instantly reload all weapons (and companion drones)
@@ -1167,6 +1179,7 @@ func _activate_gunner_skill() -> void:
 	is_gunner_active = true
 	gunner_timer = GUNNER_ACTIVE_DURATION
 	var cd = GUNNER_COOLDOWN * GameManager.get_skill_cooldown_mult()
+	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
 	skill_ready = false
 	

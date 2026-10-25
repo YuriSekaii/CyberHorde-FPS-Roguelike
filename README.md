@@ -109,6 +109,13 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 > [!NOTE]
 > The Legendary perk **Cooldown Reduction** reduces your class active skill cooldown by **50%** (Medic: 10.0s, Rogue: 5.0s, Gunner: 30.0s). In co-op, players can pick identical or complementary classes; multiple Medics stack HP/s aura regeneration for the entire squad.
 
+### 🎯 Active Skill HUD & Cooldown System
+The HUD features custom cyberpunk vector icons positioned at the bottom-left directly below the health bar:
+* **Medic**: Cellular Restore (`medic_restore.svg`, Neon Mint cross & nanite ECG wave)
+* **Rogue**: Quantum Dash (`rogue_dash.svg`, Neon Amber quantum thrusters & velocity chevrons)
+* **Gunner**: Berserk Protocol (`gunner_berserk.svg`, Neon Crimson cyber skull & crossed minigun barrels)
+* **Dynamic Radial Cooldown Wipe**: When activated into cooldown, the icon turns completely black and regains vibrant color in a clockwise radial sweep as cooldown progresses to 100% readiness, accompanied by live numeric countdown overlays and pulsating active state animations.
+
 ---
 
 ## 🧬 Roguelike Upgrades System

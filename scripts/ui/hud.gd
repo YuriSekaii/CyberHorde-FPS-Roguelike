@@ -21,6 +21,19 @@ extends CanvasLayer
 @onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
 @onready var null_barrier_label: Label = get_node_or_null("BottomLeft/NullBarrierLabel")
 @onready var dash_label: Label = get_node_or_null("BottomLeft/DashLabel")
+@onready var skill_container: Control = get_node_or_null("BottomLeft/SkillContainer")
+@onready var skill_icon: TextureRect = get_node_or_null("BottomLeft/SkillContainer/IconFrame/SkillIcon")
+@onready var skill_icon_border: Panel = get_node_or_null("BottomLeft/SkillContainer/IconFrame/IconBorder")
+@onready var skill_cooldown_label: Label = get_node_or_null("BottomLeft/SkillContainer/IconFrame/CooldownLabel")
+@onready var skill_name_label: Label = get_node_or_null("BottomLeft/SkillContainer/SkillDetails/SkillNameLabel")
+@onready var skill_status_label: Label = get_node_or_null("BottomLeft/SkillContainer/SkillDetails/SkillStatusLabel")
+
+const ICON_MEDIC = preload("res://assets/icons/skills/medic_restore.svg")
+const ICON_ROGUE = preload("res://assets/icons/skills/rogue_dash.svg")
+const ICON_GUNNER = preload("res://assets/icons/skills/gunner_berserk.svg")
+
+var current_displayed_class: String = ""
+var skill_pulse_timer: float = 0.0
 var class_label: Label = null
 
 var local_player: Node = null
@@ -45,6 +58,10 @@ func _ready() -> void:
 	_update_level_display(GameManager.player_level)
 	_update_scrap_display(GameManager.scrap)
 	
+	if skill_icon and skill_icon.material:
+		skill_icon.material = skill_icon.material.duplicate()
+	_update_skill_display_class(GameManager.player_class)
+	
 	var bottom_left = get_node_or_null("BottomLeft")
 	if bottom_left:
 		class_label = Label.new()
@@ -56,6 +73,10 @@ func _ready() -> void:
 
 func connect_player(player: Node) -> void:
 	local_player = player
+	if is_instance_valid(player):
+		var p_cls_val = player.get("player_class")
+		if p_cls_val != null:
+			_update_skill_display_class(String(p_cls_val))
 	if class_label and is_instance_valid(player):
 		var p_cls_val = player.get("player_class")
 		var c_name = String(p_cls_val if p_cls_val != null else "medic").to_upper()
@@ -115,46 +136,169 @@ func _process(delta: float) -> void:
 			null_barrier_label.visible = false
 	
 	if dash_label:
-		dash_label.visible = true
-		if local_player and is_instance_valid(local_player):
-			var p_cls_val = local_player.get("player_class")
-			var p_class = String(p_cls_val if p_cls_val != null else "medic").to_lower()
-			var timer_val = local_player.get("skill_cooldown_timer")
-			var sec_left: float = float(timer_val) if timer_val != null else 0.0
-			var is_ready = (local_player.get("skill_ready") == true) and (sec_left <= 0.0)
-			
-			match p_class:
-				"medic":
-					if is_ready:
-						dash_label.text = "[Q - RESTORE: READY]"
-						dash_label.modulate = Color(0.2, 1.0, 0.7, 1.0)
-					else:
-						dash_label.text = "[Q - RESTORE: %.1fs]" % sec_left
-						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
-				"rogue":
-					if local_player.get("is_dashing") == true:
-						dash_label.text = "[Q - DASH: ACTIVE]"
-						dash_label.modulate = Color(0.3, 1.0, 0.5, 1.0)
-					elif is_ready:
-						dash_label.text = "[Q - DASH: READY]"
-						dash_label.modulate = Color(1.0, 0.85, 0.2, 1.0)
-					else:
-						dash_label.text = "[Q - DASH: %.1fs]" % sec_left
-						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
-				"gunner", "slayer":
-					if local_player.get("is_gunner_active") == true or local_player.get("is_slayer_active") == true:
-						var dur_val = local_player.get("gunner_timer")
-						if dur_val == null:
-							dur_val = local_player.get("slayer_timer")
-						var dur_left: float = float(dur_val) if dur_val != null else 0.0
-						dash_label.text = "[Q - BERSERK: %.1fs ACTIVE]" % dur_left
-						dash_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
-					elif is_ready:
-						dash_label.text = "[Q - BERSERK: READY]"
-						dash_label.modulate = Color(1.0, 0.45, 0.3, 1.0)
-					else:
-						dash_label.text = "[Q - BERSERK: %.1fs]" % sec_left
-						dash_label.modulate = Color(0.7, 0.7, 0.7, 0.6)
+		dash_label.visible = false
+	
+	skill_pulse_timer += delta
+	_update_skill_hud()
+
+func _update_skill_display_class(p_class: String) -> void:
+	var c = p_class.to_lower()
+	if c == current_displayed_class and skill_icon and skill_icon.texture != null:
+		return
+	current_displayed_class = c
+	
+	if not skill_container:
+		return
+		
+	var theme_col = Color(0.2, 1.0, 0.7)
+	var icon_tex = ICON_MEDIC
+	var s_name = "CELLULAR RESTORE"
+	
+	match c:
+		"medic":
+			theme_col = Color(0.2, 1.0, 0.7)
+			icon_tex = ICON_MEDIC
+			s_name = "CELLULAR RESTORE"
+		"rogue":
+			theme_col = Color(1.0, 0.85, 0.2)
+			icon_tex = ICON_ROGUE
+			s_name = "QUANTUM DASH"
+		"gunner", "slayer":
+			theme_col = Color(1.0, 0.3, 0.35)
+			icon_tex = ICON_GUNNER
+			s_name = "BERSERK PROTOCOL"
+	
+	if skill_icon:
+		skill_icon.texture = icon_tex
+		if skill_icon.material is ShaderMaterial:
+			skill_icon.material.set_shader_parameter("border_color", theme_col)
+	if skill_name_label:
+		skill_name_label.text = s_name
+		skill_name_label.modulate = theme_col
+
+func _update_skill_hud() -> void:
+	if not skill_container:
+		return
+	
+	var p_class = GameManager.player_class.to_lower()
+	var sec_left: float = 0.0
+	var max_cd: float = 10.0
+	var is_ready: bool = true
+	var is_active: bool = false
+	var active_dur: float = 0.0
+	
+	if local_player and is_instance_valid(local_player):
+		var p_cls_val = local_player.get("player_class")
+		if p_cls_val != null:
+			p_class = String(p_cls_val).to_lower()
+		
+		var timer_val = local_player.get("skill_cooldown_timer")
+		sec_left = float(timer_val) if timer_val != null else 0.0
+		is_ready = (local_player.get("skill_ready") == true) and (sec_left <= 0.0)
+		
+		if local_player.has_method("get_skill_max_cooldown"):
+			max_cd = local_player.get_skill_max_cooldown()
+		else:
+			var m_cd_val = local_player.get("skill_max_cooldown")
+			max_cd = float(m_cd_val) if m_cd_val != null else 10.0
+		if max_cd <= 0.01:
+			max_cd = 10.0
+		
+		match p_class:
+			"medic":
+				pass
+			"rogue":
+				if local_player.get("is_dashing") == true:
+					is_active = true
+					var d_dur = local_player.get("dash_timer")
+					active_dur = float(d_dur) if d_dur != null else 0.15
+			"gunner", "slayer":
+				if local_player.get("is_gunner_active") == true or local_player.get("is_slayer_active") == true:
+					is_active = true
+					var dur_val = local_player.get("gunner_timer")
+					if dur_val == null:
+						dur_val = local_player.get("slayer_timer")
+					active_dur = float(dur_val) if dur_val != null else 0.0
+	
+	_update_skill_display_class(p_class)
+	
+	var theme_col = Color(0.2, 1.0, 0.7)
+	match p_class:
+		"medic": theme_col = Color(0.2, 1.0, 0.7)
+		"rogue": theme_col = Color(1.0, 0.85, 0.2)
+		"gunner", "slayer": theme_col = Color(1.0, 0.3, 0.35)
+	
+	var mat = skill_icon.material as ShaderMaterial if skill_icon else null
+	
+	if is_active:
+		if mat:
+			mat.set_shader_parameter("is_active", true)
+			mat.set_shader_parameter("pulse_time", skill_pulse_timer)
+			mat.set_shader_parameter("progress", 1.0)
+			mat.set_shader_parameter("border_color", theme_col)
+		
+		if skill_cooldown_label:
+			skill_cooldown_label.visible = true
+			skill_cooldown_label.text = "%.1fs" % maxf(0.0, active_dur)
+			skill_cooldown_label.modulate = Color(1.0, 0.35, 0.35) if p_class != "rogue" else Color(0.4, 1.0, 0.6)
+		
+		if skill_status_label:
+			skill_status_label.text = "[ACTIVE: %.1fs]" % maxf(0.0, active_dur)
+			skill_status_label.modulate = Color(1.0, 0.35, 0.35) if p_class != "rogue" else Color(0.4, 1.0, 0.6)
+		
+		_set_icon_border_color(theme_col, true)
+	elif is_ready:
+		if mat:
+			mat.set_shader_parameter("is_active", false)
+			mat.set_shader_parameter("progress", 1.0)
+			mat.set_shader_parameter("border_color", theme_col)
+		
+		if skill_cooldown_label:
+			skill_cooldown_label.visible = false
+			skill_cooldown_label.text = ""
+		
+		if skill_status_label:
+			skill_status_label.text = "[READY]"
+			skill_status_label.modulate = theme_col
+		
+		_set_icon_border_color(theme_col, false)
+	else:
+		# Cooldown in progress:
+		# progress: 0.0 (just started, whole black) -> 1.0 (recovering color clockwise)
+		var progress: float = clampf(1.0 - (sec_left / max_cd), 0.0, 1.0)
+		if mat:
+			mat.set_shader_parameter("is_active", false)
+			mat.set_shader_parameter("progress", progress)
+			mat.set_shader_parameter("border_color", theme_col)
+		
+		if skill_cooldown_label:
+			skill_cooldown_label.visible = true
+			if sec_left >= 10.0:
+				skill_cooldown_label.text = "%.0fs" % sec_left
+			else:
+				skill_cooldown_label.text = "%.1fs" % sec_left
+			skill_cooldown_label.modulate = Color(1.0, 1.0, 1.0, 0.95)
+		
+		if skill_status_label:
+			skill_status_label.text = "[COOLDOWN: %.1fs]" % sec_left
+			skill_status_label.modulate = Color(0.7, 0.7, 0.75, 0.7)
+		
+		_set_icon_border_color(Color(0.25, 0.28, 0.35, 0.5), false)
+
+func _set_icon_border_color(color: Color, pulsing: bool) -> void:
+	if not skill_icon_border:
+		return
+	var sb = skill_icon_border.get_theme_stylebox("panel")
+	if sb is StyleBoxFlat:
+		if not skill_icon_border.has_meta("unique_style"):
+			sb = sb.duplicate()
+			skill_icon_border.add_theme_stylebox_override("panel", sb)
+			skill_icon_border.set_meta("unique_style", true)
+		if pulsing:
+			var pulse_val = 0.65 + 0.35 * sin(skill_pulse_timer * 12.0)
+			sb.border_color = Color(color.r, color.g, color.b, pulse_val)
+		else:
+			sb.border_color = color
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.max_value = max_hp

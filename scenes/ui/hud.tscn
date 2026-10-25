@@ -1,6 +1,47 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Shader" path="res://assets/shaders/skill_cooldown.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" path="res://assets/icons/skills/medic_restore.svg" id="3_medic_icon"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_skill"]
+shader = ExtResource("2_shader")
+shader_parameter/progress = 1.0
+shader_parameter/cooldown_color = Color(0.02, 0.02, 0.03, 0.98)
+shader_parameter/border_color = Color(0.2, 1, 0.7, 1)
+shader_parameter/is_active = false
+shader_parameter/pulse_time = 0.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_skill_bg"]
+bg_color = Color(0.04, 0.05, 0.08, 0.92)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_skill_border"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 1, 0.7, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_key_badge"]
+bg_color = Color(0.07, 0.09, 0.13, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.45, 0.55, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
 bg_color = Color(0.1, 0.1, 0.14, 0.7)
@@ -293,8 +334,8 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = -145.0
-offset_right = 308.0
+offset_top = -225.0
+offset_right = 320.0
 offset_bottom = -28.0
 grow_vertical = 0
 mouse_filter = 2
@@ -349,6 +390,103 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "[NULL BARRIER: READY]"
+
+[node name="SkillContainer" type="HBoxContainer" parent="BottomLeft"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="IconFrame" type="Control" parent="BottomLeft/SkillContainer"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="IconBg" type="Panel" parent="BottomLeft/SkillContainer/IconFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_skill_bg")
+
+[node name="SkillIcon" type="TextureRect" parent="BottomLeft/SkillContainer/IconFrame"]
+material = SubResource("ShaderMaterial_skill")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_medic_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IconBorder" type="Panel" parent="BottomLeft/SkillContainer/IconFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_skill_border")
+
+[node name="KeyBadge" type="PanelContainer" parent="BottomLeft/SkillContainer/IconFrame"]
+layout_mode = 1
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 17.0
+offset_bottom = 17.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_key_badge")
+
+[node name="KeyLabel" type="Label" parent="BottomLeft/SkillContainer/IconFrame/KeyBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "Q"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CooldownLabel" type="Label" parent="BottomLeft/SkillContainer/IconFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SkillDetails" type="VBoxContainer" parent="BottomLeft/SkillContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="SkillNameLabel" type="Label" parent="BottomLeft/SkillContainer/SkillDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "CELLULAR RESTORE"
+mouse_filter = 2
+
+[node name="SkillStatusLabel" type="Label" parent="BottomLeft/SkillContainer/SkillDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "[READY]"
+mouse_filter = 2
 
 [node name="DashLabel" type="Label" parent="BottomLeft"]
 visible = false
