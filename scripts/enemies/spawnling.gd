@@ -34,7 +34,7 @@ func _behave(delta: float) -> void:
 	
 	# Fast aerial homing flight
 	var effective_speed = speed * slow_multiplier
-	velocity = dir * effective_speed + knockback_velocity
+	velocity = dir * effective_speed
 	
 	move_and_slide()
 	

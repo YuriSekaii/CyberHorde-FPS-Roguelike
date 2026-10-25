@@ -41,8 +41,11 @@ func _behave(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, target_rot, 6.0 * delta)
 		
 		var effective_speed = speed * slow_multiplier
-		velocity.x = dir.x * effective_speed + knockback_velocity.x * 0.3
-		velocity.z = dir.z * effective_speed + knockback_velocity.z * 0.3
+		velocity.x = dir.x * effective_speed
+		velocity.z = dir.z * effective_speed
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
 	
 	move_and_slide()
 	

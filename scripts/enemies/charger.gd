@@ -82,8 +82,8 @@ func _process_stalking(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, target_rot, 7.0 * delta)
 		
 		var effective_speed = speed * slow_multiplier
-		velocity.x = dir.x * effective_speed + knockback_velocity.x * 0.4
-		velocity.z = dir.z * effective_speed + knockback_velocity.z * 0.4
+		velocity.x = dir.x * effective_speed
+		velocity.z = dir.z * effective_speed
 		
 		# Animate 4 legs
 		walk_anim_timer += delta * effective_speed * 2.2

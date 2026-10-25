@@ -435,14 +435,14 @@ func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 	if is_explosive:
 		var rad = GameManager.explosion_radius
 		if is_plasma:
-			rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
+			rad = 5.0 * (1.5 if GameManager.explosive_rounds else 1.0)
 		var aoe_dmg = initial_hit_dmg if is_plasma else (initial_hit_dmg * 0.8)
 		var parent = get_parent()
 		if parent:
 			ExplosionScript.spawn_explosion(parent, pos, aoe_dmg, rad)
 
 func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct_enemy: Node, is_direct_crit: bool) -> void:
-	var explode_rad = 5.0 * (2.0 if GameManager.explosive_rounds else 1.0)
+	var explode_rad = 5.0 * (1.5 if GameManager.explosive_rounds else 1.0)
 	var explode_rad_sq = explode_rad * explode_rad
 	var chain_base_dmg = impact_dmg * 0.5
 	

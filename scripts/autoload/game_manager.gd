@@ -146,7 +146,7 @@ var upgrade_database: Dictionary = {
 	"explosive_payload": {
 		"id": "explosive_payload",
 		"name": "Explosive Payload",
-		"desc": "Bullets explode on impact. Plasma Core gains +100% AoE radius!",
+		"desc": "Bullets explode on impact. Plasma Core gains +50% AoE radius!",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 1

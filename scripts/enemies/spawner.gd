@@ -67,8 +67,8 @@ func _behave(delta: float) -> void:
 	
 	move_vec += right_dir * strafe_dir * (effective_speed * 0.75)
 	
-	velocity.x = move_vec.x + knockback_velocity.x * 0.2
-	velocity.z = move_vec.z + knockback_velocity.z * 0.2
+	velocity.x = move_vec.x
+	velocity.z = move_vec.z
 	
 	move_and_slide()
 	

@@ -148,7 +148,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
 | **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters shotgun spread (0.0825 spread) |
-| **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30 shot/s (3.33s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
+| **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30 shot/s (3.33s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (7.5m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
@@ -171,7 +171,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
      - Features multi-layered visual geometry: outer pulsing translucent magenta plasma sphere (0.9m diameter), electric cyan containment ring, and blinding white-hot dense energy core.
      - Equipped with an expansive **hitbox (0.75m radius + enemy collision radius = ~2.5m effective capture width)** with continuous swept-volume detection, effortlessly plowing through and impacting enemies even on near-misses while safely passing terrain corners without snagging.
    - **High Concussive Recoil**: Unleashes massive gun kickback, +13° muzzle pitch lift, camera vertical recoil, screen trauma shake (0.38 intensity), and a backward propulsion impulse.
-   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 3.33s cooldown (+ 0.18s charge windup), 2.0s reload time, 25% base crit chance.
+   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (7.5m with *Explosive Payload*), 3.33s cooldown (+ 0.18s charge windup), 2.0s reload time, 25% base crit chance.
    - **Exclusive Tesla Arc Synergy**: When paired with **Tesla Arc Emitter**, strikes *every* enemy in its explosive radius before detonating, and each arc chains outward to alive enemies within 8.5m!
 
 ---
@@ -215,7 +215,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Vampiric Siphon** | `Rare` (Purple) | Instantly restores +4 HP whenever an enemy is slain. |
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
-| **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (5.0m → 10.0m). |
+| **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +50% AoE radius** (5.0m → 7.5m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets) (Max 2 stacks). |
@@ -231,11 +231,12 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 * **Direct Hit Crits**: Every projectile rolls against its weapon's **Critical Strike Chance** (10% for Pulse Carbine, 5% for Scatter Cannon, 25% for Plasma Core, augmented by +10% per stack of *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
 * **Explosive Damage**: Explosive damage is **calculated from the initial hit damage** (100% of hit damage for Plasma Core: 150 base direct + 150 base AoE; 80% for perk-granted bullet explosions).
 * **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
+* **No Enemy Stunlock**: All player weapon, projectile, explosion, and lightning knockback on enemies has been removed. Enemies maintain their momentum and pursuit trajectories when damaged, preventing infinite stunlock exploits.
 
 ### ⚡ Plasma Core Exclusive: Tesla Supercharge Sequence
 When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk active, the weapon bypasses the standard 2-target limit with a unique 4-phase detonation sequence:
 1. **Plasma Impact**: The orb strikes a target or surface environment.
-2. **Radial Lightning Burst**: One lightning bolt is fired from the impact center to **EVERY** enemy inside the explosive blast radius (**5.0m base**, **10.0m with *Explosive Payload***). If 10 enemies are inside the radius, 10 lightning bolts fire simultaneously! This triggers **before** explosive AoE damage to maximize initial lightning targets.
+2. **Radial Lightning Burst**: One lightning bolt is fired from the impact center to **EVERY** enemy inside the explosive blast radius (**5.0m base**, **7.5m with *Explosive Payload***). If 10 enemies are inside the radius, 10 lightning bolts fire simultaneously! This triggers **before** explosive AoE damage to maximize initial lightning targets.
 3. **Plasma AoE Detonation**: Direct hit and full Area-of-Effect explosive damage are dealt to the impact point and surrounding blast radius, eliminating weaker horde units.
 4. **Outward Secondary Chain**: Each of the lightning bolts from Step 2 chains outward to another **alive enemy within 8.5m**! Against tough survivors or bosses, multiple arcs focus onto remaining threats. (Inherits *Cryo Rounds* chills and independent crit checks).
 
@@ -266,7 +267,7 @@ Hordes scale progressively to challenge late-game builds:
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing threats that charge in and slam the ground creating shockwaves and knockback!
+3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP**. Spawns with reduced frequency (14.4% weight) to serve as imposing threats that charge in and slam the ground creating shockwaves and knockback on players!
 4. **Cyber Chargers**: Four-legged cybernetic bull beasts introduced after **Wave 10** (rarer than Brutes). Stalks slowly toward players until within 14m, winds up while pawing the ground, flashes bright red as it locks your location, and rockets forward in a straight line at 24 m/s! Deals 48 heavy damage on contact and travels until impacting an arena wall/pillar, triggering a heavy collision and stunning itself for 3.5 seconds with dizzy sparks.
 5. **Void Spawners**: Colossal floating behemoths with massive biomechanical wings and a giant agape mouth housing an active cosmic portal, introduced in **Wave 20** as chaotic tank mini-bosses (**2,000 base HP**). Has no concurrent spawn limit, allowing multiple spawners to create high-intensity aerial swarms simultaneously! Has no direct attack; instead, periodically ejects Cyber Spawnlings out of its portal mouth. When defeated, drops an interactive **Loot Cache (Upgrade Box)** with free upgrade card rewards!
 6. **Cyber Spawnlings**: Fragile aerial interceptors with fluttering wings, a rear flaming thruster booster, and two hanging talons. Its body is a high-speed spinning drill bit. Possessing the **lowest health in the game (14 base HP)**, it homes directly onto players and deals small rapid continuous damage (2.5 damage every 0.15s) with intense grinding sparks when connected.

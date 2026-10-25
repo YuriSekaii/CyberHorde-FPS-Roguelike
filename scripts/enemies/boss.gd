@@ -342,8 +342,8 @@ func _process_stage_1(delta: float) -> void:
 		return
 	
 	# Normal pursuit
-	velocity.x = dir.x * eff_speed + knockback_velocity.x * 0.15
-	velocity.z = dir.z * eff_speed + knockback_velocity.z * 0.15
+	velocity.x = dir.x * eff_speed
+	velocity.z = dir.z * eff_speed
 	move_and_slide()
 	
 	# Occasional projectile if player is too far (low dmg)

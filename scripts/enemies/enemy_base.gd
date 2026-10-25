@@ -13,7 +13,6 @@ var target_player: CharacterBody3D = null
 var is_dead: bool = false
 var slow_timer: float = 0.0
 var slow_multiplier: float = 1.0
-var knockback_velocity: Vector3 = Vector3.ZERO
 var retarget_timer: float = 0.0
 var attack_speed_mult: float = 1.0
 var damage_reduction: float = 0.0
@@ -93,10 +92,6 @@ func _physics_process(delta: float) -> void:
 		if slow_timer <= 0.0:
 			slow_multiplier = 1.0
 	
-	# Handle knockback decay
-	if knockback_velocity.length_squared() > 0.01:
-		knockback_velocity = knockback_velocity.move_toward(Vector3.ZERO, 30.0 * delta)
-	
 	_behave(delta)
 
 func _behave(_delta: float) -> void:
@@ -131,11 +126,6 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	
 	# Flash mesh white/red
 	_flash_hit()
-	
-	# Apply knockback
-	var knock_dir = (global_position - from_pos).normalized()
-	knock_dir.y = 0.2
-	knockback_velocity += knock_dir.normalized() * (6.0 if is_crit else 3.5)
 	
 	if current_health <= 0:
 		die()

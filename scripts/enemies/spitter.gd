@@ -41,8 +41,8 @@ func _behave(delta: float) -> void:
 	# Strafe sideways
 	move_vec += right_dir * strafe_dir * (effective_speed * 0.7)
 	
-	velocity.x = move_vec.x + knockback_velocity.x
-	velocity.z = move_vec.z + knockback_velocity.z
+	velocity.x = move_vec.x
+	velocity.z = move_vec.z
 	
 	move_and_slide()
 	
