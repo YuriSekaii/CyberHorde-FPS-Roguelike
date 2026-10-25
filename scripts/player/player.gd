@@ -878,16 +878,21 @@ func _handle_teammate_revive(delta: float) -> void:
 		if downed_teammate.revive_prompt:
 			downed_teammate.revive_prompt.visible = true
 		
+		# Medic Passive: Revive downed teammates twice as fast (1.0s vs 2.0s)
+		var revive_speed: float = 2.0 if player_class == "medic" else 1.0
 		if Input.is_action_pressed("interact"):
-			revive_progress += delta
-			downed_teammate.revive_prompt.text = "REVIVING SQUADMATE... %d%%" % int((revive_progress / 2.0) * 100.0)
+			revive_progress += delta * revive_speed
+			var pct = int(clampf((revive_progress / 2.0) * 100.0, 0.0, 100.0))
+			if downed_teammate.revive_prompt:
+				downed_teammate.revive_prompt.text = "REVIVING SQUADMATE... %d%%" % pct
 			if revive_progress >= 2.0:
 				revive_progress = 0.0
 				downed_teammate.rpc_revive.rpc()
 				SoundManager.play("level_up", 0.2, 1.5)
 		else:
 			revive_progress = maxf(0.0, revive_progress - delta * 2.0)
-			downed_teammate.revive_prompt.text = "[HOLD E TO REVIVE]"
+			if downed_teammate.revive_prompt:
+				downed_teammate.revive_prompt.text = "[HOLD E TO REVIVE (1s - MEDIC)]" if player_class == "medic" else "[HOLD E TO REVIVE]"
 	else:
 		revive_progress = 0.0
 

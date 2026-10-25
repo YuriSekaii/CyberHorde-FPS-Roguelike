@@ -45,7 +45,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 * **Networking**: High-level ENet multiplayer (`ENetMultiplayerPeer`) over UDP port `7777`.
 * **Squad Avatars**: Host (Player 1) has Neon Cyan accents; Client (Player 2) has Neon Amber accents. Overhead tags show name and live HP bar.
 * **Shared Economy**: XP and Scrap are squad-shared. Upgrade card selection is simultaneous; choosing cards activates an **Aegis Stasis** protective shield.
-* **Revive System**: Downed players enter a crawling beacon state. Teammates hold `E` for 2 seconds within 3m to revive them with 50% HP and 3s invulnerability.
+* **Revive System**: Downed players enter a crawling beacon state. Teammates hold `E` for 2 seconds within 3m to revive them with 50% HP and 3s invulnerability (1.0s for Medics).
 * **Targeting AI**: Horde units dynamically acquire and split aggro toward the nearest active, non-downed player.
 
 ---
@@ -62,7 +62,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Reload** | `R` | Manual reload (automatic when magazine is empty) |
 | **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
-| **Revive Ally** | `E` (hold 2s) | Within 3m of downed squadmate |
+| **Revive Ally** | `E` (hold 2s) | Within 3m of downed squadmate (1.0s for Medics) |
 | **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
 | **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
@@ -103,7 +103,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 
 | Class | Accent | Role | Passive Specialization | Active Skill (`Q`) |
 | :--- | :---: | :--- | :--- | :--- |
-| **Medic** | Neon Mint | Support & Sustain | **Nano-Regen**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). | **Cellular Restore** (20s cd): Instantly recovers 20% Max Shield and 20% Max HP, and grants 2s invulnerability to ALL players. |
+| **Medic** | Neon Mint | Support & Sustain | **Nano-Regen & Quick Revive**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). Revive downed teammates **twice as fast** (1.0s vs 2.0s). | **Cellular Restore** (20s cd): Instantly recovers 20% Max Shield and 20% Max HP, and grants 2s invulnerability to ALL players. |
 | **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed, jump speed, and reload speed**. | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer) and **instantly reload all weapons**. Sky/air capable. |
 | **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons and companion drones, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **+500% MORE fire rate** and **unlimited magazine** across player weapons and companion drones. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons and companion drones reload to full magazine when the skill ends. |
 
