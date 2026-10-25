@@ -772,7 +772,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.95, 0.85, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "• Enemies killed by me drop +300% more XP & Scrap (4× yield).
-• Gain +25% MORE movement speed and jump speed."
+• Gain +25% MORE movement speed, jump speed & reload speed."
 autowrap_mode = 2
 
 [node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/RogueCard/Margin/VBox"]
@@ -791,6 +791,7 @@ theme_override_colors/font_color = Color(0.95, 0.95, 0.85, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "• Dash 15m in aim direction (sky/air capable).
 • Full invulnerability during dash + 0.5s after.
+• Instantly reloads all weapons.
 • Rapid 10s cooldown (5s with Cooldown Reduction)."
 autowrap_mode = 2
 

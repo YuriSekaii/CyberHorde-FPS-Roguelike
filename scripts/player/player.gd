@@ -48,7 +48,11 @@ var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
 
 # Class & Skill Specializations (Medic, Rogue, Gunner)
-var player_class: String = "medic"
+var player_class: String = "medic":
+	set(v):
+		player_class = v
+		if is_inside_tree() and not weapons.is_empty():
+			_update_stats()
 const MEDIC_COOLDOWN: float = 20.0
 const ROGUE_COOLDOWN: float = 10.0
 const GUNNER_COOLDOWN: float = 60.0
@@ -303,6 +307,7 @@ func _update_stats() -> void:
 		current_shield = GameManager.current_shield
 	current_shield = minf(current_shield, GameManager.shield_max)
 	
+	var rogue_reload_mult: float = 1.25 if player_class == "rogue" else 1.0
 	for w in weapons:
 		var new_max = int(round(w.base_max_ammo * GameManager.magazine_mult))
 		if new_max > w.max_ammo:
@@ -312,7 +317,7 @@ func _update_stats() -> void:
 		else:
 			w.max_ammo = new_max
 			w.current_ammo = mini(w.current_ammo, w.max_ammo)
-		w.reload_time = w.base_reload_time / GameManager.reload_speed_mult
+		w.reload_time = w.base_reload_time / (GameManager.reload_speed_mult * rogue_reload_mult)
 	
 	if drone_companion:
 		drone_companion.visible = false
@@ -689,7 +694,8 @@ func _start_reload() -> void:
 	if is_charging:
 		_cancel_charge()
 	is_reloading = true
-	reload_timer = w.reload_time
+	var rogue_reload_mult: float = 1.25 if player_class == "rogue" else 1.0
+	reload_timer = w.base_reload_time / (GameManager.reload_speed_mult * rogue_reload_mult)
 	SoundManager.play("reload", 0.05)
 	ammo_changed.emit(w.current_ammo, w.max_ammo, true)
 
@@ -1090,6 +1096,25 @@ func _start_dash() -> void:
 	dash_timer = DASH_DURATION
 	var cd = DASH_COOLDOWN * GameManager.get_skill_cooldown_mult()
 	skill_cooldown_timer = cd
+	
+	# Rogue Active: Instantly reload all weapons (and companion drones)
+	if is_reloading:
+		is_reloading = false
+		reload_timer = 0.0
+	if is_charging:
+		_cancel_charge()
+	for w in weapons:
+		w.current_ammo = w.max_ammo
+	for d in active_drones:
+		if is_instance_valid(d):
+			if d.assigned_weapon_idx >= 0 and d.assigned_weapon_idx < weapons.size():
+				d.current_ammo = weapons[d.assigned_weapon_idx].max_ammo
+			d.is_reloading = false
+			d.reload_timer = 0.0
+	if active_weapon_idx < weapons.size():
+		var cur_w = weapons[active_weapon_idx]
+		ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)
+		_update_plasma_core_visual()
 	
 	# Look direction: aim vector in 3D (allows dashing into sky, ground, or air)
 	var dir = -camera.global_transform.basis.z.normalized()
