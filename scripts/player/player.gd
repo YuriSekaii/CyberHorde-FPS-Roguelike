@@ -218,7 +218,7 @@ func _setup_weapons() -> void:
 	# Weapon 2: Plasma Launcher
 	var plasma = Weapon.new()
 	plasma.name = "Plasma Core"
-	plasma.fire_rate = 0.3
+	plasma.fire_rate = 1.0 / 0.3 # 0.3 shot/s cooldown (3.333s), not including charge
 	plasma.damage = 150.0
 	plasma.base_max_ammo = 5
 	plasma.max_ammo = 5
@@ -231,7 +231,7 @@ func _setup_weapons() -> void:
 	plasma.is_explosive = true
 	plasma.sound_name = "shoot_plasma"
 	plasma.base_crit_chance = 0.25
-	plasma.charge_time = 0.10
+	plasma.charge_time = 0.18
 	weapons.append(plasma)
 	
 	_switch_weapon(0)
@@ -485,7 +485,7 @@ func _start_charge(w: Weapon) -> void:
 	is_charging = true
 	charge_duration = w.charge_time / GameManager.fire_rate_mult
 	charge_timer = charge_duration
-	SoundManager.play("plasma_charge", 0.06, 2.0)
+	SoundManager.play("plasma_charge", 0.06, 1.0)
 	charge_changed.emit(0.0)
 
 func _cancel_charge() -> void:
@@ -500,7 +500,7 @@ func _cancel_charge() -> void:
 
 func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
-	var effective_cooldown = maxf(0.05, (w.fire_rate - w.charge_time) / GameManager.fire_rate_mult)
+	var effective_cooldown = maxf(0.05, w.fire_rate / GameManager.fire_rate_mult)
 	fire_cooldown = effective_cooldown
 	w.current_ammo -= 1
 	ammo_changed.emit(w.current_ammo, w.max_ammo, false)

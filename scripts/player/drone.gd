@@ -106,8 +106,8 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		var enemy_aim_pos = target_enemy.global_position + Vector3(0, 0.7, 0)
 		look_at(enemy_aim_pos, Vector3.UP)
 		
-		# Fires at 1/4 fire rate of its assigned weapon, scaled by Overclock Trigger (GameManager.fire_rate_mult)
-		var effective_cooldown = (cur_weapon.fire_rate * 4.0) / GameManager.fire_rate_mult
+		# Fires at assigned weapon fire rate (1/4 rate for rapid weapons, full 0.3 shot/s for heavy plasma), scaled by Overclock Trigger
+		var effective_cooldown = ((cur_weapon.fire_rate) if assigned_weapon_idx == 2 else (cur_weapon.fire_rate * 4.0)) / GameManager.fire_rate_mult
 		if fire_cooldown <= 0.0 and not is_reloading:
 			if current_ammo > 0:
 				fire_cooldown = effective_cooldown
