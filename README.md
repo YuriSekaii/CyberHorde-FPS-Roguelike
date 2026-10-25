@@ -259,25 +259,27 @@ Hordes scale progressively to challenge late-game builds:
 * **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
 * **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **50%** max reduction in Wave 50). Floating damage indicators accurately reflect reduced damage values.
+* **Every 5 Waves (Basic Enemy Multiplicative Decay)**: The spawn weights of the first and second basic enemies (**Cyber Swarmer** and **Plasma Spitter**) reduce by **5%**, compounding multiplicatively ($\text{Weight} \times 0.95^{\lfloor\text{Wave} / 5\rfloor}$).
+* **Halved Heavy Enemy Weights**: Base spawn weights for **Armored Goliath (Brute)**, **Cyber Charger**, and **Void Spawner** are reduced by half (7.2%, ~4.0% – 4.25%, and ~1.0% respectively), keeping early appearances scarce while dynamically scaling into threatening late-wave compositions as basic enemies decay.
 
 ### Enemy Catalog & Base Stats
 
 | Enemy Type | Base Health | Move Speed | Base Damage | Attack Rate / Cooldown | Attack Type & Range | Spawn Weight / Availability |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: |
-| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~45% – 55% |
-| **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% (Wave 3+) |
-| **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Wave 6+) |
-| **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~8.0% – 8.5%** (Wave 11+, Rarer than Brute) |
-| **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **~2.0%** (Wave 20+, Multi-Spawn Chaos) |
+| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | Base ~45% – 55% ($\times 0.95^{\lfloor\text{Wave}/5\rfloor}$) |
+| **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | Base 30.0% (Wave 3+, $\times 0.95^{\lfloor\text{Wave}/5\rfloor}$) |
+| **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **7.2%** (Wave 6+, Halved from 14.4%) |
+| **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~4.0% – 4.25%** (Wave 11+, Halved from ~8.0% – 8.5%) |
+| **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **~1.0%** (Wave 20+, Halved from ~2.0%) |
 | **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick) | Spawned by Void Spawner Portal |
 | **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 50 Exclusive |
 
 ### Enemy Types
-1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
-2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP**. Spawns with reduced frequency (14.4% weight) to serve as imposing threats that charge in and slam the ground creating shockwaves and knockback on players!
-4. **Cyber Chargers**: Four-legged cybernetic bull beasts introduced after **Wave 10** (rarer than Brutes). Stalks slowly toward players until within 14m, winds up while pawing the ground, flashes bright red as it locks your location, and rockets forward in a straight line at 24 m/s! Deals 48 heavy damage on contact and travels until impacting an arena wall/pillar, triggering a heavy collision and stunning itself for 3.5 seconds with dizzy sparks.
-5. **Void Spawners**: Colossal floating behemoths with massive biomechanical wings and a giant agape mouth housing an active cosmic portal, introduced in **Wave 20** as chaotic tank mini-bosses (**2,000 base HP**). Has no concurrent spawn limit, allowing multiple spawners to create high-intensity aerial swarms simultaneously! Has no direct attack; instead, periodically ejects Cyber Spawnlings out of its portal mouth. When defeated, drops an interactive **Loot Cache (Upgrade Box)** with free upgrade card rewards!
+1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites. Weight decays by 5% multiplicatively every 5 waves ($\times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
+2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts. Weight decays by 5% multiplicatively every 5 waves ($\times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
+3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP**. Spawns with halved base frequency (7.2% weight) to serve as imposing threats that charge in and slam the ground creating shockwaves and knockback on players!
+4. **Cyber Chargers**: Four-legged cybernetic bull beasts introduced after **Wave 10** (halved base weight ~4.0% – 4.25%, rarer than Brutes). Stalks slowly toward players until within 14m, winds up while pawing the ground, flashes bright red as it locks your location, and rockets forward in a straight line at 24 m/s! Deals 48 heavy damage on contact and travels until impacting an arena wall/pillar, triggering a heavy collision and stunning itself for 3.5 seconds with dizzy sparks.
+5. **Void Spawners**: Colossal floating behemoths with massive biomechanical wings and a giant agape mouth housing an active cosmic portal, introduced in **Wave 20** as chaotic tank mini-bosses (**2,000 base HP**, halved base weight ~1.0%). Has no concurrent spawn limit, allowing multiple spawners to create high-intensity aerial swarms simultaneously! Has no direct attack; instead, periodically ejects Cyber Spawnlings out of its portal mouth. When defeated, drops an interactive **Loot Cache (Upgrade Box)** with free upgrade card rewards!
 6. **Cyber Spawnlings**: Fragile aerial interceptors with fluttering wings, a rear flaming thruster booster, and two hanging talons. Its body is a high-speed spinning drill bit. Possessing the **lowest health in the game (14 base HP)**, it homes directly onto players and deals small rapid continuous damage (2.5 damage every 0.15s) with intense grinding sparks when connected.
 
 ### 👑 Wave 50 Final Boss: Apex Overlord & Multi-Stage Escalation

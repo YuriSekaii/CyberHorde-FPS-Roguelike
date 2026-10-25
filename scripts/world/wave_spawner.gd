@@ -164,45 +164,7 @@ func _spawn_one_enemy() -> void:
 		spawn_pos = Vector3(0.0, 0.5, -12.0)
 		delay = 4.0
 	else:
-		var r = randf()
-		if current_wave >= 20:
-			# Void Spawner: extremely rare (~2.0%), multiple can spawn for pure chaos
-			if r < 0.020:
-				type_id = 5
-			elif r < 0.100: # Charger (~8.0%, rarer than Brute's 14.4%)
-				type_id = 4
-			elif r < 0.244: # Brute (14.4%)
-				type_id = 2
-			elif r < 0.544: # Spitter (30.0%)
-				type_id = 1
-			else:
-				type_id = 0 # Swarmer (45.6%)
-		elif current_wave > 10:
-			# Charger introduced after Wave 10, rarer than Brute
-			if r < 0.085: # Charger (8.5%, rarer than Brute's 14.4%)
-				type_id = 4
-			elif r < 0.229: # Brute (14.4%)
-				type_id = 2
-			elif r < 0.529: # Spitter (30.0%)
-				type_id = 1
-			else:
-				type_id = 0 # Swarmer (47.1%)
-		elif current_wave >= 6:
-			# Brute spawn chance 14.4%, Spitter 30%
-			if r < 0.144:
-				type_id = 2
-			elif r < 0.444:
-				type_id = 1
-			else:
-				type_id = 0
-		elif current_wave >= 3:
-			if r < 0.35:
-				type_id = 1
-			else:
-				type_id = 0
-		else:
-			type_id = 0
-		
+		type_id = _select_enemy_type(current_wave)
 		spawn_pos = _find_valid_spawn_pos(ref_player, players)
 	
 	# Enqueue pending spawn
@@ -218,6 +180,71 @@ func _spawn_one_enemy() -> void:
 		rpc_start_spawn_telegraph.rpc(type_id, spawn_pos, enemy_name, delay)
 	else:
 		_create_spawn_indicator(type_id, spawn_pos, enemy_name, delay)
+
+func _select_enemy_type(wave_num: int) -> int:
+	# Multiplicative reduction for basic enemies (Swarmer & Spitter):
+	# Each 5 waves, reduce the weight of the first and second basic enemy by 5% multiplicatively (* 0.95^(wave/5)).
+	var wave_factor: int = int(wave_num / 5)
+	var basic_multiplier: float = pow(0.95, float(wave_factor))
+	
+	var w_swarmer: float = 0.0
+	var w_spitter: float = 0.0
+	var w_brute: float = 0.0
+	var w_charger: float = 0.0
+	var w_spawner: float = 0.0
+	
+	# Base weights for Brute, Charger, and Spawner reduced by half:
+	# Brute: 0.144 -> 0.072
+	# Charger: 0.080/0.085 -> 0.040/0.0425
+	# Spawner: 0.020 -> 0.010
+	if wave_num >= 20:
+		w_swarmer = 0.456 * basic_multiplier
+		w_spitter = 0.300 * basic_multiplier
+		w_brute = 0.072
+		w_charger = 0.040
+		w_spawner = 0.010
+	elif wave_num > 10:
+		w_swarmer = 0.471 * basic_multiplier
+		w_spitter = 0.300 * basic_multiplier
+		w_brute = 0.072
+		w_charger = 0.0425
+		w_spawner = 0.0
+	elif wave_num >= 6:
+		w_swarmer = 0.556 * basic_multiplier
+		w_spitter = 0.300 * basic_multiplier
+		w_brute = 0.072
+		w_charger = 0.0
+		w_spawner = 0.0
+	elif wave_num >= 3:
+		w_swarmer = 0.650 * basic_multiplier
+		w_spitter = 0.350 * basic_multiplier
+		w_brute = 0.0
+		w_charger = 0.0
+		w_spawner = 0.0
+	else:
+		w_swarmer = 1.0 * basic_multiplier
+		w_spitter = 0.0
+		w_brute = 0.0
+		w_charger = 0.0
+		w_spawner = 0.0
+	
+	var total_weight: float = w_swarmer + w_spitter + w_brute + w_charger + w_spawner
+	if total_weight <= 0.0:
+		return 0
+	
+	var roll: float = randf() * total_weight
+	if roll < w_spawner:
+		return 5 # Void Spawner
+	roll -= w_spawner
+	if roll < w_charger:
+		return 4 # Cyber Charger
+	roll -= w_charger
+	if roll < w_brute:
+		return 2 # Armored Goliath (Brute)
+	roll -= w_brute
+	if roll < w_spitter:
+		return 1 # Plasma Spitter
+	return 0 # Cyber Swarmer
 
 func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vector3:
 	var best_pos = Vector3.ZERO
