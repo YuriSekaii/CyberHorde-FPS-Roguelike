@@ -90,6 +90,10 @@ const DRONE_SCENE = preload("res://scenes/player/drone.tscn")
 @onready var gun_model_shotgun: Node3D = $Head/Camera3D/WeaponRig/Shotgun
 @onready var gun_model_plasma: Node3D = $Head/Camera3D/WeaponRig/Plasma
 @onready var plasma_core_mesh: MeshInstance3D = $Head/Camera3D/WeaponRig/Plasma/Core
+const COLOR_PLASMA_READY: Color = Color(0.9, 0.1, 1.0, 1.0) # Purple when ready to fire
+const COLOR_PLASMA_COOLDOWN: Color = Color(1.0, 0.12, 0.12, 1.0) # Red during cooldown / unable to shoot
+var plasma_core_mat: StandardMaterial3D = null
+var _plasma_was_ready: bool = true
 @onready var muzzle_flash_light: OmniLight3D = $Head/Camera3D/WeaponRig/MuzzleFlashLight
 @onready var muzzle_particles: CPUParticles3D = $Head/Camera3D/WeaponRig/MuzzleParticles
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
@@ -119,6 +123,12 @@ func _ready() -> void:
 	add_to_group("player")
 	_setup_weapons()
 	_update_stats()
+	
+	if plasma_core_mesh:
+		plasma_core_mat = StandardMaterial3D.new()
+		plasma_core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		plasma_core_mat.albedo_color = COLOR_PLASMA_READY
+		plasma_core_mesh.material_override = plasma_core_mat
 	
 	GameManager.stats_updated.connect(_update_stats)
 	muzzle_flash_light.visible = false
@@ -421,6 +431,7 @@ func _handle_movement(delta: float) -> void:
 func _handle_weapons(delta: float) -> void:
 	var w = weapons[active_weapon_idx]
 	fire_cooldown -= delta
+	_update_plasma_core_visual()
 	
 	if is_reloading:
 		if is_charging:
@@ -502,6 +513,7 @@ func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
 	var effective_cooldown = maxf(0.05, w.fire_rate / GameManager.fire_rate_mult)
 	fire_cooldown = effective_cooldown
+	_update_plasma_core_visual()
 	w.current_ammo -= 1
 	ammo_changed.emit(w.current_ammo, w.max_ammo, false)
 	
@@ -601,6 +613,28 @@ func _switch_weapon(new_idx: int) -> void:
 	SoundManager.play("reload", 0.1, -4.0)
 	weapon_changed.emit(active_weapon_idx, w.name)
 	ammo_changed.emit(w.current_ammo, w.max_ammo, false)
+	_update_plasma_core_visual()
+
+func _update_plasma_core_visual() -> void:
+	if active_weapon_idx != 2 or plasma_core_mat == null or not is_instance_valid(plasma_core_mesh):
+		return
+	
+	var w = weapons[2]
+	var can_shoot = (fire_cooldown <= 0.0 and not is_reloading and w.current_ammo > 0)
+	
+	if is_charging:
+		var p = clampf(1.0 - (charge_timer / maxf(0.001, charge_duration)), 0.0, 1.0)
+		plasma_core_mat.albedo_color = COLOR_PLASMA_READY.lerp(Color(1.0, 0.7, 1.0), p * 0.7)
+	elif can_shoot:
+		if not _plasma_was_ready:
+			_plasma_was_ready = true
+			var tw = create_tween()
+			plasma_core_mesh.scale = Vector3.ONE * 1.25
+			tw.tween_property(plasma_core_mesh, "scale", Vector3.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		plasma_core_mat.albedo_color = COLOR_PLASMA_READY
+	else:
+		_plasma_was_ready = false
+		plasma_core_mat.albedo_color = COLOR_PLASMA_COOLDOWN
 
 func _handle_shield_regen(delta: float) -> void:
 	if GameManager.shield_max <= 0.0:

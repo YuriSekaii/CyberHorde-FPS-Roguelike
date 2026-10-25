@@ -163,7 +163,9 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
      - **Charge Windup**: Requires holding `LMB` for at least the charge delay time (**0.18s base**, accelerated by fire rate perks) before releasing to fire. The 0.3 shot/s interval does not include this 0.18s charge delay.
      - **Charge Retention**: If held longer than the charge delay without releasing, the weapon stays charged and **will not fire until released**.
      - **Shot Cancellation**: Releasing `LMB` before reaching the required charge delay cancels the shot completely without consuming ammo or triggering cooldown. To shoot, you must charge from scratch again.
-     - Dynamic visual & HUD feedback: Pulsing plasma core chamber (expands to 135%), radiant purple muzzle illumination, focused crosshair reticle contraction with neon magenta glow, and capacitor whine audio.
+     - Dynamic visual & HUD feedback:
+       - **Dynamic Core Chamber Status Illumination**: The plasma chamber ball on the weapon model shifts to **Warning Red** whenever the weapon cannot shoot (during the 3.33s cooldown, during reload, or when out of ammo), and immediately transitions back to **Radiant Neon Purple** with an energy pop animation the moment it is ready to fire.
+       - Pulsing plasma core chamber (expands to 135% while charging), radiant purple muzzle illumination, focused crosshair reticle contraction with neon magenta glow, and capacitor whine audio.
    - **Slow-Moving Heavy Plasma Projectile with Massive Hitbox**:
      - Fires a giant, layered plasma orb traveling at **~23.3 m/s** (exactly 1/3 of standard bullet speed).
      - Features multi-layered visual geometry: outer pulsing translucent magenta plasma sphere (0.9m diameter), electric cyan containment ring, and blinding white-hot dense energy core.
