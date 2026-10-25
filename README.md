@@ -147,15 +147,15 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 | Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag Size | Reload Time | Base Crit | AoE / Effect |
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
-| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters shotgun spread (0.0825 spread) |
+| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters shotgun spread (0.103125 spread) |
 | **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30 shot/s (3.33s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (7.5m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
    - 32-round magazine, 0.12s fire rate (8.3 shots/sec), 22.0 base damage, 10% base crit chance, crisp suppressive fire.
 2. **Scatter Cannon (`Key 2`)**:
-   - Heavy close-quarters shotgun blasting 12 pellets simultaneously with punchy recoil and screen kick.
-   - 18.0 damage per pellet (216 base burst damage), 8-round magazine, 0.65s fire rate, 5% base crit chance, wide 0.0825 spread cone (+10% wider dispersion).
+   - Heavy close-quarters shotgun blasting 10 pellets simultaneously with punchy recoil and screen kick.
+   - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 5% base crit chance, wide 0.103125 spread cone (+25% wider dispersion).
 3. **Plasma Core (`Key 3`)**:
    - High-yield heavy energy launcher firing concentrated plasma orbs.
    - **0.30 shot/s Fire Rate with Hold-to-Charge & Release-to-Fire Mechanic**:
@@ -218,7 +218,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +50% AoE radius** (5.0m → 7.5m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
-| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets) (Max 2 stacks). |
+| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 20 pellets) (Max 2 stacks). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets (+2 targets per stack, max 4 stacks: up to 8 targets). Chains sequentially between enemies within 8.5m and can bounce back and forth between previously chained targets! **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce (Max 2 stacks). |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick (Max 3 stacks). |

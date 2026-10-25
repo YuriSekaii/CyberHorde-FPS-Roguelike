@@ -218,8 +218,8 @@ func _setup_weapons() -> void:
 	shotgun.base_reload_time = 1.6
 	shotgun.reload_time = 1.6
 	shotgun.is_auto = false
-	shotgun.pellets = 12
-	shotgun.spread = 0.0825
+	shotgun.pellets = 10
+	shotgun.spread = 0.103125
 	shotgun.is_explosive = false
 	shotgun.sound_name = "shoot_shotgun"
 	shotgun.base_crit_chance = 0.05
