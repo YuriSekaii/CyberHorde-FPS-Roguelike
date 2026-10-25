@@ -216,8 +216,8 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Cryo Rounds** | `Rare` (Purple) | Bullets chill targets, slowing them by 40% for 3 seconds. |
 | **Nanite Scavenger** | `Rare` (Purple) | +40% XP and Scrap drops from all defeated enemies. |
 | **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +50% AoE radius** (5.0m → 7.5m). |
-| **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
-| **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
+| **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 0.5s of invulnerability (Max 2 stacks: 1s). |
+| **Null Barrier** | `Epic` (Orange) | Every 10s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
 | **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 20 pellets) (Max 2 stacks). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets (+2 targets per stack, max 4 stacks: up to 8 targets). Chains sequentially between enemies within 8.5m and can bounce back and forth between previously chained targets! **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce (Max 2 stacks). |

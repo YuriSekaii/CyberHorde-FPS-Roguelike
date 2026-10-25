@@ -227,7 +227,7 @@ var upgrade_database: Dictionary = {
 	"reactive_barrier": {
 		"id": "reactive_barrier",
 		"name": "Reactive Phase-Shield",
-		"desc": "When taking damage, gain 1s of invulnerability (Max 2 stacks: 2s).",
+		"desc": "When taking damage, gain 0.5s of invulnerability (Max 2 stacks: 1s).",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 2
@@ -235,7 +235,7 @@ var upgrade_database: Dictionary = {
 	"null_barrier": {
 		"id": "null_barrier",
 		"name": "Null Barrier",
-		"desc": "Every 5s, nullifies the next instance of damage taken (Triggers invulnerability perks).",
+		"desc": "Every 10s, nullifies the next instance of damage taken (Triggers invulnerability perks).",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 1
@@ -653,7 +653,7 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 		"hardened_alloy":
 			player_damage_reduction = minf(0.50, player_damage_reduction + 0.10)
 		"reactive_barrier":
-			hit_invulnerability_duration = minf(2.0, hit_invulnerability_duration + 1.0)
+			hit_invulnerability_duration = minf(1.0, hit_invulnerability_duration + 0.5)
 		"null_barrier":
 			null_barrier_unlocked = true
 		"loot_greed":

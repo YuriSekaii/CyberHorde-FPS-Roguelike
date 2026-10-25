@@ -334,7 +334,7 @@ func _physics_process(delta: float) -> void:
 		if invulnerable_timer <= 0.0:
 			is_invulnerable = false
 	
-	# Null Barrier cooldown timer (Every 5s, nullifies next instance of damage)
+	# Null Barrier cooldown timer (Every 10s, nullifies next instance of damage)
 	if GameManager.null_barrier_unlocked and not null_barrier_ready:
 		null_barrier_timer -= delta
 		if null_barrier_timer <= 0.0:
@@ -769,10 +769,10 @@ func take_damage(amount: float) -> void:
 	if is_invulnerable:
 		return
 	
-	# Epic perk: Null Barrier (Every 5s, nullifies next instance of damage)
+	# Epic perk: Null Barrier (Every 10s, nullifies next instance of damage)
 	if GameManager.null_barrier_unlocked and null_barrier_ready:
 		null_barrier_ready = false
-		null_barrier_timer = 5.0
+		null_barrier_timer = 10.0
 		SoundManager.play("shield_hit", 0.15, 1.8)
 		shake_intensity = 0.08
 		
@@ -820,7 +820,7 @@ func take_damage(amount: float) -> void:
 		else:
 			die()
 	else:
-		# Survived hit: check Epic perk Reactive Phase-Shield (1s invulnerability per stack, max 2s)
+		# Survived hit: check Epic perk Reactive Phase-Shield (0.5s invulnerability per stack, max 1s)
 		if GameManager.hit_invulnerability_duration > 0.0:
 			trigger_invulnerability(GameManager.hit_invulnerability_duration)
 
