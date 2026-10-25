@@ -138,12 +138,11 @@ func _apply_wave_scaling() -> void:
 	var dmg_scale = pow(1.05, float(maxi(0, wave_num - 1)))
 	attack_damage = clampf(120.0 * dmg_scale, 120.0, 540.0)
 	
-	# Speed and damage reduction
-	var speed_tier: int = int(wave_num / 10)
-	var speed_factor: float = pow(1.05, float(speed_tier))
-	speed = 3.2 * speed_factor
-	wave_speed_mult = speed_factor
-	attack_speed_mult = speed_factor
+	# Final Boss Fixed Speed & Attack Cadence:
+	# Keep movement speed and attack speed fixed for calibrated telegraph windows and easier balancing
+	speed = 3.2
+	wave_speed_mult = 1.0
+	attack_speed_mult = 1.0
 	
 	var reduction_tier: int = int(wave_num / 10)
 	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.50)
@@ -332,7 +331,7 @@ func _process_stage_1(delta: float) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 		move_and_slide()
-		if slam_charge_timer >= (SLAM_CHARGE_DURATION / attack_speed_mult):
+		if slam_charge_timer >= SLAM_CHARGE_DURATION:
 			_execute_tremor_stomp()
 		return
 	
@@ -348,7 +347,7 @@ func _process_stage_1(delta: float) -> void:
 	move_and_slide()
 	
 	# Occasional projectile if player is too far (low dmg)
-	var eff_cannon_interval = 2.4 / attack_speed_mult
+	var eff_cannon_interval = 2.4
 	if dist > 8.5 and cannon_cooldown <= 0.0:
 		cannon_cooldown = eff_cannon_interval
 		_fire_stage1_cannon()
@@ -362,7 +361,7 @@ func _start_slam_charge() -> void:
 
 func _execute_tremor_stomp() -> void:
 	is_charging_slam = false
-	slam_cooldown = 4.2 / attack_speed_mult
+	slam_cooldown = 4.2
 	if slam_light:
 		slam_light.visible = false
 	
@@ -419,7 +418,7 @@ func _process_stage_2(delta: float) -> void:
 			velocity = Vector3.ZERO
 			
 			if attack_timer <= 0.0:
-				attack_timer = 0.85 / attack_speed_mult
+				attack_timer = 0.85
 				_fire_stage2_bomb()
 				s2_shots_fired += 1
 				if s2_shots_fired >= 4:
@@ -454,7 +453,7 @@ func _process_stage_2(delta: float) -> void:
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
 			
-			velocity = dive_dir * (60.0 * wave_speed_mult)
+			velocity = dive_dir * 60.0
 			move_and_slide()
 			
 			# Check impact with ground or target point
@@ -561,12 +560,12 @@ func _process_stage_3(delta: float) -> void:
 			flight_orbit_angle += delta * 2.8
 			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 20.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 20.0)
 			var flight_dir = (target_flight_pos - global_position).normalized()
-			velocity = flight_dir * (32.0 * wave_speed_mult)
+			velocity = flight_dir * 32.0
 			move_and_slide()
 			
 			# Bullet hell barrage from both hands and both wings simultaneously
 			if attack_timer <= 0.0:
-				attack_timer = 0.065 / attack_speed_mult
+				attack_timer = 0.065
 				_fire_stage3_machine_gun()
 				s3_machine_shots += 1
 			
@@ -620,7 +619,7 @@ func _process_stage_3(delta: float) -> void:
 			var dive_dist = dive_vec.length()
 			var dive_dir = dive_vec.normalized()
 			
-			velocity = dive_dir * (105.0 * wave_speed_mult)
+			velocity = dive_dir * 105.0
 			move_and_slide()
 			
 			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 3.0 or is_on_floor():
