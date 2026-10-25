@@ -128,7 +128,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 * **Rapid AABB Pre-Filtering**: Checks 2D horizontal bounding box distance (`absf(dx) > r or absf(dz) > r`) to instantly discard ~95% of non-applicable enemies before computing squared distance, completely eliminating expensive `sqrt()` operations.
 * **Disabled Physics Area Monitoring**: Explosions and Bullets set `monitoring = false` and `monitorable = false`, removing hundreds of broadphase collision pairs from Godot's PhysicsServer.
 * **Clustered Forward+ Light Capping**: Active explosion `OmniLight3D` instances are capped to a maximum of 4 concurrent lights, and bullet lights are capped to 8, preventing multi-light overlap bottlenecks.
-* **Audio Throttling**: Sound playback for hits, explosions, and ricochets is throttled to prevent audio bus saturation.
+* **Audio Throttling & Volume Balancing**: Sound playback for hits, explosions, and ricochets is throttled to prevent audio bus saturation, with ricochet impact volume balanced to -8.0 dB (1/4 of previous volume) to prevent audio fatigue during dense multi-bullet bouncing.
 
 ### 3. Scalable Engine Optimization
 * **Static Entity Caching**: Replaced frequent `get_tree().get_nodes_in_group("enemies")` calls with `EnemyBase.all_enemies` static registry, saving hundreds of heap array allocations per second.

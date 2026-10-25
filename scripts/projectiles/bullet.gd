@@ -407,11 +407,11 @@ func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) 
 	if direction != Vector3.ZERO:
 		look_at(global_position + direction, Vector3.UP)
 	
-	# Audio throttling on ricochet
+	# Audio throttling on ricochet (attenuated to 1/4 volume: 4.0 dB - 12.0 dB = -8.0 dB)
 	var now = Time.get_ticks_msec()
 	if now - last_ricochet_sound_msec >= 35:
 		last_ricochet_sound_msec = now
-		SoundManager.play("hitmarker", 0.25, 4.0)
+		SoundManager.play("hitmarker", 0.25, -8.0)
 
 func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore_target: Node) -> Node3D:
 	# Direct access to static cache: 0 heap allocations, 0 SceneTree queries
