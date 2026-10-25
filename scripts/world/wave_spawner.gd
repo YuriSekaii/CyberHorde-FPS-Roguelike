@@ -166,25 +166,17 @@ func _spawn_one_enemy() -> void:
 	else:
 		var r = randf()
 		if current_wave >= 20:
-			# Void Spawner: extremely rare (~2.5%), max 1 concurrent spawner
-			var active_spawner_count = 0
-			for e in active_enemies:
-				if is_instance_valid(e) and e.get("enemy_name") == "Void Spawner":
-					active_spawner_count += 1
-			for p in pending_spawns:
-				if p.get("type_id") == 5:
-					active_spawner_count += 1
-			
-			if r < 0.025 and active_spawner_count == 0:
+			# Void Spawner: extremely rare (~2.0%), multiple can spawn for pure chaos
+			if r < 0.020:
 				type_id = 5
-			elif r < 0.105: # Charger (~8.0%, rarer than Brute's 14.4%)
+			elif r < 0.100: # Charger (~8.0%, rarer than Brute's 14.4%)
 				type_id = 4
-			elif r < 0.249: # Brute (14.4%)
+			elif r < 0.244: # Brute (14.4%)
 				type_id = 2
-			elif r < 0.549: # Spitter (30.0%)
+			elif r < 0.544: # Spitter (30.0%)
 				type_id = 1
 			else:
-				type_id = 0 # Swarmer (45.1%)
+				type_id = 0 # Swarmer (45.6%)
 		elif current_wave > 10:
 			# Charger introduced after Wave 10, rarer than Brute
 			if r < 0.085: # Charger (8.5%, rarer than Brute's 14.4%)
