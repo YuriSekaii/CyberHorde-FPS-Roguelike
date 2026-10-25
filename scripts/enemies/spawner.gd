@@ -7,8 +7,8 @@ var active_minions: Array[Node] = []
 var minion_counter: int = 0
 
 const SPAWN_INTERVAL: float = 4.5
-const PREFERRED_HEIGHT: float = 4.2
-const PREFERRED_DISTANCE: float = 16.0
+const PREFERRED_HEIGHT: float = 8.5
+const PREFERRED_DISTANCE: float = 17.0
 
 const SPAWNLING_SCENE = preload("res://scenes/enemies/spawnling.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")

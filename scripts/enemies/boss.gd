@@ -147,12 +147,12 @@ func _apply_wave_scaling() -> void:
 	var reduction_tier: int = int(wave_num / 10)
 	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.50)
 
-func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT) -> void:
 	# Damage mitigation during cinematic transitions
 	if current_stage == BossStage.STAGE_2_TRANSITION or current_stage == BossStage.STAGE_3_TRANSITION:
 		amount *= 0.25
 	
-	super.take_damage(amount, is_crit, from_pos)
+	super.take_damage(amount, is_crit, from_pos, damage_type)
 	
 	if not is_dead:
 		GameManager.boss_health_updated.emit(current_health, max_health)

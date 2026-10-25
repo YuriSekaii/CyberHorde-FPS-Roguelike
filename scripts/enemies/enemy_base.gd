@@ -24,6 +24,13 @@ static var all_enemies: Array[Node] = []
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
+const DAMAGE_TYPE_DIRECT: int = 0
+const DAMAGE_TYPE_RICOCHET: int = 1
+const DAMAGE_TYPE_EXPLOSIVE: int = 2
+const DAMAGE_TYPE_CHAIN_LIGHTNING: int = 3
+
+var _last_immune_feedback_msec: int = 0
+
 func _ready() -> void:
 	all_enemies.append(self)
 	add_to_group("enemies")
@@ -98,12 +105,30 @@ func _behave(_delta: float) -> void:
 	# Overridden in child classes
 	pass
 
-@rpc("any_peer", "call_local", "reliable")
-func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
-	take_damage(amount, is_crit, from_pos)
+func is_immune_to(_damage_type: int) -> bool:
+	return false
 
-func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
+func _on_immune_hit(_from_pos: Vector3) -> void:
+	var now = Time.get_ticks_msec()
+	if now - _last_immune_feedback_msec >= 100:
+		_last_immune_feedback_msec = now
+		SoundManager.play("shield_hit", 0.15, -4.0)
+	if GameManager.show_damage_numbers:
+		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
+		get_parent().add_child(dnum)
+		dnum.global_position = global_position + Vector3(randf_range(-0.2, 0.2), 0.8, randf_range(-0.2, 0.2))
+		dnum.setup_text("IMMUNE", Color(0.3, 0.85, 1.0))
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
+	take_damage(amount, is_crit, from_pos, damage_type)
+
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
 	if is_dead:
+		return
+	
+	if is_immune_to(damage_type):
+		_on_immune_hit(from_pos)
 		return
 	
 	# Apply enemy damage reduction (10% per 10 waves)

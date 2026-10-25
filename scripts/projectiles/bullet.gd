@@ -16,6 +16,7 @@ var pierces_left: int = 0
 var bounces_left: int = 0
 var already_hit: Array[Node] = []
 var crit_chance: float = 0.10
+var is_ricochet: bool = false
 
 # Dynamic bullet visual threshold tracking
 static var active_bullets: Array[Node] = []
@@ -336,20 +337,23 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if is_plasma and GameManager.chain_lightning:
 			_trigger_plasma_chain_lightning(hit_pos, final_dmg, collider, is_crit)
 		else:
-			if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position)
-			elif collider.has_method("take_damage"):
-				collider.take_damage(final_dmg, is_crit, global_position)
+			var hit_dmg_type = EnemyBase.DAMAGE_TYPE_RICOCHET if is_ricochet else EnemyBase.DAMAGE_TYPE_DIRECT
+			var is_immune = collider.has_method("is_immune_to") and collider.is_immune_to(hit_dmg_type)
 			
-			GameManager.record_damage(final_dmg, is_crit)
+			if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
+				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position, hit_dmg_type)
+			elif collider.has_method("take_damage"):
+				collider.take_damage(final_dmg, is_crit, global_position, hit_dmg_type)
+			
+			if not is_immune:
+				GameManager.record_damage(final_dmg, is_crit)
+				# Cryo slow
+				if GameManager.cryo_slow and collider.has_method("apply_slow"):
+					collider.apply_slow(0.4, 3.0)
 			
 			# Standard Chain Lightning effect on enemy hit
 			if GameManager.chain_lightning:
 				_trigger_chain_lightning_at_pos(hit_pos, final_dmg * 0.5, collider)
-			
-			# Cryo slow
-			if GameManager.cryo_slow and collider.has_method("apply_slow"):
-				collider.apply_slow(0.4, 3.0)
 			
 			# Explosion on hit (purely based on initial hit damage)
 			_trigger_impact_effects(hit_pos, final_dmg)
@@ -390,6 +394,7 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		queue_free()
 
 func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) -> void:
+	is_ricochet = true
 	var bounce_dir = direction.bounce(surface_normal).normalized()
 	if bounce_dir == Vector3.ZERO:
 		bounce_dir = surface_normal
@@ -424,10 +429,13 @@ func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore
 			if absf(epos.x - from_pos.x) > 28.0 or absf(epos.z - from_pos.z) > 28.0:
 				continue
 			var d_sq = from_pos.distance_squared_to(epos)
-			if d_sq < best_dist_sq:
+			# Prioritize targets that are vulnerable to ricochet damage
+			var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_RICOCHET)
+			var score = d_sq + (100000.0 if is_immune else 0.0)
+			if score < best_dist_sq:
 				var dir_to = (epos - from_pos).normalized()
 				if forward_dir.dot(dir_to) > -0.25:
-					best_dist_sq = d_sq
+					best_dist_sq = score
 					best_target = enemy
 	return best_target
 
@@ -463,14 +471,16 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 				
 				var is_crit = randf() < crit_chance
 				var bolt_dmg = chain_base_dmg * (GameManager.crit_damage if is_crit else 1.0)
+				var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 				if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-					enemy.rpc_take_damage.rpc(bolt_dmg, is_crit, hit_pos)
+					enemy.rpc_take_damage.rpc(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 				elif enemy.has_method("take_damage"):
-					enemy.take_damage(bolt_dmg, is_crit, hit_pos)
-				GameManager.record_damage(bolt_dmg, is_crit)
+					enemy.take_damage(bolt_dmg, is_crit, hit_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 				
-				if GameManager.cryo_slow and enemy.has_method("apply_slow"):
-					enemy.apply_slow(0.3, 2.0)
+				if not is_immune:
+					GameManager.record_damage(bolt_dmg, is_crit)
+					if GameManager.cryo_slow and enemy.has_method("apply_slow"):
+						enemy.apply_slow(0.3, 2.0)
 				
 				hit_count += 1
 				if hit_count >= 10:
@@ -481,14 +491,17 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 	
 	# Direct hit damage
 	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.is_dead:
+		var direct_dmg_type = EnemyBase.DAMAGE_TYPE_RICOCHET if is_ricochet else EnemyBase.DAMAGE_TYPE_DIRECT
+		var direct_immune = direct_enemy.has_method("is_immune_to") and direct_enemy.is_immune_to(direct_dmg_type)
 		if direct_enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position)
+			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position, direct_dmg_type)
 		elif direct_enemy.has_method("take_damage"):
-			direct_enemy.take_damage(impact_dmg, is_direct_crit, global_position)
-		GameManager.record_damage(impact_dmg, is_direct_crit)
+			direct_enemy.take_damage(impact_dmg, is_direct_crit, global_position, direct_dmg_type)
 		
-		if GameManager.cryo_slow and direct_enemy.has_method("apply_slow"):
-			direct_enemy.apply_slow(0.4, 3.0)
+		if not direct_immune:
+			GameManager.record_damage(impact_dmg, is_direct_crit)
+			if GameManager.cryo_slow and direct_enemy.has_method("apply_slow"):
+				direct_enemy.apply_slow(0.4, 3.0)
 	
 	# Detonate plasma explosion AoE damage
 	_trigger_impact_effects(hit_pos, impact_dmg)
@@ -518,7 +531,8 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 				var dist_sq = from_pos.distance_squared_to(epos)
 				if dist_sq <= chain_rad_sq:
 					var times_hit = secondary_hit_counts.get(enemy, 0)
-					var score = float(times_hit) * 1000.0 + dist_sq
+					var is_cand_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+					var score = float(times_hit) * 1000.0 + dist_sq + (50000.0 if is_cand_immune else 0.0)
 					if score < best_score:
 						best_score = score
 						best_cand = enemy
@@ -530,14 +544,16 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 			
 			var chain_is_crit = randf() < crit_chance
 			var chain_dmg = chain_base_dmg * (GameManager.crit_damage if chain_is_crit else 1.0)
+			var is_target_immune = best_cand.has_method("is_immune_to") and best_cand.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 			if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				best_cand.rpc_take_damage.rpc(chain_dmg, chain_is_crit, from_pos)
+				best_cand.rpc_take_damage.rpc(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 			elif best_cand.has_method("take_damage"):
-				best_cand.take_damage(chain_dmg, chain_is_crit, from_pos)
-			GameManager.record_damage(chain_dmg, chain_is_crit)
+				best_cand.take_damage(chain_dmg, chain_is_crit, from_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 			
-			if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
-				best_cand.apply_slow(0.3, 2.0)
+			if not is_target_immune:
+				GameManager.record_damage(chain_dmg, chain_is_crit)
+				if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
+					best_cand.apply_slow(0.3, 2.0)
 			
 			secondary_hits += 1
 	
@@ -583,8 +599,9 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, init
 			var d_sq = current_pos.distance_squared_to(epos)
 			if d_sq <= range_sq:
 				var times_hit = chain_hit_counts.get(enemy, 0)
-				# Prioritize enemies with fewer chain hits, then closest distance
-				var score = float(times_hit) * 1000.0 + d_sq
+				# Prioritize enemies with fewer chain hits and those vulnerable to chain lightning
+				var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
+				var score = float(times_hit) * 1000.0 + d_sq + (50000.0 if is_immune else 0.0)
 				if score < best_score:
 					best_score = score
 					best_cand = enemy
@@ -600,14 +617,16 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, init
 		
 		var is_crit = randf() < crit_chance
 		var final_dmg = chain_dmg * (GameManager.crit_damage if is_crit else 1.0)
+		var is_target_immune = best_cand.has_method("is_immune_to") and best_cand.is_immune_to(EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 		if best_cand.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-			best_cand.rpc_take_damage.rpc(final_dmg, is_crit, current_pos)
+			best_cand.rpc_take_damage.rpc(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 		elif best_cand.has_method("take_damage"):
-			best_cand.take_damage(final_dmg, is_crit, current_pos)
-		GameManager.record_damage(final_dmg, is_crit)
+			best_cand.take_damage(final_dmg, is_crit, current_pos, EnemyBase.DAMAGE_TYPE_CHAIN_LIGHTNING)
 		
-		if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
-			best_cand.apply_slow(0.3, 2.0)
+		if not is_target_immune:
+			GameManager.record_damage(final_dmg, is_crit)
+			if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
+				best_cand.apply_slow(0.3, 2.0)
 		
 		hit_count += 1
 		# Advance chain

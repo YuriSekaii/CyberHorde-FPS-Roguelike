@@ -64,3 +64,14 @@ func _behave(delta: float) -> void:
 		drill_rotation_speed = 25.0
 		if contact_sparks:
 			contact_sparks.emitting = false
+
+func is_immune_to(damage_type: int) -> bool:
+	# Spawnlings require a direct hit from a bullet to take damage.
+	# Immune to ricochet, AoE (explosive), and chain lightning.
+	return damage_type != DAMAGE_TYPE_DIRECT
+
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT) -> void:
+	if damage_type != DAMAGE_TYPE_DIRECT:
+		_on_immune_hit(from_pos)
+		return
+	super.take_damage(amount, is_crit, from_pos, damage_type)

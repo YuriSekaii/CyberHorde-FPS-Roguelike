@@ -90,11 +90,13 @@ static func _deal_static_damage(pos: Vector3, dmg: float, rad: float) -> void:
 		if absf(epos.x - pos.x) > rad or absf(epos.z - pos.z) > rad:
 			continue
 		if pos.distance_squared_to(epos) <= rad_sq:
+			var is_immune = enemy.has_method("is_immune_to") and enemy.is_immune_to(EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
 			if enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				enemy.rpc_take_damage.rpc(dmg, false, pos)
+				enemy.rpc_take_damage.rpc(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
 			elif enemy.has_method("take_damage"):
-				enemy.take_damage(dmg, false, pos)
-			GameManager.record_damage(dmg, false)
+				enemy.take_damage(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE)
+			if not is_immune:
+				GameManager.record_damage(dmg, false)
 
 func _process(delta: float) -> void:
 	if not is_active:
