@@ -1,6 +1,6 @@
 extends "res://scripts/enemies/enemy_base.gd"
 
-## Apex Overlord - Wave 100 Final Boss
+## Apex Overlord - Wave 50 Final Boss
 ## Multi-Stage Climactic Battle:
 ## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg) & occasional long-range cannon fire (low dmg).
 ## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg).
@@ -145,7 +145,7 @@ func _apply_wave_scaling() -> void:
 	attack_speed_mult = speed_factor
 	
 	var reduction_tier: int = int(wave_num / 10)
-	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.90)
+	damage_reduction = clampf(float(reduction_tier) * 0.10, 0.0, 0.50)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3) -> void:
 	# Damage mitigation during cinematic transitions

@@ -12,7 +12,7 @@ const SPAWNER_ENEMY_SCENE = preload("res://scenes/enemies/spawner.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 const SPAWN_INDICATOR_SCENE = preload("res://scenes/world/spawn_indicator.tscn")
 
-const FINAL_WAVE: int = 100
+const FINAL_WAVE: int = 50
 const SPAWN_DELAY: float = 3.0
 const MAX_CONCURRENT_ENEMIES: int = 40
 
@@ -44,8 +44,8 @@ func start_spawner() -> void:
 	boss_spawned_for_wave = false
 	_clean_all_indicators()
 	if GameManager.is_boss_battle_mode:
-		current_wave = 100
-		GameManager.current_wave = 100
+		current_wave = 50
+		GameManager.current_wave = 50
 	else:
 		current_wave = 1
 	# In multiplayer, only server controls wave timers
@@ -364,7 +364,7 @@ func _complete_wave() -> void:
 	GameManager.add_scrap(30 + current_wave * 10)
 	GameManager.add_xp(40 + current_wave * 15)
 	
-	# Wave 100 Final Wave Victory
+	# Wave 50 Final Wave Victory
 	if current_wave >= FINAL_WAVE:
 		if NetworkManager.is_multiplayer:
 			rpc_trigger_victory.rpc()

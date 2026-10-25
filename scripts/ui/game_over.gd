@@ -29,7 +29,7 @@ func _on_victory() -> void:
 	visible = true
 	title_label.text = "MISSION ACCOMPLISHED"
 	title_label.modulate = Color(1.0, 0.85, 0.2)
-	subtitle_label.text = "CYBER HORDE PROTOCOL PURGED - WAVE 100 CONQUERED!"
+	subtitle_label.text = "CYBER HORDE PROTOCOL PURGED - WAVE 50 CONQUERED!"
 	subtitle_label.modulate = Color(0.2, 1.0, 0.6)
 	restart_button.text = "PLAY AGAIN"
 	_populate_stats()

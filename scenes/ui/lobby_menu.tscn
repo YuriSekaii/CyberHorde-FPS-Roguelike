@@ -191,7 +191,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_boss")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_boss_hover")
-text = "⚔️  BOSS BATTLE (WAVE 100)"
+text = "⚔️  BOSS BATTLE (WAVE 50)"
 
 [node name="UpdateBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -404,14 +404,14 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.3, 0.35, 1)
 theme_override_font_sizes/font_size = 16
-text = "⚔️  BOSS BATTLE PROTOCOL (WAVE 100)"
+text = "⚔️  BOSS BATTLE PROTOCOL (WAVE 50)"
 horizontal_alignment = 1
 
 [node name="BossDesc" type="Label" parent="Panel/VBoxContainer/BossContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.85)
 theme_override_font_sizes/font_size = 12
-text = "Deploy directly to Wave 100 to challenge the Apex Overlord!
+text = "Deploy directly to Wave 50 to challenge the Apex Overlord!
 Equipped with all perks fully stacked (10 stacks for infinite perks).
 Enter the Authorization Key below to engage:"
 horizontal_alignment = 1

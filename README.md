@@ -27,8 +27,8 @@ The matching Godot 4.7.2 Engine is bundled directly in the repository (`engine.z
 * **Single Player (Solo)**: Classic solo horde survival starting at Wave 1. Build your loadout card-by-card.
 * **Host Co-op Mission (Server)**: Host an online squad co-op lobby using ENet networking (default port: `7777`).
 * **Join Co-op Mission (Client)**: Connect to a teammate's host using their local or public IP address.
-* **⚔️ Boss Battle (Wave 100 Test Protocol)**:
-  * Direct testing mode to immediately fight the **Wave 100 Apex Overlord** without grinding through earlier waves.
+* **⚔️ Boss Battle (Wave 50 Test Protocol)**:
+  * Direct testing mode to immediately fight the **Wave 50 Apex Overlord** without grinding through earlier waves.
   * **Authorization Key**: Requires entering `HereComeTheChallenger` to authorize deployment.
   * **Fully Stacked Perk Arsenal**: You are automatically outfitted with every single perk in the game fully maxed out (infinite-stacking perks—*Heavy Caliber*, *Aegis Energy Shield*, *Vital Plating*, and *Hollow-Point Rounds*—are granted **10 stacks** each).
   * **Deployment Flexibility**: Playable either **Solo** or **Hosted as a Co-op Squad** session.
@@ -132,7 +132,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 
 ### 3. Scalable Engine Optimization
 * **Static Entity Caching**: Replaced frequent `get_tree().get_nodes_in_group("enemies")` calls with `EnemyBase.all_enemies` static registry, saving hundreds of heap array allocations per second.
-* **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas (e.g. all 610 enemies in Wave 100).
+* **Concurrent Horde Limiter**: Capped concurrent active enemies on the arena to 40 (`MAX_CONCURRENT_ENEMIES`), replenishing immediately on enemy kills while preserving full wave quotas (e.g. all 310 enemies in Wave 50).
 * **Frictionless Enemy Physics**: Set enemy `collision_mask = 5` (world + player), eliminating expensive pairwise enemy-on-enemy collision solving loops.
 
 ### 4. Damage Number Toggle & Concurrency Limiting
@@ -246,11 +246,11 @@ When wielding the **Slot 3 Plasma Core** with the **Tesla Arc Emitter** perk act
 
 ### Wave Progression & Scaling
 Hordes scale progressively to challenge late-game builds:
-* **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies, Wave 100 = 610 enemies).
+* **Wave Spawn Budget**: Total enemies per wave scales by **$10 + \text{Wave} \times 6$** (Wave 1 = 16 enemies, Wave 10 = 70 enemies, Wave 50 = 310 enemies).
 * **Spawn Interval Acceleration**: Time between enemy spawns accelerates from 1.9s down to a rapid 0.4s cap ($\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$).
 * **Every Wave**: Enemies gain **+10% Compounding Health** ($\text{Base} \times 1.10^{\text{Wave} - 1}$) and **+5% Compounding Damage** ($\text{Base} \times 1.05^{\text{Wave} - 1}$).
 * **Every 10 Waves**: Enemies gain **+5% Movement Speed and +5% Attack Speed** ($\text{Attack Interval} / \text{Speed Multiplier}$).
-* **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **90%** max reduction). Floating damage indicators accurately reflect reduced damage values.
+* **Every 10 Waves**: Enemies gain **+10% Damage Reduction** (capped at **50%** max reduction in Wave 50). Floating damage indicators accurately reflect reduced damage values.
 
 ### Enemy Catalog & Base Stats
 
@@ -262,7 +262,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~8.0% – 8.5%** (Wave 11+, Rarer than Brute) |
 | **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **~2.0%** (Wave 20+, Multi-Spawn Chaos) |
 | **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick) | Spawned by Void Spawner Portal |
-| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
+| **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 50 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
@@ -272,8 +272,8 @@ Hordes scale progressively to challenge late-game builds:
 5. **Void Spawners**: Colossal floating behemoths with massive biomechanical wings and a giant agape mouth housing an active cosmic portal, introduced in **Wave 20** as chaotic tank mini-bosses (**2,000 base HP**). Has no concurrent spawn limit, allowing multiple spawners to create high-intensity aerial swarms simultaneously! Has no direct attack; instead, periodically ejects Cyber Spawnlings out of its portal mouth. When defeated, drops an interactive **Loot Cache (Upgrade Box)** with free upgrade card rewards!
 6. **Cyber Spawnlings**: Fragile aerial interceptors with fluttering wings, a rear flaming thruster booster, and two hanging talons. Its body is a high-speed spinning drill bit. Possessing the **lowest health in the game (14 base HP)**, it homes directly onto players and deals small rapid continuous damage (2.5 damage every 0.15s) with intense grinding sparks when connected.
 
-### 👑 Wave 100 Final Boss: Apex Overlord & Multi-Stage Escalation
-**Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
+### 👑 Wave 50 Final Boss: Apex Overlord & Multi-Stage Escalation
+**Wave 50 is the climactic Final Wave**. Reaching Wave 50 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
 * **Dedicated HUD Boss Bar**: Displays live HP and health percentage at the top of the screen.
 * **Dual Threat Battlefield**: Players face simultaneous pressure from surrounding horde spawns (enabling on-kill perks like *Vampiric Siphon* and Nanite XP replenishment) while evading the Apex Overlord's evolving aerial and ground attacks.
 * **Stage 1 (100% – 66% HP) — Armored Ground Juggernaut**:
@@ -295,7 +295,7 @@ Hordes scale progressively to challenge late-game builds:
   * **Post-Exhaustion Supersonic Dive**: Surges back to life, flashes its crimson red aura, locks your position with the exact same 0.70s warning window as Stage 2, and dives with supersonic hyper speed (105 m/s) into the ground, causing an 11.5m shockwave (`attack_damage × 2.5` massive damage).
   * **Loop**: Rockets back into the sky and loops the Stage 3 pattern until defeated.
 * **Victory Protocol**: Defeating the Apex Overlord causes its unstable reactor to detonate in a cascading EMP meltdown, clearing any remaining horde units and achieving **MISSION ACCOMPLISHED** victory!
-* **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 99? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 100 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.
+* **Direct Boss Battle Testing**: Need to test boss attack patterns, phases, audio, or balance without grinding waves 1 through 49? Select **⚔️ BOSS BATTLE** in the main lobby, enter authorization key `HereComeTheChallenger`, and immediately deploy into Wave 50 with every perk fully stacked (10 stacks for infinite perks)! Accessible in both Solo and Co-op Host modes.
 
 ---
 
@@ -338,7 +338,7 @@ Game/
 │   │   ├── charger.gd                # 4-legged bull rushing & wall-stun AI
 │   │   ├── spawner.gd                # Void Spawner aerial portal minion carrier AI
 │   │   ├── spawnling.gd              # Fast spinning drill minion AI
-│   │   └── boss.gd                   # Wave 100 Apex Overlord multi-phase boss AI
+│   │   └── boss.gd                   # Wave 50 Apex Overlord multi-phase boss AI
 │   ├── projectiles/
 │   │   ├── bullet.gd                 # ★ PROJECTILE PERKS: Explosions, pierce, ricochet, chain lightning, cryo
 │   │   ├── enemy_projectile.gd       # Spitter plasma orb
@@ -353,7 +353,7 @@ Game/
 │   │   ├── pause_menu.gd             # Pause screen with sensitivity & audio sliders
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
-│       ├── wave_spawner.gd           # Wave director, Wave 100 Boss Battle spawning & horde scaling
+│       ├── wave_spawner.gd           # Wave director, Wave 50 Boss Battle spawning & horde scaling
 │       ├── spawn_indicator.gd        # 3D holographic telegraph rings & emergence
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/

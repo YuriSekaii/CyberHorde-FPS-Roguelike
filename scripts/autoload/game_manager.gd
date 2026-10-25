@@ -581,8 +581,8 @@ func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Arr
 func setup_boss_battle_mode() -> void:
 	reset_game()
 	is_boss_battle_mode = true
-	current_wave = 100
-	player_level = 100
+	current_wave = 50
+	player_level = 50
 	grant_boss_battle_loadout()
 
 func grant_boss_battle_loadout() -> void:

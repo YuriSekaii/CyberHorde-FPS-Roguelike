@@ -137,8 +137,8 @@ func _on_hitmarker(is_crit: bool) -> void:
 	hitmarker.scale = Vector2(1.4, 1.4) if is_crit else Vector2.ONE
 
 func _on_wave_started(wave_num: int) -> void:
-	if wave_num >= 100:
-		wave_label.text = "WAVE 100 [FINAL BOSS]"
+	if wave_num >= 50:
+		wave_label.text = "WAVE 50 [FINAL BOSS]"
 		wave_label.modulate = Color(1.0, 0.25, 0.25)
 	else:
 		wave_label.text = "WAVE %d" % wave_num
