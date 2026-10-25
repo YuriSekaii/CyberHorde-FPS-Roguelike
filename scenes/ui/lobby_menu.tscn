@@ -866,7 +866,7 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.95, 0.88, 0.88, 0.85)
 theme_override_font_sizes/font_size = 11
-text = "• 5s: +300% Fire Rate & infinite ammo.
+text = "• 5s: +500% Fire Rate & infinite ammo.
 • All weapons become fully automatic (hold to fire).
 • Plasma Core fires instantly without charging.
 • All weapons reload when skill ends. 60s cooldown (30s with CD perk)."

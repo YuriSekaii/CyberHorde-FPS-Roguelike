@@ -650,7 +650,7 @@ func _cancel_charge() -> void:
 
 func _fire_active_weapon() -> void:
 	var w = weapons[active_weapon_idx]
-	var slayer_fr_mult = 4.0 if is_slayer_active else 1.0
+	var slayer_fr_mult = 6.0 if is_slayer_active else 1.0 # Gunner Active: +500% MORE fire rate (6x multiplier)
 	var effective_cooldown = maxf(0.02, w.fire_rate / (GameManager.fire_rate_mult * slayer_fr_mult))
 	w.cooldown = effective_cooldown
 	_update_plasma_core_visual()
