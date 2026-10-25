@@ -278,7 +278,7 @@ Hordes scale progressively to challenge late-game builds:
 | **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **7.2%** (Wave 6+, Halved from 14.4%) |
 | **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~4.0% – 4.25%** (Wave 11+, Halved from ~8.0% – 8.5%) |
 | **Void Spawner** | **2,000.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | High-altitude flight (Direct sky spawn at 8.5m with vertical ground-to-sky summon beacon), Enlarged Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **0.25%** (Wave 20+, Reduced by 1/2 then 1/4) |
-| **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick). **Direct bullet hits only** (Immune to ricochet, AoE/explosive, and chain lightning) | Spawned by Void Spawner Portal |
+| **Cyber Spawnling** | **14.0** (Lowest HP) | **13.0 m/s** | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick). **Direct bullet hits only** (Immune to ricochet, AoE/explosive, and chain lightning) | Spawned by Void Spawner Portal |
 | **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | **120.0 → 540.0 (Cap)** (+50% Boosted Base & Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE (14.25m), Red Aura Lock-On, Hyper Dive (15.75m), Machine Gun (50% Tighter Spread), Mega Orb (18.0m AoE), & Supersonic Dive (17.25m) | Wave 50 Exclusive |
 
 ### Enemy Types

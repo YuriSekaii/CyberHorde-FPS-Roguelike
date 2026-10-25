@@ -3,6 +3,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 var attack_timer: float = 0.0
 var wing_timer: float = 0.0
 var drill_rotation_speed: float = 25.0
+var launch_decay: float = 0.35
 
 const ATTACK_INTERVAL: float = 0.15
 const CONNECT_RANGE: float = 1.45
@@ -34,7 +35,12 @@ func _behave(delta: float) -> void:
 	
 	# Fast aerial homing flight
 	var effective_speed = speed * slow_multiplier
-	velocity = dir * effective_speed
+	var target_vel = dir * effective_speed
+	if launch_decay > 0.0:
+		launch_decay -= delta
+		velocity = velocity.lerp(target_vel, 8.0 * delta)
+	else:
+		velocity = target_vel
 	
 	move_and_slide()
 	
