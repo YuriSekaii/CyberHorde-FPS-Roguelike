@@ -49,7 +49,7 @@ var jump_buffer_timer: float = 0.0
 
 # Class & Skill Specializations (Medic, Rogue, Gunner)
 var player_class: String = "medic"
-const MEDIC_COOLDOWN: float = 25.0
+const MEDIC_COOLDOWN: float = 20.0
 const ROGUE_COOLDOWN: float = 10.0
 const GUNNER_COOLDOWN: float = 60.0
 const GUNNER_ACTIVE_DURATION: float = 5.0
@@ -1051,7 +1051,7 @@ func _activate_class_skill() -> void:
 		"gunner", "slayer":
 			_activate_gunner_skill()
 
-# --- MEDIC ACTIVE: EMERGENCY OVERDRIVE (25s cd) ---
+# --- MEDIC ACTIVE: CELLULAR RESTORE (20s cd) ---
 func _activate_medic_skill() -> void:
 	var cd = MEDIC_COOLDOWN * GameManager.get_skill_cooldown_mult()
 	skill_cooldown_timer = cd
@@ -1071,17 +1071,17 @@ func _apply_medic_heal_all() -> void:
 	var players = get_tree().get_nodes_in_group("player")
 	for p in players:
 		if is_instance_valid(p):
-			if p.get("is_downed") == true and p.has_method("rpc_revive"):
-				p.rpc_revive()
-			else:
-				var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
-				p.heal(max_hp * 0.25)
-				if GameManager.shield_max > 0.0:
-					var s_add = GameManager.shield_max * 0.25
-					p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
-					GameManager.current_shield = p.current_shield
-					p.shield_changed.emit(p.current_shield, GameManager.shield_max)
-	_spawn_floating_text("+25% HP & SHIELD", Color(0.2, 1.0, 0.6))
+			# Active skill no longer revives downed squadmates (manual revive with E remains)
+			if p.get("is_downed") == true:
+				continue
+			var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
+			p.heal(max_hp * 0.20)
+			if GameManager.shield_max > 0.0:
+				var s_add = GameManager.shield_max * 0.20
+				p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
+				GameManager.current_shield = p.current_shield
+				p.shield_changed.emit(p.current_shield, GameManager.shield_max)
+	_spawn_floating_text("+20% HP & SHIELD", Color(0.2, 1.0, 0.6))
 
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
