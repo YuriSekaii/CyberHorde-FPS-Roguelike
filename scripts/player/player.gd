@@ -54,6 +54,7 @@ var player_class: String = "medic":
 		if is_inside_tree() and not weapons.is_empty():
 			_update_stats()
 const MEDIC_COOLDOWN: float = 20.0
+const MEDIC_ACTIVE_DURATION: float = 2.0
 const ROGUE_COOLDOWN: float = 10.0
 const GUNNER_COOLDOWN: float = 60.0
 const GUNNER_ACTIVE_DURATION: float = 5.0
@@ -61,6 +62,10 @@ const GUNNER_ACTIVE_DURATION: float = 5.0
 var skill_cooldown_timer: float = 0.0
 var skill_max_cooldown: float = 10.0
 var skill_ready: bool = true
+
+# Medic Active: Cellular Restore
+var is_medic_active: bool = false
+var medic_timer: float = 0.0
 
 func get_skill_max_cooldown() -> float:
 	var mult = GameManager.get_skill_cooldown_mult()
@@ -431,6 +436,13 @@ func _physics_process(delta: float) -> void:
 		slayer_timer -= delta
 		if slayer_timer <= 0.0:
 			_end_slayer_skill()
+	
+	# Medic active duration timer (2s invulnerability)
+	if is_medic_active:
+		medic_timer -= delta
+		if medic_timer <= 0.0:
+			is_medic_active = false
+			medic_timer = 0.0
 	
 	# Medic Passive: 5 HP/s regeneration across all players per active Medic (Stackable)
 	if not is_downed and current_health < max_health:
@@ -990,6 +1002,9 @@ func _recover_from_abyss() -> void:
 func die() -> void:
 	if is_charging:
 		_cancel_charge()
+	if is_medic_active:
+		is_medic_active = false
+		medic_timer = 0.0
 	if NetworkManager.is_multiplayer:
 		# Check if any teammate is still alive
 		var any_alive = false
@@ -1034,6 +1049,9 @@ func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 func rpc_set_downed(downed: bool) -> void:
 	if downed and is_charging:
 		_cancel_charge()
+	if downed and is_medic_active:
+		is_medic_active = false
+		medic_timer = 0.0
 	is_downed = downed
 	bleedout_timer = 30.0
 	downed_state_changed.emit(downed)
@@ -1098,6 +1116,8 @@ func _activate_class_skill() -> void:
 
 # --- MEDIC ACTIVE: CELLULAR RESTORE (20s cd) ---
 func _activate_medic_skill() -> void:
+	is_medic_active = true
+	medic_timer = MEDIC_ACTIVE_DURATION
 	var cd = MEDIC_COOLDOWN * GameManager.get_skill_cooldown_mult()
 	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
@@ -1114,6 +1134,8 @@ func rpc_medic_active() -> void:
 	_apply_medic_heal_all()
 
 func _apply_medic_heal_all() -> void:
+	is_medic_active = true
+	medic_timer = MEDIC_ACTIVE_DURATION
 	var players = get_tree().get_nodes_in_group("player")
 	for p in players:
 		if is_instance_valid(p):
@@ -1127,7 +1149,9 @@ func _apply_medic_heal_all() -> void:
 				p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
 				GameManager.current_shield = p.current_shield
 				p.shield_changed.emit(p.current_shield, GameManager.shield_max)
-	_spawn_floating_text("+20% HP & SHIELD", Color(0.2, 1.0, 0.6))
+			if p.has_method("trigger_invulnerability"):
+				p.trigger_invulnerability(2.0)
+	_spawn_floating_text("+20% HP & SHIELD (INVULN 2s)", Color(0.2, 1.0, 0.6))
 
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:

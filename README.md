@@ -103,7 +103,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 
 | Class | Accent | Role | Passive Specialization | Active Skill (`Q`) |
 | :--- | :---: | :--- | :--- | :--- |
-| **Medic** | Neon Mint | Support & Sustain | **Nano-Regen**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). | **Cellular Restore** (20s cd): Instantly recovers 20% Max Shield and 20% Max HP to ALL players. |
+| **Medic** | Neon Mint | Support & Sustain | **Nano-Regen**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). | **Cellular Restore** (20s cd): Instantly recovers 20% Max Shield and 20% Max HP, and grants 2s invulnerability to ALL players. |
 | **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed, jump speed, and reload speed**. | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer) and **instantly reload all weapons**. Sky/air capable. |
 | **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons and companion drones, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **+300% MORE fire rate** and **unlimited magazine** across player weapons and companion drones. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons and companion drones reload to full magazine when the skill ends. |
 

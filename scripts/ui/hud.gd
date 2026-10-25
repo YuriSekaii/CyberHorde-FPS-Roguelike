@@ -206,7 +206,10 @@ func _update_skill_hud() -> void:
 		
 		match p_class:
 			"medic":
-				pass
+				if local_player.get("is_medic_active") == true:
+					is_active = true
+					var dur_val = local_player.get("medic_timer")
+					active_dur = float(dur_val) if dur_val != null else 0.0
 			"rogue":
 				if local_player.get("is_dashing") == true:
 					is_active = true
@@ -240,11 +243,11 @@ func _update_skill_hud() -> void:
 		if skill_cooldown_label:
 			skill_cooldown_label.visible = true
 			skill_cooldown_label.text = "%.1fs" % maxf(0.0, active_dur)
-			skill_cooldown_label.modulate = Color(1.0, 0.35, 0.35) if p_class != "rogue" else Color(0.4, 1.0, 0.6)
+			skill_cooldown_label.modulate = theme_col if (p_class == "medic" or p_class == "rogue") else Color(1.0, 0.35, 0.35)
 		
 		if skill_status_label:
 			skill_status_label.text = "[ACTIVE: %.1fs]" % maxf(0.0, active_dur)
-			skill_status_label.modulate = Color(1.0, 0.35, 0.35) if p_class != "rogue" else Color(0.4, 1.0, 0.6)
+			skill_status_label.modulate = theme_col if (p_class == "medic" or p_class == "rogue") else Color(1.0, 0.35, 0.35)
 		
 		_set_icon_border_color(theme_col, true)
 	elif is_ready:
