@@ -193,16 +193,16 @@ func _select_enemy_type(wave_num: int) -> int:
 	var w_charger: float = 0.0
 	var w_spawner: float = 0.0
 	
-	# Base weights for Brute, Charger, and Spawner reduced by half:
-	# Brute: 0.144 -> 0.072
-	# Charger: 0.080/0.085 -> 0.040/0.0425
-	# Spawner: 0.020 -> 0.010
+	# Base weights:
+	# Brute: 0.144 -> 0.072 (halved)
+	# Charger: 0.080/0.085 -> 0.040/0.0425 (halved)
+	# Spawner: 0.020 -> 0.010 -> 0.0025 (halved, then reduced to another 1/4)
 	if wave_num >= 20:
 		w_swarmer = 0.456 * basic_multiplier
 		w_spitter = 0.300 * basic_multiplier
 		w_brute = 0.072
 		w_charger = 0.040
-		w_spawner = 0.010
+		w_spawner = 0.0025
 	elif wave_num > 10:
 		w_swarmer = 0.471 * basic_multiplier
 		w_spitter = 0.300 * basic_multiplier
