@@ -148,7 +148,7 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
 | **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 15% | Close-quarters shotgun spread |
-| **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.50s (0.18s charge + 0.32s cd) | 5 | 2.0s | 25% | 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
+| **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30s (0.10s charge + 0.20s cd) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
@@ -158,13 +158,17 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
    - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 15% base crit chance.
 3. **Plasma Core (`Key 3`)**:
    - High-yield heavy energy launcher firing concentrated plasma orbs.
-   - **Hold-to-Charge & Release-to-Fire Mechanic**:
-     - Requires holding `LMB` for at least the charge delay time (**0.18s base**, accelerated by fire rate perks).
+   - **Rapid 0.30s Fire Rate with Hold-to-Charge & Release-to-Fire Mechanic**:
+     - Requires holding `LMB` for at least the charge delay time (**0.10s base**, accelerated by fire rate perks) before releasing to fire, with a 0.20s post-fire cooldown (total cycle 0.30s / 3.33 shots per sec).
      - **Charge Retention**: If held longer than the charge delay without releasing, the weapon stays charged and **will not fire until released**.
      - **Shot Cancellation**: Releasing `LMB` before reaching the required charge delay cancels the shot completely without consuming ammo or triggering cooldown. To shoot, you must charge from scratch again.
      - Dynamic visual & HUD feedback: Pulsing plasma core chamber (expands to 135%), radiant purple muzzle illumination, focused crosshair reticle contraction with neon magenta glow, and capacitor whine audio.
+   - **Slow-Moving Heavy Plasma Projectile with Massive Hitbox**:
+     - Fires a giant, layered plasma orb traveling at **~23.3 m/s** (exactly 1/3 of standard bullet speed).
+     - Features multi-layered visual geometry: outer pulsing translucent magenta plasma sphere (0.9m diameter), electric cyan containment ring, and blinding white-hot dense energy core.
+     - Equipped with an expansive **hitbox (0.75m radius + enemy collision radius = ~2.5m effective capture width)** with continuous swept-volume detection, effortlessly plowing through and impacting enemies even on near-misses while safely passing terrain corners without snagging.
    - **High Concussive Recoil**: Unleashes massive gun kickback, +13° muzzle pitch lift, camera vertical recoil, screen trauma shake (0.38 intensity), and a backward propulsion impulse.
-   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.5s total shot cycle, 2.0s reload time, 25% base crit chance.
+   - Deals 150 direct impact damage and 150 Area-of-Effect detonation damage in a 5.0m blast radius (10.0m with *Explosive Payload*), 0.30s total shot cycle, 2.0s reload time, 25% base crit chance.
    - **Exclusive Tesla Arc Synergy**: When paired with **Tesla Arc Emitter**, strikes *every* enemy in its explosive radius before detonating, and each arc chains outward to alive enemies within 8.5m!
 
 ---

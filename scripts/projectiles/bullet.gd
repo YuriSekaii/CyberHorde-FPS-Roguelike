@@ -1,6 +1,10 @@
 extends Area3D
 
-@export var speed: float = 70.0
+const BASE_BULLET_SPEED: float = 70.0
+const PLASMA_SPEED: float = BASE_BULLET_SPEED / 3.0 # ~23.33 m/s (1/3 of standard bullet speed)
+const PLASMA_HITBOX_RADIUS: float = 0.75 # Generous hitbox radius for plasma orb
+
+@export var speed: float = BASE_BULLET_SPEED
 @export var base_damage: float = 25.0
 @export var is_explosive: bool = false
 @export var is_plasma: bool = false
@@ -25,6 +29,14 @@ static var beam_pool: Array[MeshInstance3D] = []
 static var shared_beam_mesh: CylinderMesh = null
 static var shared_beam_mat: StandardMaterial3D = null
 const MAX_BEAM_POOL: int = 24
+
+# Static shared resources for plasma projectiles (Zero heap allocations per shot)
+static var plasma_outer_mesh: SphereMesh = null
+static var plasma_outer_mat: StandardMaterial3D = null
+static var plasma_core_mesh_res: SphereMesh = null
+static var plasma_core_mat: StandardMaterial3D = null
+static var plasma_ring_mesh: TorusMesh = null
+static var plasma_ring_mat: StandardMaterial3D = null
 
 var is_visual: bool = true
 var has_light: bool = false
@@ -90,6 +102,18 @@ func _unregister_bullet() -> void:
 						break
 
 func set_visual(state: bool) -> void:
+	if is_plasma:
+		is_visual = true
+		if mesh_instance:
+			mesh_instance.visible = true
+		var light_target: OmniLight3D = omni_light if omni_light else get_node_or_null("OmniLight3D")
+		if light_target:
+			if not has_light and active_bullet_lights < MAX_BULLET_LIGHTS:
+				active_bullet_lights += 1
+				has_light = true
+			light_target.visible = true
+		return
+
 	is_visual = state
 	if mesh_instance:
 		mesh_instance.visible = is_visual
@@ -111,12 +135,88 @@ func set_visual(state: bool) -> void:
 		elif not is_visual:
 			light_target.visible = false
 
+static func _init_plasma_resources() -> void:
+	plasma_outer_mesh = SphereMesh.new()
+	plasma_outer_mesh.radius = 0.45
+	plasma_outer_mesh.height = 0.90
+	
+	plasma_outer_mat = StandardMaterial3D.new()
+	plasma_outer_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	plasma_outer_mat.albedo_color = Color(0.92, 0.22, 1.0, 0.75)
+	plasma_outer_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	plasma_outer_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	plasma_outer_mesh.material = plasma_outer_mat
+	
+	plasma_core_mesh_res = SphereMesh.new()
+	plasma_core_mesh_res.radius = 0.24
+	plasma_core_mesh_res.height = 0.48
+	
+	plasma_core_mat = StandardMaterial3D.new()
+	plasma_core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	plasma_core_mat.albedo_color = Color(1.0, 0.9, 1.0, 1.0)
+	plasma_core_mesh_res.material = plasma_core_mat
+	
+	plasma_ring_mesh = TorusMesh.new()
+	plasma_ring_mesh.inner_radius = 0.44
+	plasma_ring_mesh.outer_radius = 0.52
+	
+	plasma_ring_mat = StandardMaterial3D.new()
+	plasma_ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	plasma_ring_mat.albedo_color = Color(0.35, 0.92, 1.0, 0.85)
+	plasma_ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	plasma_ring_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	plasma_ring_mesh.material = plasma_ring_mat
+
+func _setup_plasma_visuals() -> void:
+	if plasma_outer_mesh == null:
+		_init_plasma_resources()
+	
+	var m = mesh_instance if mesh_instance else get_node_or_null("MeshInstance3D")
+	if m:
+		m.mesh = plasma_outer_mesh
+		m.material_override = null
+		m.transform = Transform3D.IDENTITY
+		m.visible = true
+		
+		# Inner white-hot glowing core
+		var core = m.get_node_or_null("PlasmaCore")
+		if core == null:
+			core = MeshInstance3D.new()
+			core.name = "PlasmaCore"
+			core.mesh = plasma_core_mesh_res
+			m.add_child(core)
+		
+		# Equatorial electric containment ring
+		var ring = m.get_node_or_null("PlasmaRing")
+		if ring == null:
+			ring = MeshInstance3D.new()
+			ring.name = "PlasmaRing"
+			ring.mesh = plasma_ring_mesh
+			ring.rotation_degrees = Vector3(90, 0, 0)
+			m.add_child(ring)
+	
+	var light_target: OmniLight3D = omni_light if omni_light else get_node_or_null("OmniLight3D")
+	if light_target:
+		light_target.light_color = Color(0.95, 0.25, 1.0)
+		light_target.light_energy = 3.5
+		light_target.omni_range = 6.5
+		light_target.visible = true
+		if not has_light and active_bullet_lights < MAX_BULLET_LIGHTS:
+			active_bullet_lights += 1
+			has_light = true
+
 func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10) -> void:
 	direction = dir.normalized()
 	base_damage = dmg
 	is_explosive = explosive or GameManager.explosive_rounds
 	is_plasma = from_plasma
 	crit_chance = base_crit + (GameManager.crit_chance - 0.10)
+	if is_plasma:
+		speed = PLASMA_SPEED
+		lifetime = 4.5
+		if not self in visible_bullets:
+			visible_bullets.append(self)
+		_setup_plasma_visuals()
 	if direction != Vector3.ZERO:
 		look_at(global_position + direction, Vector3.UP)
 
@@ -127,11 +227,91 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	var move_step = direction * speed * delta
-	# Check raycast sweep for precise collision at high speed
+	var next_pos = global_position + move_step
 	var space_state = get_world_3d().direct_space_state
+	
+	if is_plasma:
+		# Rotating & pulsing plasma orb visual animation
+		var m = mesh_instance if mesh_instance else get_node_or_null("MeshInstance3D")
+		if m:
+			m.rotate_z(6.0 * delta)
+			var ring = m.get_node_or_null("PlasmaRing")
+			if ring:
+				ring.rotate_x(8.0 * delta)
+				ring.rotate_y(10.0 * delta)
+			var pulse = 1.0 + sin(timer * 18.0) * 0.06
+			m.scale = Vector3(pulse, pulse, pulse)
+		
+		# --- PLASMA COLLISION DETECTION WITH LARGE HITBOX ---
+		# 1. Environment collision (walls, floor) with raycast so it doesn't snag on corners/doorways
+		var ray_query = PhysicsRayQueryParameters3D.create(
+			global_position,
+			next_pos,
+			1, # Layer 1: World / Environment
+			[self]
+		)
+		var wall_result = space_state.intersect_ray(ray_query)
+		var wall_dist = global_position.distance_to(wall_result.position) if wall_result else INF
+		
+		# 2. Check enemies with generous hitbox
+		var best_enemy: Node = null
+		var best_enemy_dist = INF
+		var best_hit_pos = Vector3.ZERO
+		
+		var seg = next_pos - global_position
+		var seg_len_sq = seg.length_squared()
+		
+		for enemy in EnemyBase.all_enemies:
+			if not is_instance_valid(enemy) or enemy.is_dead or enemy in already_hit:
+				continue
+			
+			var col_shape = enemy.get_node_or_null("CollisionShape3D")
+			var enemy_rad = 0.55
+			var shape_offset = Vector3(0, 0.5, 0)
+			if col_shape:
+				shape_offset = col_shape.position
+				if col_shape.shape is SphereShape3D:
+					enemy_rad = col_shape.shape.radius
+				elif col_shape.shape is BoxShape3D:
+					var s = col_shape.shape.size
+					enemy_rad = maxf(s.x, s.z) * 0.5
+			
+			var epos = enemy.global_position + shape_offset
+			
+			# Broadphase distance cull
+			if absf(epos.x - global_position.x) > 4.0 or absf(epos.z - global_position.z) > 4.0 or absf(epos.y - global_position.y) > 4.0:
+				continue
+			
+			var t = 0.0
+			if seg_len_sq > 0.0001:
+				t = clampf((epos - global_position).dot(seg) / seg_len_sq, 0.0, 1.0)
+			var closest_pt = global_position + seg * t
+			var dist = closest_pt.distance_to(epos)
+			
+			# Generous contact threshold: projectile radius (0.75m) + enemy collision radius
+			if dist <= (PLASMA_HITBOX_RADIUS + enemy_rad):
+				var travel_d = global_position.distance_to(closest_pt)
+				if travel_d < wall_dist and travel_d < best_enemy_dist:
+					best_enemy = enemy
+					best_enemy_dist = travel_d
+					best_hit_pos = closest_pt
+		
+		# 3. Resolve collision
+		if best_enemy != null:
+			global_position = next_pos
+			_handle_hit(best_enemy, best_hit_pos, -direction)
+			return
+		elif wall_result:
+			_handle_hit(wall_result.collider, wall_result.position, wall_result.normal)
+			return
+		else:
+			global_position = next_pos
+			return
+	
+	# Standard bullet raycast sweep
 	var query = PhysicsRayQueryParameters3D.create(
 		global_position,
-		global_position + move_step,
+		next_pos,
 		collision_mask,
 		[self]
 	)
@@ -139,7 +319,7 @@ func _physics_process(delta: float) -> void:
 	if result:
 		_handle_hit(result.collider, result.position, result.normal)
 	else:
-		global_position += move_step
+		global_position = next_pos
 
 func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> void:
 	if collider in already_hit:
