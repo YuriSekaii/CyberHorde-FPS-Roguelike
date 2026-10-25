@@ -218,10 +218,10 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (5.0m → 10.0m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
-| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets). |
+| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets) (Max 2 stacks). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets. **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
-| **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
-| **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick. |
+| **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce (Max 2 stacks). |
+| **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick (Max 3 stacks). |
 | **Emergency Defibrillator** | `Legendary` (Gold) | Survive fatal damage, gaining **5s of invulnerability**. Automatically **recharges after surviving 10 waves**! |
 
 ---

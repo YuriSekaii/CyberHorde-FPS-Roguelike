@@ -133,7 +133,7 @@ var upgrade_database: Dictionary = {
 		"desc": "+100% Projectiles per shot (Doubles shot count).",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 4
+		"max_stacks": 2
 	},
 	"piercing_core": {
 		"id": "piercing_core",
@@ -189,7 +189,7 @@ var upgrade_database: Dictionary = {
 		"desc": "Projectiles ricochet with on-hit explosion & lightning per bounce.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 3
+		"max_stacks": 2
 	},
 	"combat_drone": {
 		"id": "combat_drone",
@@ -197,7 +197,7 @@ var upgrade_database: Dictionary = {
 		"desc": "Deploys an autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). +1 drone per pick.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 6
+		"max_stacks": 3
 	},
 	"second_wind": {
 		"id": "second_wind",
