@@ -7,6 +7,8 @@ const SWARMER_SCENE = preload("res://scenes/enemies/swarmer.tscn")
 const SPITTER_SCENE = preload("res://scenes/enemies/spitter.tscn")
 const BRUTE_SCENE = preload("res://scenes/enemies/brute.tscn")
 const BOSS_SCENE = preload("res://scenes/enemies/boss.tscn")
+const CHARGER_SCENE = preload("res://scenes/enemies/charger.tscn")
+const SPAWNER_ENEMY_SCENE = preload("res://scenes/enemies/spawner.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 const SPAWN_INDICATOR_SCENE = preload("res://scenes/world/spawn_indicator.tscn")
 
@@ -151,7 +153,8 @@ func _spawn_one_enemy() -> void:
 	var enemy_name = "Enemy_%d_%d" % [current_wave, enemy_counter]
 	
 	# Determine enemy type
-	var type_id = 0 # 0=Swarmer, 1=Spitter, 2=Brute, 3=Boss
+	# 0=Swarmer, 1=Spitter, 2=Brute, 3=Boss, 4=Charger, 5=Spawner
+	var type_id = 0
 	var spawn_pos: Vector3
 	var delay: float = SPAWN_DELAY
 	
@@ -161,16 +164,53 @@ func _spawn_one_enemy() -> void:
 		spawn_pos = Vector3(0.0, 0.5, -12.0)
 		delay = 4.0
 	else:
-		if current_wave >= 6:
-			var r = randf()
-			# Brute spawn chance reduced by 20% (from 18% to 14.4%)
+		var r = randf()
+		if current_wave >= 20:
+			# Void Spawner: extremely rare (~2.5%), max 1 concurrent spawner
+			var active_spawner_count = 0
+			for e in active_enemies:
+				if is_instance_valid(e) and e.get("enemy_name") == "Void Spawner":
+					active_spawner_count += 1
+			for p in pending_spawns:
+				if p.get("type_id") == 5:
+					active_spawner_count += 1
+			
+			if r < 0.025 and active_spawner_count == 0:
+				type_id = 5
+			elif r < 0.105: # Charger (~8.0%, rarer than Brute's 14.4%)
+				type_id = 4
+			elif r < 0.249: # Brute (14.4%)
+				type_id = 2
+			elif r < 0.549: # Spitter (30.0%)
+				type_id = 1
+			else:
+				type_id = 0 # Swarmer (45.1%)
+		elif current_wave > 10:
+			# Charger introduced after Wave 10, rarer than Brute
+			if r < 0.085: # Charger (8.5%, rarer than Brute's 14.4%)
+				type_id = 4
+			elif r < 0.229: # Brute (14.4%)
+				type_id = 2
+			elif r < 0.529: # Spitter (30.0%)
+				type_id = 1
+			else:
+				type_id = 0 # Swarmer (47.1%)
+		elif current_wave >= 6:
+			# Brute spawn chance 14.4%, Spitter 30%
 			if r < 0.144:
 				type_id = 2
 			elif r < 0.444:
 				type_id = 1
+			else:
+				type_id = 0
 		elif current_wave >= 3:
-			if randf() < 0.35:
+			if r < 0.35:
 				type_id = 1
+			else:
+				type_id = 0
+		else:
+			type_id = 0
+		
 		spawn_pos = _find_valid_spawn_pos(ref_player, players)
 	
 	# Enqueue pending spawn
@@ -249,6 +289,10 @@ func _instantiate_enemy(type_id: int, spawn_pos: Vector3, net_name: String) -> v
 		enemy_scene = BRUTE_SCENE
 	elif type_id == 3:
 		enemy_scene = BOSS_SCENE
+	elif type_id == 4:
+		enemy_scene = CHARGER_SCENE
+	elif type_id == 5:
+		enemy_scene = SPAWNER_ENEMY_SCENE
 	
 	var enemy = enemy_scene.instantiate()
 	enemy.name = net_name

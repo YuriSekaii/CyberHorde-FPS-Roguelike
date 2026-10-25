@@ -237,17 +237,23 @@ Hordes scale progressively to challenge late-game builds:
 
 ### Enemy Catalog & Base Stats
 
-| Enemy Type | Base Health | Move Speed | Base Damage | Attack Rate / Cooldown | Attack Type & Range | Spawn Weight (Wave 6+) |
+| Enemy Type | Base Health | Move Speed | Base Damage | Attack Rate / Cooldown | Attack Type & Range | Spawn Weight / Availability |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: |
-| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~55.6% |
-| **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% |
-| **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Reduced by 20%) |
+| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~45% – 55% |
+| **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing plasma orb (25.0m) | 30.0% (Wave 3+) |
+| **Armored Goliath (Brute)** | **500.0** | 3.6 m/s | 35.0 | 3.5s | Shockwave Ground Slam (4.8m) + 10.0 Knockup | **14.4%** (Wave 6+) |
+| **Cyber Charger** | **220.0** | 3.2 m/s (24 m/s Charge) | **48.0** | 2.5s | Red Lock-On straightline rush, Wall Crash & **3.5s Stun** | **~8.0% – 8.5%** (Wave 11+, Rarer than Brute) |
+| **Void Spawner** | **1,600.0** | 2.8 m/s | 0.0 (Spawner) | 4.5s Spawn | Portal Mouth Ejection (Spawns Spawnlings), **Drops Upgrade Box** | **~2.5%** (Wave 20+, Extremely Rare Mini-Boss) |
+| **Cyber Spawnling** | **14.0** (Lowest HP) | 8.5 m/s | 2.5 | 0.15s | High-speed spinning drill contact (Continuous rapid tick) | Spawned by Void Spawner Portal |
 | **Apex Overlord (Final Boss)** | **4,444,444.0** (Cute Fixed HP) | 3.2 – 105.0 m/s (Dive) | 40.0 → 180.0 (Cap) | Dynamic Multi-Stage Attack Loops | Multi-Stage Flight, Slam AoE, Red Aura Lock-On, Hyper Dive, Machine Gun & Mega Orb | Wave 100 Exclusive |
 
 ### Enemy Types
 1. **Cyber Swarmers**: Fast neon-red crawler insect mechs that swarm in packs and rush players for melee bites.
 2. **Plasma Spitters**: Hovering purple combat drones that strafe at a distance and fire homing plasma bolts.
-3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing mini-boss style threats that charge in and slam the ground creating shockwaves and knockback!
+3. **Armored Goliaths (Brutes)**: Giant armored cyber crushers boasting **500 base HP** and 70% knockback resistance. Spawns with reduced frequency (14.4% weight) to serve as imposing threats that charge in and slam the ground creating shockwaves and knockback!
+4. **Cyber Chargers**: Four-legged cybernetic bull beasts introduced after **Wave 10** (rarer than Brutes). Stalks slowly toward players until within 14m, winds up while pawing the ground, flashes bright red as it locks your location, and rockets forward in a straight line at 24 m/s! Deals 48 heavy damage on contact and travels until impacting an arena wall/pillar, triggering a heavy collision and stunning itself for 3.5 seconds with dizzy sparks.
+5. **Void Spawners**: Colossal floating behemoths with massive biomechanical wings and a giant agape mouth housing an active cosmic portal, introduced in **Wave 20** as extremely rare tank mini-bosses (**1,600 base HP**). Has no direct attack; instead, periodically ejects Cyber Spawnlings out of its portal mouth. When defeated, drops an interactive **Loot Cache (Upgrade Box)** with free upgrade card rewards!
+6. **Cyber Spawnlings**: Fragile aerial interceptors with fluttering wings, a rear flaming thruster booster, and two hanging talons. Its body is a high-speed spinning drill bit. Possessing the **lowest health in the game (14 base HP)**, it homes directly onto players and deals small rapid continuous damage (2.5 damage every 0.15s) with intense grinding sparks when connected.
 
 ### 👑 Wave 100 Final Boss: Apex Overlord & Multi-Stage Escalation
 **Wave 100 is the climactic Final Wave**. Reaching Wave 100 spawns the ultimate mechanical juggernaut—the **Apex Overlord** (featuring a fixed, unscaled **4,444,444 HP**)—commanding a full escalation horde of Swarmers, Spitters, and Armored Goliaths with dynamic 3-stage combat mechanics:
@@ -312,6 +318,9 @@ Game/
 │   │   ├── swarmer.gd                # Fast swarm insect AI
 │   │   ├── spitter.gd                # Ranged hovering drone AI
 │   │   ├── brute.gd                  # Ground-slamming heavy golem AI
+│   │   ├── charger.gd                # 4-legged bull rushing & wall-stun AI
+│   │   ├── spawner.gd                # Void Spawner aerial portal minion carrier AI
+│   │   ├── spawnling.gd              # Fast spinning drill minion AI
 │   │   └── boss.gd                   # Wave 100 Apex Overlord multi-phase boss AI
 │   ├── projectiles/
 │   │   ├── bullet.gd                 # ★ PROJECTILE PERKS: Explosions, pierce, ricochet, chain lightning, cryo
@@ -327,13 +336,13 @@ Game/
 │   │   ├── pause_menu.gd             # Pause screen with sensitivity & audio sliders
 │   │   └── game_over.gd              # Stats summary & retry screen
 │   └── world/
-│       ├── spawner.gd                # Wave director, Wave 100 Boss Battle spawning & horde scaling
+│       ├── wave_spawner.gd           # Wave director, Wave 100 Boss Battle spawning & horde scaling
 │       ├── spawn_indicator.gd        # 3D holographic telegraph rings & emergence
 │       └── jump_pad.gd               # Aerial launch pads
 └── scenes/
     ├── main.tscn                     # Main game scene combining arena, squad, HUD
     ├── player/player.tscn            # Player scene with 1st-person & 3rd-person armor
-    ├── enemies/                      # Swarmer, Spitter, Brute, Boss scenes
+    ├── enemies/                      # Swarmer, Spitter, Brute, Charger, Spawner, Spawnling, Boss scenes
     ├── projectiles/                  # Bullet, Plasma, Explosion scenes
     ├── loot/                         # Pickup & Chest scenes
     ├── ui/                           # Lobby, HUD, Upgrade, Pause, GameOver scenes
@@ -459,7 +468,7 @@ All perks are driven by a centralized data structure in [`scripts/autoload/game_
 2. Override `_behave(delta)` with your custom movement and attack pattern (e.g. charging, dodging, sniping).
    * `target_player` automatically updates to the nearest active, non-downed squadmate!
 3. Create a corresponding `.tscn` scene in `scenes/enemies/` with a `CharacterBody3D`, `CollisionShape3D`, and visual meshes.
-4. Open [`scripts/world/spawner.gd`](scripts/world/spawner.gd):
+4. Open [`scripts/world/wave_spawner.gd`](scripts/world/wave_spawner.gd):
    * Preload the scene: `const MY_ENEMY_SCENE = preload("res://scenes/enemies/my_enemy.tscn")`.
    * Add a type ID condition in `_spawn_one_enemy()` and `_instantiate_enemy()`.
 

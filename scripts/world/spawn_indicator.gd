@@ -80,6 +80,14 @@ func _apply_theme() -> void:
 			type_name = "FINAL BOSS: APEX OVERLORD"
 			theme_color = Color(1.0, 0.1, 0.25, 1.0)
 			base_radius = 4.5
+		4: # Charger
+			type_name = "Charger"
+			theme_color = Color(1.0, 0.55, 0.0, 1.0)
+			base_radius = 2.0
+		5: # Void Spawner
+			type_name = "Void Spawner"
+			theme_color = Color(0.75, 0.15, 1.0, 1.0)
+			base_radius = 2.8
 		_:
 			type_name = "Enemy"
 			theme_color = Color(1.0, 0.4, 0.1, 1.0)

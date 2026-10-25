@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/world/arena.tscn" id="2_arena"]
-[ext_resource type="Script" path="res://scripts/world/spawner.gd" id="3_spawner"]
+[ext_resource type="Script" path="res://scripts/world/wave_spawner.gd" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/upgrade_menu.tscn" id="5_upg"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6_pause"]

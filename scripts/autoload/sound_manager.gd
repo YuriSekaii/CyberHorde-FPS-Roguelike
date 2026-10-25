@@ -253,3 +253,40 @@ func _generate_all_sounds() -> void:
 		var noise = (randf() * 2.0 - 1.0) * 0.35
 		return (tone * 0.6 + noise * 0.4) * env * 0.55
 	)
+	
+	# 21. Charger windup (heavy revving mechanical bull turbine)
+	sounds["charger_windup"] = _create_wav(0.75, func(t, d):
+		var p = t / d
+		var freq = 90.0 + (p * p * 380.0)
+		var sub = sin(TAU * freq * t + sin(t * 80.0) * 0.4)
+		var rumble = (randf() * 2.0 - 1.0) * 0.25 * (1.0 + p)
+		var env = clampf(t * 8.0, 0.0, 1.0) * (0.4 + p * 0.6)
+		return (sub * 0.75 + rumble) * env * 0.8
+	)
+	
+	# 22. Charger crash (violent metallic collision impact)
+	sounds["charger_crash"] = _create_wav(0.50, func(t, d):
+		var env = exp(-t * 7.5)
+		var bass = sin(TAU * (85.0 * exp(-t * 9.0)) * t) * 0.8
+		var clang = sin(TAU * 740.0 * exp(-t * 15.0) * t) * 0.4
+		var crunch = (randf() * 2.0 - 1.0) * exp(-t * 12.0) * 0.9
+		return (bass + clang + crunch) * env * 0.85
+	)
+	
+	# 23. Spawnling drill (continuous high-speed serrated buzz saw)
+	sounds["spawnling_drill"] = _create_wav(0.18, func(t, d):
+		var env = exp(-t * 14.0)
+		var f = 880.0 + sin(TAU * 45.0 * t) * 220.0
+		var wave = sin(TAU * f * t)
+		var rasp = (randf() * 2.0 - 1.0) * 0.45
+		return (wave * 0.6 + rasp) * env * 0.65
+	)
+	
+	# 24. Spawner portal (ethereal deep cosmic warp pulse)
+	sounds["spawner_portal"] = _create_wav(0.40, func(t, d):
+		var env = sin(PI * (t / d))
+		var sweep = 180.0 + sin(TAU * 5.0 * t) * 60.0 + (t / d) * 320.0
+		var tone = sin(TAU * sweep * t)
+		var harmonic = sin(TAU * (sweep * 1.5) * t) * 0.4
+		return (tone + harmonic) * env * 0.7
+	)
