@@ -344,12 +344,12 @@ Game/
 If you are continuing development on **CyberHorde**, this section gives you the exact blueprint of how systems connect and how to add new features safely.
 
 ### 1. Multiplayer Networking Architecture
-* **Autoload**: [`scripts/autoload/network_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/network_manager.gd) handles `ENetMultiplayerPeer`, hosting, client joining, and connection signals.
+* **Autoload**: [`scripts/autoload/network_manager.gd`](scripts/autoload/network_manager.gd) handles `ENetMultiplayerPeer`, hosting, client joining, and connection signals.
 * **Squad Launch Pipeline**:
-  1. Players connect in [`lobby_menu.tscn`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scenes/ui/lobby_menu.tscn).
+  1. Players connect in [`lobby_menu.tscn`](scenes/ui/lobby_menu.tscn).
   2. Host clicks **`LAUNCH SQUAD MISSION`** $\rightarrow$ calls `rpc_start_mission.rpc(NetworkManager.connected_peers)`.
-  3. Both Host and Client receive `rpc_start_mission` and spawn each squad member into the `$Players` container in [`scripts/main.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/main.gd).
-* **Player Authority & Avatars** ([`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd)):
+  3. Both Host and Client receive `rpc_start_mission` and spawn each squad member into the `$Players` container in [`scripts/main.gd`](scripts/main.gd).
+* **Player Authority & Avatars** ([`scripts/player/player.gd`](scripts/player/player.gd)):
   * Each player node is named `"Player_%d" % peer_id`.
   * `set_multiplayer_authority(id)` assigns ownership.
   * **Local Player** (`id == multiplayer.get_unique_id()`):
@@ -368,34 +368,34 @@ If you are continuing development on **CyberHorde**, this section gives you the 
 
 ### 2. How to Add or Modify Perks (Upgrades)
 
-All perks are driven by a centralized data structure in [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) and executed across specific gameplay scripts.
+All perks are driven by a centralized data structure in [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) and executed across specific gameplay scripts.
 
 #### 📍 Which Files to Modify
 
 | Perk Category | Primary File(s) to Modify | What to Implement |
 | :--- | :--- | :--- |
-| **All Perks (Registration & Stats)** | [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) | Add/modify entries in `upgrade_database`, declare stat variables, reset in `reset_game()`, and apply values in `apply_upgrade()`. |
-| **Defensive & Player Perks** (Shields, Invulnerability, Nullify, HP, Speed, Jumps) | [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd) | Check stats inside `take_damage()`, `_physics_process()`, `_handle_movement()`, or `_update_stats()`. |
-| **Weapon & Projectile Perks** (Explosions, Ricochet, Piercing, Chain Lightning, Cryo) | [`scripts/projectiles/bullet.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/projectiles/bullet.gd) | Check stats during collisions (`_on_body_entered()`, `_handle_ricochet()`, `_handle_pierce()`, `_handle_lightning()`). |
-| **Loot & Economy Perks** (Pickup Radius, Extra Scrap/XP) | [`scripts/loot/loot_pickup.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/loot/loot_pickup.gd) & [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd) | `GameManager.magnet_radius` in `loot_pickup.gd`, and `GameManager.greed_mult` in `add_xp()` / `add_scrap()`. |
-| **Card Selector UI** | [`scripts/ui/upgrade_menu.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/ui/upgrade_menu.gd) | *Automatic*: Reads directly from `GameManager.upgrade_database` and handles stack counts automatically. |
-| **HUD Status Display** | [`scripts/ui/hud.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/ui/hud.gd) | Add HUD widgets for perks that need real-time feedback (like Shield Bar or Null Barrier cooldown). |
+| **All Perks (Registration & Stats)** | [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) | Add/modify entries in `upgrade_database`, declare stat variables, reset in `reset_game()`, and apply values in `apply_upgrade()`. |
+| **Defensive & Player Perks** (Shields, Invulnerability, Nullify, HP, Speed, Jumps) | [`scripts/player/player.gd`](scripts/player/player.gd) | Check stats inside `take_damage()`, `_physics_process()`, `_handle_movement()`, or `_update_stats()`. |
+| **Weapon & Projectile Perks** (Explosions, Ricochet, Piercing, Chain Lightning, Cryo) | [`scripts/projectiles/bullet.gd`](scripts/projectiles/bullet.gd) | Check stats during collisions (`_on_body_entered()`, `_handle_ricochet()`, `_handle_pierce()`, `_handle_lightning()`). |
+| **Loot & Economy Perks** (Pickup Radius, Extra Scrap/XP) | [`scripts/loot/loot_pickup.gd`](scripts/loot/loot_pickup.gd) & [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd) | `GameManager.magnet_radius` in `loot_pickup.gd`, and `GameManager.greed_mult` in `add_xp()` / `add_scrap()`. |
+| **Card Selector UI** | [`scripts/ui/upgrade_menu.gd`](scripts/ui/upgrade_menu.gd) | *Automatic*: Reads directly from `GameManager.upgrade_database` and handles stack counts automatically. |
+| **HUD Status Display** | [`scripts/ui/hud.gd`](scripts/ui/hud.gd) | Add HUD widgets for perks that need real-time feedback (like Shield Bar or Null Barrier cooldown). |
 
 ---
 
 #### ✏️ How to Modify an Existing Perk
-1. Open [`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd).
+1. Open [`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd).
 2. Locate the perk entry in `upgrade_database`:
    - Change `max_stacks` to adjust the maximum rank (e.g. `max_stacks: 2`).
    - Change `desc` to update the description shown on the holographic upgrade card.
    - Change `rarity` (`"Common"`, `"Rare"`, `"Epic"`, or `"Legendary"`) and `color` (`Color(0.4, 0.8, 1.0)` for Common, `Color(0.8, 0.3, 1.0)` for Rare, `Color(1.0, 0.6, 0.1)` for Epic, `Color(1.0, 0.9, 0.2)` for Legendary).
 3. Update the perk's bonus values in `apply_upgrade()` (e.g., adjust stat multipliers or flat bonuses).
-4. Synchronize the perk table in [`README.md`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/README.md) to match.
+4. Synchronize the perk table in [`README.md`](README.md) to match.
 
 ---
 
 #### ➕ Step-by-Step: How to Add a New Perk
-1. **Define in `upgrade_database`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
+1. **Define in `upgrade_database`** ([`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd)):
    ```gdscript
    "plasma_shield": {
        "id": "plasma_shield",
@@ -406,7 +406,7 @@ All perks are driven by a centralized data structure in [`scripts/autoload/game_
        "max_stacks": 3
    },
    ```
-2. **Add tracking variable & reset in `reset_game()`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
+2. **Add tracking variable & reset in `reset_game()`** ([`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd)):
    ```gdscript
    var plasma_shield_bonus: float = 0.0
    
@@ -414,20 +414,20 @@ All perks are driven by a centralized data structure in [`scripts/autoload/game_
        ...
        plasma_shield_bonus = 0.0
    ```
-3. **Handle in `apply_upgrade(upgrade_id: String)`** ([`scripts/autoload/game_manager.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/autoload/game_manager.gd)):
+3. **Handle in `apply_upgrade(upgrade_id: String)`** ([`scripts/autoload/game_manager.gd`](scripts/autoload/game_manager.gd)):
    ```gdscript
    "plasma_shield":
        plasma_shield_bonus += 25.0
    ```
 4. **Hook up the gameplay effect** in the target script:
-   - For player stats: read `GameManager.plasma_shield_bonus` in [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd) inside `_update_stats()`.
-   - For projectile effects: read `GameManager` flags in [`scripts/projectiles/bullet.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/projectiles/bullet.gd).
+   - For player stats: read `GameManager.plasma_shield_bonus` in [`scripts/player/player.gd`](scripts/player/player.gd) inside `_update_stats()`.
+   - For projectile effects: read `GameManager` flags in [`scripts/projectiles/bullet.gd`](scripts/projectiles/bullet.gd).
 5. **Update documentation & push**: Update the [Roguelike Upgrades Catalog](#-roguelike-upgrades-system) in `README.md` and push changes to GitHub.
 
 ---
 
 ### 3. How to Add a New Weapon
-1. Open [`scripts/player/player.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/player/player.gd).
+1. Open [`scripts/player/player.gd`](scripts/player/player.gd).
 2. In `_setup_weapons()`, create a new `Weapon` instance and append it to `weapons`:
    ```gdscript
    var smg = Weapon.new()
@@ -446,17 +446,17 @@ All perks are driven by a centralized data structure in [`scripts/autoload/game_
    smg.sound_name = "shoot_rifle"
    weapons.append(smg)
    ```
-3. Add a corresponding 3D gun mesh under `Head/Camera3D/WeaponRig` in [`scenes/player/player.tscn`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scenes/player/player.tscn).
+3. Add a corresponding 3D gun mesh under `Head/Camera3D/WeaponRig` in [`scenes/player/player.tscn`](scenes/player/player.tscn).
 4. Update `_switch_weapon(new_idx)` and `_update_third_person_weapon(idx)` to toggle your new gun model's visibility.
 
 ---
 
 ### 4. How to Add a New Enemy Type
-1. Create a new script in `scripts/enemies/` inheriting from [`scripts/enemies/enemy_base.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/enemies/enemy_base.gd).
+1. Create a new script in `scripts/enemies/` inheriting from [`scripts/enemies/enemy_base.gd`](scripts/enemies/enemy_base.gd).
 2. Override `_behave(delta)` with your custom movement and attack pattern (e.g. charging, dodging, sniping).
    * `target_player` automatically updates to the nearest active, non-downed squadmate!
 3. Create a corresponding `.tscn` scene in `scenes/enemies/` with a `CharacterBody3D`, `CollisionShape3D`, and visual meshes.
-4. Open [`scripts/world/spawner.gd`](file:///c:/Users/Admin/Desktop/Code/SelfMadeProduct/Game/scripts/world/spawner.gd):
+4. Open [`scripts/world/spawner.gd`](scripts/world/spawner.gd):
    * Preload the scene: `const MY_ENEMY_SCENE = preload("res://scenes/enemies/my_enemy.tscn")`.
    * Add a type ID condition in `_spawn_one_enemy()` and `_instantiate_enemy()`.
 
