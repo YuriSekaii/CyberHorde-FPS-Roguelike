@@ -104,7 +104,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 | :--- | :---: | :--- | :--- | :--- |
 | **Medic** | Neon Mint | Support & Sustain | **Nano-Regen**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). | **Cellular Restore** (25s cd): Instantly recovers 25% Max Shield and 25% Max HP to ALL players, and revives downed squadmates. |
 | **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed and jump speed**. | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer). Sky/air capable. |
-| **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **+300% MORE fire rate** and **unlimited magazine**. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons reload to full magazine when the skill ends. |
+| **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons and companion drones, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **+300% MORE fire rate** and **unlimited magazine** across player weapons and companion drones. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons and companion drones reload to full magazine when the skill ends. |
 
 > [!NOTE]
 > The Legendary perk **Cooldown Reduction** reduces your class active skill cooldown by **50%** (Medic: 12.5s, Rogue: 5.0s, Gunner: 30.0s). In co-op, players can pick identical or complementary classes; multiple Medics stack HP/s aura regeneration for the entire squad.
@@ -145,7 +145,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
 | **Tesla Arc Emitter** | `Epic` | Hits arc chain lightning to 2 targets (+2 per stack, up to 8 max within 8.5m). Synergizes with Plasma Core | 4 |
 | **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion & chain lightning per bounce | 2 |
-| **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 fire rate, inherits perks) | 3 |
+| **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, and Gunner Berserk Protocol active) | 3 |
 | **Emergency Defibrillator**| `Legendary`| Prevents fatal damage + 5s invulnerability. Recharges every 10 waves | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
 

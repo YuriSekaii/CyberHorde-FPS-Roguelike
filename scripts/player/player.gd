@@ -1136,6 +1136,10 @@ func _activate_gunner_skill() -> void:
 		reload_timer = 0.0
 	if is_charging:
 		_cancel_charge()
+	for d in active_drones:
+		if is_instance_valid(d):
+			d.is_reloading = false
+			d.reload_timer = 0.0
 	
 	SoundManager.play("level_up", 0.25, 0.6)
 	shake_intensity = 0.22
@@ -1152,6 +1156,13 @@ func _end_gunner_skill() -> void:
 		w.current_ammo = w.max_ammo
 	is_reloading = false
 	reload_timer = 0.0
+	# Reload all companion drones after skill ends
+	for d in active_drones:
+		if is_instance_valid(d):
+			if d.assigned_weapon_idx >= 0 and d.assigned_weapon_idx < weapons.size():
+				d.current_ammo = weapons[d.assigned_weapon_idx].max_ammo
+			d.is_reloading = false
+			d.reload_timer = 0.0
 	SoundManager.play("reload", 0.15, 0.0)
 	var cur_w = weapons[active_weapon_idx]
 	ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)

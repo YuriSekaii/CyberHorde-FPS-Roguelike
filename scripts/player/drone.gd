@@ -12,6 +12,7 @@ var is_reloading: bool = false
 var reload_timer: float = 0.0
 var idle_timer: float = 0.0
 var _visuals_applied: bool = false
+var _was_berserk: bool = false
 
 @onready var light: OmniLight3D = $DroneLight
 @onready var ring: MeshInstance3D = $DroneRing
@@ -59,6 +60,23 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	else:
 		current_ammo = mini(current_ammo, cur_weapon.max_ammo)
 	
+	var is_berserk: bool = false
+	if is_instance_valid(player_ref):
+		is_berserk = (player_ref.get("is_gunner_active") == true or player_ref.get("is_slayer_active") == true)
+	
+	# Berserk skill transition: if active ends, reload drone to max_ammo
+	if _was_berserk and not is_berserk:
+		current_ammo = cur_weapon.max_ammo
+		is_reloading = false
+		reload_timer = 0.0
+		if light:
+			light.light_energy = 1.5
+	# If berserk just activated while reloading, interrupt reload immediately so drone can shoot
+	if is_berserk and is_reloading:
+		is_reloading = false
+		reload_timer = 0.0
+	_was_berserk = is_berserk
+	
 	# Smooth orbital flight formation around player
 	var t = Time.get_ticks_msec() / 1000.0
 	var angle_offset = (TAU / float(maxi(1, total_drones))) * float(drone_index)
@@ -72,9 +90,9 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	
 	global_position = global_position.lerp(target_pos, clampf(14.0 * delta, 0.0, 1.0))
 	
-	# Stabilizer ring rotation (spins faster while reloading)
+	# Stabilizer ring rotation (spins fastest in Berserk, fast while reloading, normal otherwise)
 	if ring:
-		ring.rotate_y((7.0 if is_reloading else 3.5) * delta)
+		ring.rotate_y((14.0 if is_berserk else (7.0 if is_reloading else 3.5)) * delta)
 	
 	# Handle reload countdown
 	if is_reloading:
@@ -87,9 +105,12 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 			current_ammo = cur_weapon.max_ammo
 			if light:
 				light.light_energy = 1.5
+	elif is_berserk and light:
+		# Pulsate with intense berserk energy during active
+		light.light_energy = 2.2 + sin(Time.get_ticks_msec() * 0.025) * 1.2
 	
-	# Trigger reload if empty or if player reloads their weapon
-	if not is_reloading:
+	# Trigger reload if empty or if player reloads their weapon (disabled during Berserk Overdrive)
+	if not is_reloading and not is_berserk:
 		if current_ammo <= 0:
 			_start_reload(cur_weapon)
 		elif player_ref.is_reloading and current_ammo < cur_weapon.max_ammo:
@@ -106,17 +127,18 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		var enemy_aim_pos = target_enemy.global_position + Vector3(0, 0.7, 0)
 		look_at(enemy_aim_pos, Vector3.UP)
 		
-		# Fires at assigned weapon fire rate (1/4 rate for rapid weapons, full 0.3 shot/s for heavy plasma), scaled by Overclock Trigger
-		var effective_cooldown = ((cur_weapon.fire_rate) if assigned_weapon_idx == 2 else (cur_weapon.fire_rate * 4.0)) / GameManager.fire_rate_mult
+		# Fires at assigned weapon fire rate (1/4 rate for rapid weapons, full 0.3 shot/s for heavy plasma), scaled by Overclock Trigger and Gunner Active (+300% MORE fire rate)
+		var gunner_fr_mult: float = 4.0 if is_berserk else 1.0
+		var effective_cooldown = maxf(0.02, (((cur_weapon.fire_rate) if assigned_weapon_idx == 2 else (cur_weapon.fire_rate * 4.0)) / (GameManager.fire_rate_mult * gunner_fr_mult)))
 		if fire_cooldown <= 0.0 and not is_reloading:
-			if current_ammo > 0:
+			if current_ammo > 0 or is_berserk:
 				fire_cooldown = effective_cooldown
-				_fire_weapon(enemy_aim_pos, cur_weapon, assigned_weapon_idx == 2, player_ref)
+				_fire_weapon(enemy_aim_pos, cur_weapon, assigned_weapon_idx == 2, player_ref, is_berserk)
 			else:
 				_start_reload(cur_weapon)
 	else:
-		# Idle reload after 3s out of combat if magazine is not full
-		if not is_reloading and current_ammo < cur_weapon.max_ammo:
+		# Idle reload after 3s out of combat if magazine is not full (only outside Berserk)
+		if not is_reloading and not is_berserk and current_ammo < cur_weapon.max_ammo:
 			idle_timer += delta
 			if idle_timer >= 3.0:
 				idle_timer = 0.0
@@ -149,11 +171,12 @@ func _find_target() -> void:
 				best = e
 	target_enemy = best
 
-func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null) -> void:
+func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null, is_berserk: bool = false) -> void:
 	var aim_dir = (target_pos - global_position).normalized()
 	
-	# Consume magazine ammo
-	current_ammo -= 1
+	# Consume magazine ammo only when not in Berserk Overdrive
+	if not is_berserk:
+		current_ammo -= 1
 	
 	# Inherits weapon base pellets and Multi-Barrel Splitter (+100% projectiles per stack)
 	var total_bullets = int(round(float(w.pellets) * (1.0 + GameManager.extra_projectile_mult)))
@@ -169,6 +192,10 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null)
 	var scene_root = get_tree().current_scene
 	if not scene_root:
 		scene_root = get_parent()
+	
+	# Inherits Gunner Passive (+25% critical strike chance)
+	var is_gunner = (p_owner != null and (p_owner.get("player_class") == "gunner" or p_owner.get("player_class") == "slayer"))
+	var crit_bonus: float = 0.25 if is_gunner else 0.0
 	
 	for i in range(total_bullets):
 		var bullet = BULLET_SCENE.instantiate()
@@ -195,10 +222,11 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null)
 		# - Smart Bouncing Core (ricochets with on-bounce explosion and lightning)
 		# - Cryo Rounds (slows enemies)
 		# - Precision Optics & Hollow-Point Rounds (critical hits)
+		# - Gunner Passive (+25% critical strike chance)
 		# - Multi-Barrel Splitter (extra projectiles)
 		# - Extended Mag (same magazine capacity)
 		# - Rapid Loader (same reload speed)
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance, p_owner)
+		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance + crit_bonus, p_owner)
 	
-	if current_ammo <= 0:
+	if not is_berserk and current_ammo <= 0:
 		_start_reload(w)
