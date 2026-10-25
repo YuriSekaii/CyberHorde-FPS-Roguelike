@@ -110,9 +110,6 @@ func rpc_spawn_minion(pos: Vector3, launch_dir: Vector3, minion_name: String) ->
 	_do_spawn_minion(pos, launch_dir, minion_name)
 
 func _do_spawn_minion(pos: Vector3, launch_dir: Vector3, minion_name: String) -> void:
-	SoundManager.play("spawner_portal", 0.1, 1.0)
-	SoundManager.play("spawn_emerge", 0.1, 2.0)
-	
 	if portal_particles:
 		portal_particles.restart()
 	
