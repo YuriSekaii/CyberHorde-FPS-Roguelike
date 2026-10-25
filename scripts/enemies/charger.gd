@@ -72,12 +72,13 @@ func _behave(delta: float) -> void:
 			_process_stunned(delta)
 
 func _process_stalking(delta: float) -> void:
-	var to_player = target_player.global_position - global_position
-	to_player.y = 0.0
-	var dist = to_player.length()
-	var dir = to_player.normalized()
+	var full_to_player = target_player.global_position - global_position
+	var dist_3d = full_to_player.length()
+	var to_player_horiz = Vector3(full_to_player.x, 0.0, full_to_player.z)
+	var horiz_dist = to_player_horiz.length()
+	var dir = to_player_horiz.normalized()
 	
-	if dist > 0.1:
+	if horiz_dist > 0.1:
 		var target_rot = atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, 7.0 * delta)
 		
@@ -99,7 +100,7 @@ func _process_stalking(delta: float) -> void:
 	move_and_slide()
 	
 	# Check if inside attack range to wind up
-	if dist <= ATTACK_RANGE and charge_cooldown <= 0.0:
+	if dist_3d <= ATTACK_RANGE and absf(full_to_player.y) <= 3.0 and charge_cooldown <= 0.0:
 		_start_windup()
 
 func _start_windup() -> void:

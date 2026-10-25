@@ -435,6 +435,10 @@ func _physics_process(delta: float) -> void:
 			net_sync_timer = 0.0
 			rpc_sync_state.rpc(global_position, rotation.y, head.rotation.x, velocity, active_weapon_idx)
 	
+	# Abyss out-of-bounds safety recovery
+	if global_position.y < -15.0:
+		_recover_from_abyss()
+	
 	# Downed handling
 	if is_downed:
 		_handle_downed_state(delta)
@@ -947,6 +951,15 @@ func heal(amount: float) -> void:
 func apply_impulse_jump(force: float) -> void:
 	velocity.y = force
 	SoundManager.play("jump_pad", 0.05)
+
+func _recover_from_abyss() -> void:
+	velocity = Vector3.ZERO
+	global_position = Vector3(0.0, 2.0, 0.0)
+	if not is_downed:
+		take_damage(max_health * 0.20)
+		trigger_invulnerability(2.0)
+		_spawn_floating_text("OUT OF BOUNDS (-20% HP)", Color(1.0, 0.35, 0.35))
+	SoundManager.play("player_hurt", 0.1, -2.0)
 
 func die() -> void:
 	if is_charging:

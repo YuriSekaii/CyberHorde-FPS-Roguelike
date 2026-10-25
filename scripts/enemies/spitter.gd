@@ -23,8 +23,8 @@ func _behave(delta: float) -> void:
 	var target_rot = atan2(-forward_dir.x, -forward_dir.z)
 	rotation.y = lerp_angle(rotation.y, target_rot, 8.0 * delta)
 	
-	# Hover height (keep around 2.5m above floor)
-	var target_y = target_player.global_position.y + 2.2
+	# Hover height (keep around 2.2m above floor/player, clamped within arena limits)
+	var target_y = clampf(target_player.global_position.y + 2.2, 1.8, 8.0)
 	var dy = target_y - global_position.y
 	velocity.y = dy * 3.0
 	
@@ -45,6 +45,14 @@ func _behave(delta: float) -> void:
 	velocity.z = move_vec.z
 	
 	move_and_slide()
+	
+	# Keep within arena perimeter bounds
+	if absf(global_position.x) > 28.5:
+		global_position.x = clampf(global_position.x, -28.5, 28.5)
+		strafe_dir = -strafe_dir
+	if absf(global_position.z) > 28.5:
+		global_position.z = clampf(global_position.z, -28.5, 28.5)
+		strafe_dir = -strafe_dir
 	
 	# Randomly change strafe direction
 	if randf() < 0.01:

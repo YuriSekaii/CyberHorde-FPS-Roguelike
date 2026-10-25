@@ -14,12 +14,13 @@ func _behave(delta: float) -> void:
 	
 	attack_cooldown -= delta
 	
-	var to_player = target_player.global_position - global_position
-	to_player.y = 0.0
-	var dist = to_player.length()
+	var full_to_player = target_player.global_position - global_position
+	var dist_3d = full_to_player.length()
+	var to_player_horiz = Vector3(full_to_player.x, 0.0, full_to_player.z)
+	var horiz_dist = to_player_horiz.length()
 	
-	if dist > 0.1:
-		var dir = to_player.normalized()
+	if horiz_dist > 0.1:
+		var dir = to_player_horiz.normalized()
 		# Face player smoothly
 		var target_rot = atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, 12.0 * delta)
@@ -33,8 +34,8 @@ func _behave(delta: float) -> void:
 	
 	move_and_slide()
 	
-	# Attack if in range
-	if dist <= ATTACK_RANGE and attack_cooldown <= 0.0:
+	# Attack if in 3D range (must be within ATTACK_RANGE in full 3D and vertical offset <= 1.8m)
+	if dist_3d <= ATTACK_RANGE and absf(full_to_player.y) <= 1.8 and attack_cooldown <= 0.0:
 		attack_cooldown = ATTACK_RATE / attack_speed_mult
 		if target_player.has_method("take_damage"):
 			target_player.take_damage(attack_damage)

@@ -22,10 +22,11 @@ func _behave(delta: float) -> void:
 	
 	slam_cooldown -= delta
 	
-	var to_player = target_player.global_position - global_position
-	to_player.y = 0.0
-	var dist = to_player.length()
-	var dir = to_player.normalized()
+	var full_to_player = target_player.global_position - global_position
+	var dist_3d = full_to_player.length()
+	var to_player_horiz = Vector3(full_to_player.x, 0.0, full_to_player.z)
+	var horiz_dist = to_player_horiz.length()
+	var dir = to_player_horiz.normalized()
 	
 	if is_charging_slam:
 		charge_timer += delta
@@ -37,7 +38,7 @@ func _behave(delta: float) -> void:
 			_execute_slam()
 		return
 	
-	if dist > 0.1:
+	if horiz_dist > 0.1:
 		var target_rot = atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, 6.0 * delta)
 		
@@ -50,7 +51,7 @@ func _behave(delta: float) -> void:
 	
 	move_and_slide()
 	
-	if dist <= SLAM_RANGE and slam_cooldown <= 0.0:
+	if dist_3d <= SLAM_RANGE and absf(full_to_player.y) <= 2.5 and slam_cooldown <= 0.0:
 		_start_slam_charge()
 
 func _start_slam_charge() -> void:

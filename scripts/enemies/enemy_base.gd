@@ -89,6 +89,11 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
+	# Abyss kill check: if an enemy falls below the arena into the abyss, kill it immediately
+	if global_position.y < -10.0:
+		die()
+		return
+	
 	retarget_timer += delta
 	if retarget_timer >= 0.5 or target_player == null or not is_instance_valid(target_player):
 		retarget_timer = 0.0
@@ -196,23 +201,30 @@ func _drop_loot() -> void:
 	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
 	var loot_mult: float = 4.0 if is_rogue_kill else 1.0 # 300% more = 4x value
 	
+	# Clamp loot spawn to safe arena ground level so pickups are never lost in abyss
+	var drop_pos = global_position
+	if drop_pos.y < 0.2:
+		drop_pos.x = clampf(drop_pos.x, -28.0, 28.0)
+		drop_pos.z = clampf(drop_pos.z, -28.0, 28.0)
+		drop_pos.y = 0.5
+	
 	if is_rogue_kill and GameManager.show_damage_numbers:
 		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
 		get_parent().call_deferred("add_child", dnum)
-		dnum.global_position = global_position + Vector3(0, 1.8, 0)
+		dnum.global_position = drop_pos + Vector3(0, 1.8, 0)
 		dnum.setup_text("+300% BOUNTY", Color(1.0, 0.85, 0.1))
 	
 	# 1. Drop XP Gem
 	var xp = LOOT_SCENE.instantiate()
 	get_parent().call_deferred("add_child", xp)
-	xp.global_position = global_position + Vector3(0, 0.5, 0)
+	xp.global_position = drop_pos + Vector3(0, 0.5, 0)
 	xp.setup(0, int(xp_reward * loot_mult))
 	
 	# 2. Chance of Scrap
 	if randf() < 0.45 or is_rogue_kill:
 		var scrap = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", scrap)
-		scrap.global_position = global_position + Vector3(0, 0.5, 0)
+		scrap.global_position = drop_pos + Vector3(0, 0.5, 0)
 		scrap.setup(2, int(scrap_reward * loot_mult))
 	
 	# 3. Chance of Health Stim
@@ -222,5 +234,5 @@ func _drop_loot() -> void:
 	if randf() < health_chance:
 		var hp = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", hp)
-		hp.global_position = global_position + Vector3(0, 0.5, 0)
+		hp.global_position = drop_pos + Vector3(0, 0.5, 0)
 		hp.setup(1, 25)

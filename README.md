@@ -166,7 +166,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 
 | Enemy Type | Base HP | Speed | Damage | Attack Cooldown | Attack Type & Range | Base Weight | Notes |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
-| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m) | ~45–55% | Decays every 5 waves |
+| **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m 3D sphere, $\le 1.8$m height) | ~45–55% | Decays every 5 waves |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing orb (25.0m) | 30.0% | Wave 3+, decays every 5 waves |
 | **Armored Goliath (Brute)** | 500.0 | 3.6 m/s | 35.0 | 3.5s | Slam AoE (4.8m) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 24 m/s rush attack | ~4.0–4.25% | Wave 11+, wall crash causes 3.5s self-stun |
@@ -184,6 +184,8 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 ## 💎 Pickups & Arena Elements
 
+* **Perimeter Containment Walls & Sky Ceiling**: 32m tall reinforced fortress walls with 48m collision barrier and ceiling preventing any dash, jump pad, or flight escape.
+* **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Enemies knocked or falling off-stage ($Y < -10\text{m}$) are immediately eliminated with loot safely placed on the arena edge.
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 HP. Drops more frequently at low health.
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.
