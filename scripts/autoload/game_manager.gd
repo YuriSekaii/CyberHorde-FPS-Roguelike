@@ -253,7 +253,7 @@ var upgrade_database: Dictionary = {
 		"desc": "+10% Critical Strike Chance.",
 		"rarity": "Common",
 		"color": Color(0.4, 0.8, 1.0),
-		"max_stacks": 4
+		"max_stacks": 5
 	},
 	"hollow_point": {
 		"id": "hollow_point",

@@ -147,15 +147,15 @@ To guarantee silky-smooth frame rates even during chaotic late-game waves with d
 | Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag Size | Reload Time | Base Crit | AoE / Effect |
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
-| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 15% | Close-quarters shotgun spread |
+| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Close-quarters shotgun spread |
 | **Plasma Core** | `3` | Hold-to-Charge (Release to Fire) | 150.0 direct + 150.0 AoE | 1 | 0.30 shot/s (3.33s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow-moving giant plasma orb (~23.3 m/s, 1/3 speed), generous 1.5m+ hitbox, 5.0m blast radius (10.0m with *Explosive Payload*), high recoil & concussive kick |
 
 1. **Pulse Carbine (`Key 1`)**:
    - High-velocity kinetic automatic assault rifle.
    - 32-round magazine, 0.12s fire rate (8.3 shots/sec), 22.0 base damage, 10% base crit chance, crisp suppressive fire.
 2. **Scatter Cannon (`Key 2`)**:
-   - Heavy close-quarters shotgun blasting 10 pellets simultaneously with punchy recoil and screen kick.
-   - 18.0 damage per pellet (180 base burst damage), 8-round magazine, 0.65s fire rate, 15% base crit chance.
+   - Heavy close-quarters shotgun blasting 12 pellets simultaneously with punchy recoil and screen kick.
+   - 18.0 damage per pellet (216 base burst damage), 8-round magazine, 0.65s fire rate, 5% base crit chance.
 3. **Plasma Core (`Key 3`)**:
    - High-yield heavy energy launcher firing concentrated plasma orbs.
    - **0.30 shot/s Fire Rate with Hold-to-Charge & Release-to-Fire Mechanic**:
@@ -202,7 +202,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | :--- | :--- | :--- |
 | **Heavy Caliber** | `Common` (Cyan) | +25% Projectile Damage across all weapons (**Stacks Infinitely**). |
 | **Vital Plating** | `Common` (Cyan) | +25 Maximum Health (**Stacks Infinitely**). Proactively heals upon selection. |
-| **Precision Optics** | `Common` (Cyan) | +10% Critical Strike Chance (stacks up to 4x). |
+| **Precision Optics** | `Common` (Cyan) | +10% Critical Strike Chance (stacks up to 5x). |
 | **Overclock Trigger** | `Common` (Cyan) | +25% Fire Rate for continuous suppression (stacks up to 6x). |
 | **Rapid Loader** | `Common` (Cyan) | +25% Reload Speed across all weapons (stacks up to 6x). |
 | **Extended Mag** | `Common` (Cyan) | +30% Magazine Capacity across all weapons (stacks up to 6x). |
@@ -218,7 +218,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 | **Explosive Payload** | `Epic` (Orange) | Bullets explode on impact. **Plasma Core gains +100% AoE radius** (5.0m → 10.0m). |
 | **Reactive Phase-Shield** | `Epic` (Orange) | When you take damage, gain 1s of invulnerability (Max 2 stacks: 2s). |
 | **Null Barrier** | `Epic` (Orange) | Every 5s, nullifies the next instance of damage taken (**Triggers invulnerability perks**). Only 1 stack. |
-| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 20 pellets). |
+| **Multi-Barrel Splitter** | `Epic` (Orange) | +100% Projectiles per shot (Doubles shot count — e.g., Shotgun fires 24 pellets). |
 | **Tesla Arc Emitter** | `Epic` (Orange) | Hits arc chain lightning to 2 targets. **Exclusive Plasma Core synergy**: Shoots lightning to *every* enemy in explosive radius before detonating, which then chain outward to alive enemies! |
 | **Smart Bouncing Core** | `Epic` (Orange) | Bullets ricochet with on-hit explosion & chain lightning per bounce. |
 | **Assault Drone Unit** | `Epic` (Orange) | Deploys autonomous companion drone randomly equipped with 1 of 3 arsenal weapons (1/4 fire rate, same mag & reload speed, all weapon perks). Color-coded rings (Cyan/Orange/Magenta) distinguish weapon type. +1 drone per pick. |
@@ -228,7 +228,7 @@ Don't like the 3 cards offered? Spend accumulated **Scrap** to reshuffle a fresh
 
 ## 🎯 Critical Hit & Explosive Mechanics
 
-* **Direct Hit Crits**: Every projectile rolls against its weapon's **Critical Strike Chance** (10% for Pulse Carbine, 15% for Scatter Cannon, 25% for Plasma Core, augmented by +10% per stack of *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
+* **Direct Hit Crits**: Every projectile rolls against its weapon's **Critical Strike Chance** (10% for Pulse Carbine, 5% for Scatter Cannon, 25% for Plasma Core, augmented by +10% per stack of *Precision Optics*). A successful crit multiplies damage by your **Critical Damage Multiplier** (base 2.0x, augmented indefinitely by *Hollow-Point Rounds*).
 * **Explosive Damage**: Explosive damage is **calculated from the initial hit damage** (100% of hit damage for Plasma Core: 150 base direct + 150 base AoE; 80% for perk-granted bullet explosions).
 * **No Double-Dipping**: Explosions do not trigger critical rolls independently, preventing unintended exponential double-crit scaling while ensuring explosions from a critical bullet strike pack massive punch!
 
