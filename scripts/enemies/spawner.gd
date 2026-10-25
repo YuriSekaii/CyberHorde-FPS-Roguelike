@@ -9,7 +9,6 @@ var minion_counter: int = 0
 const SPAWN_INTERVAL: float = 4.5
 const PREFERRED_HEIGHT: float = 4.2
 const PREFERRED_DISTANCE: float = 16.0
-const MAX_SPAWNED_MINIONS: int = 6
 
 const SPAWNLING_SCENE = preload("res://scenes/enemies/spawnling.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
@@ -89,10 +88,6 @@ func _behave(delta: float) -> void:
 func _attempt_spawn_minion() -> void:
 	# Only server initiates in multiplayer
 	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
-		return
-	
-	_clean_minions()
-	if active_minions.size() >= MAX_SPAWNED_MINIONS:
 		return
 	
 	minion_counter += 1
