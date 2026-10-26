@@ -27,6 +27,7 @@ signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
 # Fever System Constants & State
 const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
 const FEVER_MAX_DURATION: float = 20.0
+const FEVER_KILL_DURATION: float = 0.5
 var fever_tier_index: int = 0
 var fever_duration: float = 0.0
 var _fever_sync_timer: float = 0.0
@@ -530,7 +531,7 @@ func record_kill(enemy_type: String) -> void:
 	enemy_killed.emit(enemy_type)
 
 func add_fever_kill() -> void:
-	fever_duration += 1.0
+	fever_duration += FEVER_KILL_DURATION
 	if fever_duration >= FEVER_MAX_DURATION:
 		if fever_tier_index < FEVER_TIERS.size() - 1:
 			fever_tier_index += 1
