@@ -168,7 +168,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | **Vampiric Siphon** | `Rare` | Restores +4 HP on enemy kill | 1 |
 | **Cryo Rounds** | `Rare` | Bullets slow targets by 40% for 3 seconds | 1 |
 | **Nanite Scavenger** | `Rare` | +40% XP and Scrap drops from defeated enemies | 1 |
-| **Explosive Payload** | `Epic` | Bullets explode on impact (3.0m AoE). Plasma Core AoE +25% (5.0m → 6.25m) | 1 |
+| **Explosive Payload** | `Epic` | Bullets explode on impact (2.5m AoE). Plasma Core AoE +25% (5.0m → 6.25m) | 1 |
 | **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.5s invulnerability | 2 (1s max) |
 | **Null Barrier** | `Epic` | Nullifies damage instance every 10s (triggers invulnerability perks) | 1 |
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |

@@ -65,7 +65,7 @@ var extra_projectiles: int = 0
 var extra_projectile_mult: float = 0.0
 var pierce_count: int = 0
 var explosive_rounds: bool = false
-var explosion_radius: float = 3.0
+var explosion_radius: float = 2.5
 var bouncing_bullets: bool = false
 var bounce_count: int = 0
 var chain_lightning: bool = false
@@ -161,7 +161,7 @@ var upgrade_database: Dictionary = {
 	"explosive_payload": {
 		"id": "explosive_payload",
 		"name": "Explosive Payload",
-		"desc": "Bullets explode on impact (3.0m AoE). Plasma Core gains +25% AoE radius (6.25m)!",
+		"desc": "Bullets explode on impact (2.5m AoE). Plasma Core gains +25% AoE radius (6.25m)!",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 1
@@ -442,7 +442,7 @@ func reset_game() -> void:
 	extra_projectile_mult = 0.0
 	pierce_count = 0
 	explosive_rounds = false
-	explosion_radius = 3.0
+	explosion_radius = 2.5
 	bouncing_bullets = false
 	bounce_count = 0
 	chain_lightning = false
