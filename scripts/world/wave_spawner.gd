@@ -50,7 +50,13 @@ func start_spawner() -> void:
 		current_wave = 1
 	# In multiplayer, only server controls wave timers
 	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
-		start_intermission(3.0)
+		start_intermission(3.0 / GameManager.get_fever_spawn_rate_mult())
+
+func get_effective_enemy_cap() -> int:
+	return int(round(float(MAX_CONCURRENT_ENEMIES) * GameManager.get_fever_spawn_rate_mult()))
+
+func get_effective_spawn_interval() -> float:
+	return spawn_interval / GameManager.get_fever_spawn_rate_mult()
 
 func _process(delta: float) -> void:
 	if not is_spawner_active:
@@ -83,10 +89,10 @@ func _process(delta: float) -> void:
 		_clean_dead_enemies()
 		var current_active = active_enemies.size() + pending_spawns.size()
 		var can_spawn: bool = (current_wave >= FINAL_WAVE or enemies_left_to_spawn > 0)
-		if can_spawn and current_active < MAX_CONCURRENT_ENEMIES:
+		if can_spawn and current_active < get_effective_enemy_cap():
 			spawn_timer -= delta
 			if spawn_timer <= 0.0:
-				spawn_timer = spawn_interval
+				spawn_timer = get_effective_spawn_interval()
 				_spawn_one_enemy()
 		
 		# Process pending spawn delays (3.0s countdown)
@@ -134,12 +140,12 @@ func _start_wave(wave_num: int) -> void:
 		enemies_left_to_spawn = -1
 		# Final Boss Fight: all enemies have double spawn rate (half spawn interval: 0.4s -> 0.2s)
 		spawn_interval = 0.2
-		spawn_timer = 0.2
+		spawn_timer = get_effective_spawn_interval()
 	else:
 		total_enemies_in_wave = 10 + wave_num * 6
 		enemies_left_to_spawn = total_enemies_in_wave
 		spawn_interval = clampf(2.0 - (wave_num * 0.1), 0.4, 2.0)
-		spawn_timer = 0.5
+		spawn_timer = minf(0.5, get_effective_spawn_interval())
 	
 	pending_spawns.clear()
 	_clean_all_indicators()
@@ -432,8 +438,9 @@ func _complete_wave() -> void:
 	else:
 		GameManager.wave_cleared.emit(current_wave)
 	
-	GameManager.add_scrap(30 + current_wave * 10)
-	GameManager.add_xp(40 + current_wave * 15)
+	var fever_mult = GameManager.get_fever_loot_mult()
+	GameManager.add_scrap(int((30 + current_wave * 10) * fever_mult))
+	GameManager.add_xp(int((40 + current_wave * 15) * fever_mult))
 	
 	# Wave 50 Final Wave Victory
 	if current_wave >= FINAL_WAVE:
@@ -444,7 +451,8 @@ func _complete_wave() -> void:
 		return
 	
 	current_wave += 1
-	start_intermission(4.5)
+	var next_round_delay = 4.5 / GameManager.get_fever_spawn_rate_mult()
+	start_intermission(next_round_delay)
 
 # ==============================================================================
 # SPAWNER MULTIPLAYER RPCS

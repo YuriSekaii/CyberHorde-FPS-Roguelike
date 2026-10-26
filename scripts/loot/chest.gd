@@ -38,11 +38,12 @@ func open_chest() -> void:
 	tw.tween_property(chest_lid, "rotation_degrees:x", -65.0, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Spawn loot fountain
+	var fever_mult: float = GameManager.get_fever_loot_mult()
 	for i in range(5):
 		var p = LOOT_SCENE.instantiate()
 		get_parent().add_child(p)
 		p.global_position = global_position + Vector3(0, 0.6, 0)
-		p.setup(0 if i % 2 == 0 else 2, randi_range(20, 40)) # XP or Scrap
+		p.setup(0 if i % 2 == 0 else 2, int(randi_range(20, 40) * fever_mult)) # XP or Scrap
 	
 	# Award free upgrade card!
 	await get_tree().create_timer(0.4).timeout

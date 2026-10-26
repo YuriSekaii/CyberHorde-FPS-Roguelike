@@ -40,7 +40,11 @@ func open_menu() -> void:
 		return
 	
 	visible = true
-	title_label.text = "LEVEL UP! CHOOSE AN UPGRADE"
+	var fever_tier = GameManager.get_fever_tier_name()
+	if GameManager.fever_tier_index > 0:
+		title_label.text = "LEVEL UP! CHOOSE AN UPGRADE  [FEVER %s: RARER PERKS ACTIVE]" % fever_tier
+	else:
+		title_label.text = "LEVEL UP! CHOOSE AN UPGRADE"
 	_populate_cards()
 	_update_reroll_ui()
 

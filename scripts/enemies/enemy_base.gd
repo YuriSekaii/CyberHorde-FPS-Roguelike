@@ -215,6 +215,7 @@ func die() -> void:
 func _drop_loot() -> void:
 	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
 	var loot_mult: float = 4.0 if is_rogue_kill else 1.0 # 300% more = 4x value
+	var fever_mult: float = GameManager.get_fever_loot_mult()
 	
 	# Clamp loot spawn to safe arena ground level so pickups are never lost outside the arena or in the abyss
 	var drop_pos = global_position
@@ -233,14 +234,14 @@ func _drop_loot() -> void:
 	var xp = LOOT_SCENE.instantiate()
 	get_parent().call_deferred("add_child", xp)
 	xp.global_position = drop_pos + Vector3(0, 0.5, 0)
-	xp.setup(0, int(xp_reward * loot_mult))
+	xp.setup(0, int(xp_reward * loot_mult * fever_mult))
 	
 	# 2. Chance of Scrap
 	if randf() < 0.45 or is_rogue_kill:
 		var scrap = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", scrap)
 		scrap.global_position = drop_pos + Vector3(0, 0.5, 0)
-		scrap.setup(2, int(scrap_reward * loot_mult))
+		scrap.setup(2, int(scrap_reward * loot_mult * fever_mult))
 	
 	# 3. Chance of Health Stim
 	var health_chance = 0.12

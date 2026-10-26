@@ -738,8 +738,9 @@ func die() -> void:
 	# Generous rewards
 	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
 	var loot_mult: float = 4.0 if is_rogue_kill else 1.0
-	GameManager.add_xp(int(800 * loot_mult))
-	GameManager.add_scrap(int(500 * loot_mult))
+	var fever_mult: float = GameManager.get_fever_loot_mult()
+	GameManager.add_xp(int(800 * loot_mult * fever_mult))
+	GameManager.add_scrap(int(500 * loot_mult * fever_mult))
 	GameManager.record_kill(enemy_name)
 	
 	for i in range(4):

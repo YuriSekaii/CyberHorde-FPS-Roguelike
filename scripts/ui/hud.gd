@@ -19,6 +19,11 @@ extends CanvasLayer
 @onready var boss_name_label: Label = $BossContainer/BossNameLabel
 @onready var boss_bar: ProgressBar = $BossContainer/BossBar
 @onready var boss_hp_label: Label = $BossContainer/BossBar/BossHPLabel
+@onready var fever_container: Control = get_node_or_null("TopCenter/FeverContainer")
+@onready var fever_tier_label: Label = get_node_or_null("TopCenter/FeverContainer/FeverHeader/FeverTierLabel")
+@onready var fever_bonus_label: Label = get_node_or_null("TopCenter/FeverContainer/FeverHeader/FeverBonusLabel")
+@onready var fever_timer_label: Label = get_node_or_null("TopCenter/FeverContainer/FeverHeader/FeverTimerLabel")
+@onready var fever_bar: ProgressBar = get_node_or_null("TopCenter/FeverContainer/FeverBar")
 @onready var null_barrier_label: Label = get_node_or_null("BottomLeft/NullBarrierLabel")
 @onready var dash_label: Label = get_node_or_null("BottomLeft/DashLabel")
 @onready var skill_container: Control = get_node_or_null("BottomLeft/SkillContainer")
@@ -31,6 +36,22 @@ extends CanvasLayer
 const ICON_MEDIC = preload("res://assets/icons/skills/medic_restore.svg")
 const ICON_ROGUE = preload("res://assets/icons/skills/rogue_dash.svg")
 const ICON_GUNNER = preload("res://assets/icons/skills/gunner_berserk.svg")
+
+const FEVER_COLORS: Dictionary = {
+	"D": Color(0.65, 0.65, 0.65),
+	"C": Color(0.2, 0.85, 1.0),
+	"B": Color(0.25, 1.0, 0.45),
+	"A": Color(1.0, 0.65, 0.15),
+	"S": Color(1.0, 0.15, 0.55)
+}
+
+const FEVER_BONUS_TEXTS: Dictionary = {
+	"D": "NO BONUS",
+	"C": "+25% XP/SCRAP/SPAWNS",
+	"B": "+50% XP/SCRAP/SPAWNS",
+	"A": "+75% XP/SCRAP/SPAWNS",
+	"S": "★ MAX FEVER ★ +100% XP/SCRAP/SPAWNS"
+}
 
 var current_displayed_class: String = ""
 var skill_pulse_timer: float = 0.0
@@ -53,6 +74,15 @@ func _ready() -> void:
 	GameManager.boss_spawned.connect(_on_boss_spawned)
 	GameManager.boss_health_updated.connect(_on_boss_health_updated)
 	GameManager.boss_defeated.connect(_on_boss_defeated)
+	GameManager.fever_updated.connect(_on_fever_updated)
+	GameManager.fever_tier_promoted.connect(_on_fever_tier_promoted)
+	GameManager.fever_tier_demoted.connect(_on_fever_tier_demoted)
+	
+	if fever_bar:
+		var fill_style = fever_bar.get_theme_stylebox("fill")
+		if fill_style:
+			fever_bar.add_theme_stylebox_override("fill", fill_style.duplicate())
+	_update_fever_display(GameManager.get_fever_tier_name(), GameManager.fever_tier_index, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
 	
 	_update_xp_display(GameManager.player_xp, GameManager.xp_to_next_level)
 	_update_level_display(GameManager.player_level)
@@ -138,8 +168,67 @@ func _process(delta: float) -> void:
 	if dash_label:
 		dash_label.visible = false
 	
+	# Smooth live countdown update
+	if fever_timer_label and fever_bar:
+		var cur_tier = GameManager.get_fever_tier_name()
+		var dur = GameManager.fever_duration
+		fever_bar.value = dur
+		if cur_tier == "S" and dur >= GameManager.FEVER_MAX_DURATION:
+			fever_timer_label.text = "MAX (20.0s)"
+		elif cur_tier == "D" and dur <= 0.0:
+			fever_timer_label.text = "0.0s"
+		else:
+			fever_timer_label.text = "%.1fs" % dur
+	
 	skill_pulse_timer += delta
 	_update_skill_hud()
+
+func _on_fever_updated(tier_name: String, tier_idx: int, duration: float, max_duration: float) -> void:
+	_update_fever_display(tier_name, tier_idx, duration, max_duration)
+
+func _on_fever_tier_promoted(tier_name: String, tier_idx: int) -> void:
+	_update_fever_display(tier_name, tier_idx, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
+	if fever_tier_label:
+		var tw = create_tween()
+		fever_tier_label.pivot_offset = fever_tier_label.size * 0.5
+		fever_tier_label.scale = Vector2(1.35, 1.35)
+		tw.tween_property(fever_tier_label, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _on_fever_tier_demoted(tier_name: String, tier_idx: int) -> void:
+	_update_fever_display(tier_name, tier_idx, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
+	if fever_tier_label:
+		var tw = create_tween()
+		fever_tier_label.modulate = Color.RED
+		tw.tween_property(fever_tier_label, "modulate", FEVER_COLORS.get(tier_name, Color.WHITE), 0.3)
+
+func _update_fever_display(tier_name: String, _tier_idx: int, duration: float, max_duration: float) -> void:
+	if not fever_container:
+		return
+	
+	var col: Color = FEVER_COLORS.get(tier_name, Color.WHITE)
+	if fever_tier_label:
+		fever_tier_label.text = "[FEVER %s]" % tier_name
+		fever_tier_label.modulate = col
+	
+	if fever_bonus_label:
+		fever_bonus_label.text = FEVER_BONUS_TEXTS.get(tier_name, "")
+		fever_bonus_label.modulate = col if tier_name != "D" else Color(0.55, 0.55, 0.55, 0.8)
+	
+	if fever_timer_label:
+		if tier_name == "S" and duration >= max_duration:
+			fever_timer_label.text = "MAX (20.0s)"
+		elif tier_name == "D" and duration <= 0.0:
+			fever_timer_label.text = "0.0s"
+		else:
+			fever_timer_label.text = "%.1fs" % duration
+		fever_timer_label.modulate = col
+	
+	if fever_bar:
+		fever_bar.max_value = max_duration
+		fever_bar.value = duration
+		var fill_style = fever_bar.get_theme_stylebox("fill")
+		if fill_style is StyleBoxFlat:
+			fill_style.bg_color = col
 
 func _update_skill_display_class(p_class: String) -> void:
 	var c = p_class.to_lower()

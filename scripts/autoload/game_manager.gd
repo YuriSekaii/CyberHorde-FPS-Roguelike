@@ -20,6 +20,16 @@ signal enemy_killed(enemy_type: String)
 signal upgrade_requested()
 signal window_mode_changed(is_fullscreen: bool)
 signal damage_numbers_toggled(enabled: bool)
+signal fever_updated(tier_name: String, tier_index: int, duration: float, max_duration: float)
+signal fever_tier_promoted(new_tier_name: String, new_tier_index: int)
+signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
+
+# Fever System Constants & State
+const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
+const FEVER_MAX_DURATION: float = 20.0
+var fever_tier_index: int = 0
+var fever_duration: float = 0.0
+var _fever_sync_timer: float = 0.0
 
 const SETTINGS_PATH: String = "user://settings.cfg"
 
@@ -310,6 +320,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if state == GameState.PLAYING:
 		run_time += delta
+		_process_fever(delta)
 
 func _setup_inputs() -> void:
 	# Primary bindings
@@ -453,6 +464,11 @@ func reset_game() -> void:
 	cooldown_reduction = false
 	greed_mult = 1.0
 	
+	fever_tier_index = 0
+	fever_duration = 0.0
+	_fever_sync_timer = 0.0
+	fever_updated.emit("D", 0, 0.0, FEVER_MAX_DURATION)
+	
 	active_upgrades.clear()
 	boss_defeated.emit()
 	get_tree().paused = false
@@ -509,7 +525,71 @@ func record_damage(dmg: float, is_crit: bool) -> void:
 
 func record_kill(enemy_type: String) -> void:
 	enemies_killed += 1
+	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
+		add_fever_kill()
 	enemy_killed.emit(enemy_type)
+
+func add_fever_kill() -> void:
+	fever_duration += 1.0
+	if fever_duration >= FEVER_MAX_DURATION:
+		if fever_tier_index < FEVER_TIERS.size() - 1:
+			fever_tier_index += 1
+			fever_duration = 1.0
+			fever_tier_promoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
+			SoundManager.play("level_up", 0.15, 1.4)
+		else:
+			fever_duration = FEVER_MAX_DURATION
+	fever_updated.emit(FEVER_TIERS[fever_tier_index], fever_tier_index, fever_duration, FEVER_MAX_DURATION)
+	if NetworkManager.is_multiplayer and NetworkManager.is_server:
+		rpc_sync_fever.rpc(fever_tier_index, fever_duration)
+
+func _process_fever(delta: float) -> void:
+	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
+		if fever_duration > 0.0 or fever_tier_index > 0:
+			fever_duration -= delta
+			if fever_duration <= 0.0:
+				if fever_tier_index > 0:
+					fever_tier_index -= 1
+					fever_duration = 19.0
+					fever_tier_demoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
+					SoundManager.play("empty_ammo", 0.1, -1.0)
+				else:
+					fever_duration = 0.0
+				fever_updated.emit(FEVER_TIERS[fever_tier_index], fever_tier_index, fever_duration, FEVER_MAX_DURATION)
+				if NetworkManager.is_multiplayer:
+					rpc_sync_fever.rpc(fever_tier_index, fever_duration)
+		
+		if NetworkManager.is_multiplayer:
+			_fever_sync_timer += delta
+			if _fever_sync_timer >= 0.25:
+				_fever_sync_timer = 0.0
+				rpc_sync_fever.rpc(fever_tier_index, fever_duration)
+	else:
+		if fever_duration > 0.0:
+			fever_duration = maxf(0.0, fever_duration - delta)
+
+@rpc("call_local", "unreliable")
+func rpc_sync_fever(tier_idx: int, duration: float) -> void:
+	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
+		var old_tier = fever_tier_index
+		fever_tier_index = tier_idx
+		fever_duration = duration
+		if tier_idx > old_tier:
+			fever_tier_promoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
+			SoundManager.play("level_up", 0.15, 1.4)
+		elif tier_idx < old_tier:
+			fever_tier_demoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
+			SoundManager.play("empty_ammo", 0.1, -1.0)
+		fever_updated.emit(FEVER_TIERS[fever_tier_index], fever_tier_index, fever_duration, FEVER_MAX_DURATION)
+
+func get_fever_tier_name() -> String:
+	return FEVER_TIERS[fever_tier_index]
+
+func get_fever_loot_mult() -> float:
+	return 1.0 + 0.25 * float(fever_tier_index)
+
+func get_fever_spawn_rate_mult() -> float:
+	return 1.0 + 0.25 * float(fever_tier_index)
 
 func prompt_upgrade_menu() -> void:
 	state = GameState.UPGRADING
@@ -526,14 +606,24 @@ func has_available_upgrades() -> bool:
 			return true
 	return false
 
-# Higher rarity tier is 1/4 probability of lower rarity tier:
-# Common = 64, Rare = 16 (1/4 of Common), Epic = 4 (1/4 of Rare), Legendary = 1 (1/4 of Epic)
-const RARITY_TIER_WEIGHTS: Dictionary = {
-	"Common": 64.0,
+# Base rarity weights: Common base weight increased by 25% from 64.0 to 80.0
+# Fever tier reduces Common weight: 80.0 * 0.75^(current tier above D)
+const RARITY_TIER_BASE_WEIGHTS: Dictionary = {
+	"Common": 80.0,
 	"Rare": 16.0,
 	"Epic": 4.0,
 	"Legendary": 1.0
 }
+const RARITY_TIER_WEIGHTS: Dictionary = RARITY_TIER_BASE_WEIGHTS
+
+func get_current_rarity_weights() -> Dictionary:
+	var common_w: float = 80.0 * pow(0.75, float(fever_tier_index))
+	return {
+		"Common": common_w,
+		"Rare": 16.0,
+		"Epic": 4.0,
+		"Legendary": 1.0
+	}
 
 func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Array[Dictionary]:
 	# Group available items by rarity
@@ -564,13 +654,14 @@ func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Arr
 		max_available += by_rarity[r].size()
 	var needed = mini(count, max_available)
 	
+	var current_weights = get_current_rarity_weights()
 	while result.size() < needed:
 		# Calculate total weight of rarities that currently have available items
 		var total_weight: float = 0.0
 		var active_rarities: Array[String] = []
 		for r in ["Common", "Rare", "Epic", "Legendary"]:
 			if by_rarity.has(r) and by_rarity[r].size() > 0:
-				total_weight += RARITY_TIER_WEIGHTS[r]
+				total_weight += current_weights[r]
 				active_rarities.append(r)
 		
 		if active_rarities.is_empty():
@@ -580,7 +671,7 @@ func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Arr
 		var cumulative: float = 0.0
 		var chosen_rarity = active_rarities[0]
 		for r in active_rarities:
-			cumulative += RARITY_TIER_WEIGHTS[r]
+			cumulative += current_weights[r]
 			if roll <= cumulative:
 				chosen_rarity = r
 				break

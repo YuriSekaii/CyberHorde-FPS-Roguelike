@@ -119,10 +119,31 @@ The HUD features custom cyberpunk vector icons positioned at the bottom-left dir
 
 ---
 
+## 🔥 Squad Fever System
+
+Operatives channel combat momentum into a squad-shared **Fever** gauge displayed under the wave/XP bar:
+
+| Fever Tier | Duration Window | Drop XP & Scrap | Spawn Rate (Less Interval) | Concurrent Enemy Cap | Intermission Delay | Common Weight Formula |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **D** | 0.0s – 20.0s | Baseline (+0%) | Baseline (1.0×) | 40 enemies | 4.5s | $80.0 \times 0.75^0 = 80.0$ |
+| **C** | 0.0s – 20.0s | **+25% MORE** | **+25% MORE** (1.25×) | 50 enemies | 3.6s | $80.0 \times 0.75^1 = 60.0$ |
+| **B** | 0.0s – 20.0s | **+50% MORE** | **+50% MORE** (1.50×) | 60 enemies | 3.0s | $80.0 \times 0.75^2 = 45.0$ |
+| **A** | 0.0s – 20.0s | **+75% MORE** | **+75% MORE** (1.75×) | 70 enemies | 2.57s | $80.0 \times 0.75^3 = 33.75$ |
+| **S** | 0.0s – 20.0s (Cap) | **+100% MORE** (2.0×) | **+100% MORE** (2.0×) | 80 enemies | 2.25s (Half Delay) | $80.0 \times 0.75^4 \approx 25.31$ |
+
+### Fever Mechanics
+* **Progression**: Start at **Tier D** (0.0s). Each enemy kill increases the active tier duration by **+1.0s**.
+* **Promotion**: Reaching **20.0s** immediately promotes to the next tier, starting at **1.0s** of the new tier (caps at 20.0s at Tier S).
+* **Demotion**: If current tier duration decays to **0.0s**, demotes to the lower tier at **19.0s** (clamps at 0.0s at Tier D).
+* **Economy & Horde Buffs**: Tier D provides no bonuses. Each tier above D grants **+25% MORE** XP and Scrap drops, **+25% MORE** enemy spawn rate (halving spawn interval at S), expands concurrent enemy cap up to 80, and reduces round intermission delay down to 2.25s at Tier S to sustain combat momentum.
+* **Rarer Perk Upgrades**: Common perk base weight is increased by 25% from 64 to 80. Advancing Fever tiers decays Common weight by $80 \times 0.75^{\text{tier}}$, more than doubling the offering probability of Rare, Epic, and Legendary cards at Tier S.
+
+---
+
 ## 🧬 Roguelike Upgrades System
 
 ### Upgrade Mechanics
-* **Card Offer**: Leveling up or opening a Loot Cache offers 3 cards. Rarity rates: Common (~75.3%), Rare (~18.8%), Epic (~4.7%), Legendary (~1.2%).
+* **Card Offer**: Leveling up or opening a Loot Cache offers 3 cards. Rarity rates: Common (~79.2% at Tier D down to ~54.7% at Tier S), with Rare, Epic, and Legendary cards appearing more than twice as frequently at max Fever.
 * **Scrap Reroll**: Reshuffles 3 cards. Costs 500 Scrap initially, doubling per use (500 → 1,000 → 2,000 → 4,000...), shared across co-op.
 * **Crits & Explosions**: Projectiles roll weapon crit chance (+ *Precision Optics*). Base crit multiplier is 2.0× (+ *Hollow-Point Rounds*). Explosions derive damage from initial hit damage and do not double-dip crits.
 * **Knockback Removal**: Player weapons have zero knockback on enemies to prevent stunlock exploits.
