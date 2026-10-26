@@ -132,7 +132,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | **S** | 0.0s – 20.0s (Cap) | **+100% MORE** (2.0×) | **+100% MORE** (2.0×) | 80 enemies | 2.25s (Half Delay) | $80.0 \times 0.75^4 \approx 25.31$ |
 
 ### Fever Mechanics
-* **Progression**: Start at **Tier D** (0.0s). Each enemy kill increases the active tier duration by **+0.5s**.
+* **Progression**: Start at **Tier D** (0.0s). Each enemy kill increases the active tier duration by **+2.0s**.
 * **Promotion**: Reaching **20.0s** immediately promotes to the next tier, starting at **1.0s** of the new tier (caps at 20.0s at Tier S).
 * **Demotion**: If current tier duration decays to **0.0s**, demotes to the lower tier at **19.0s** (clamps at 0.0s at Tier D).
 * **Economy & Horde Buffs**: Tier D provides no bonuses. Each tier above D grants **+25% MORE** XP and Scrap drops, **+25% MORE** enemy spawn rate (halving spawn interval at S), expands concurrent enemy cap up to 80, and reduces round intermission delay down to 2.25s at Tier S to sustain combat momentum.
