@@ -127,7 +127,7 @@ func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 		var enemy_aim_pos = target_enemy.global_position + Vector3(0, 0.7, 0)
 		look_at(enemy_aim_pos, Vector3.UP)
 		
-		# Fires at assigned weapon fire rate (1/4 rate for rapid weapons, full 0.3 shot/s for heavy plasma), scaled by Overclock Trigger and Gunner Active (+500% MORE fire rate)
+		# Fires at assigned weapon fire rate (1/4 rate for rapid weapons, full 0.2 shot/s for heavy plasma), scaled by Overclock Trigger and Gunner Active (+500% MORE fire rate)
 		var gunner_fr_mult: float = 6.0 if is_berserk else 1.0
 		var effective_cooldown = maxf(0.02, (((cur_weapon.fire_rate) if assigned_weapon_idx == 2 else (cur_weapon.fire_rate * 4.0)) / (GameManager.fire_rate_mult * gunner_fr_mult)))
 		if fire_cooldown <= 0.0 and not is_reloading:

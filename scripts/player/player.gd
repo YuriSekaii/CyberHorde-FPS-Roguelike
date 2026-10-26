@@ -303,7 +303,7 @@ func _setup_weapons() -> void:
 	# Weapon 2: Plasma Launcher
 	var plasma = Weapon.new()
 	plasma.name = "Plasma Core"
-	plasma.fire_rate = 1.0 / 0.3 # 0.3 shot/s cooldown (3.333s), not including charge
+	plasma.fire_rate = 1.0 / 0.2 # 0.2 shot/s cooldown (5.0s), not including charge
 	plasma.damage = 150.0
 	plasma.base_max_ammo = 5
 	plasma.max_ammo = 5
