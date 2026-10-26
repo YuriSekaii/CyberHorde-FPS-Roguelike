@@ -193,7 +193,7 @@ var upgrade_database: Dictionary = {
 	"chain_lightning": {
 		"id": "chain_lightning",
 		"name": "Tesla Arc Emitter",
-		"desc": "Bullet hits arc chain lightning up to 2 targets (+2 per stack, max 4 stacks). Chains between enemies and can bounce back to previous targets. Plasma Core casts lightning to EVERY enemy in blast radius before detonating, which then chain outward!",
+		"desc": "Direct bullet hits arc chain lightning dealing 75% damage to 2 targets (+2 per stack, max 4 stacks; no ricochet trigger except Plasma Core). Chains between enemies and can bounce back to previous targets. Plasma Core casts lightning to EVERY enemy in blast radius before detonating, which then chain outward!",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 4
@@ -201,7 +201,7 @@ var upgrade_database: Dictionary = {
 	"ricochet": {
 		"id": "ricochet",
 		"name": "Smart Bouncing Core",
-		"desc": "Projectiles ricochet with on-hit explosion & lightning per bounce.",
+		"desc": "Projectiles ricochet with on-hit explosion per bounce (and Plasma Core lightning synergy).",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
 		"max_stacks": 2

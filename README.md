@@ -147,7 +147,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 * **Scrap Reroll**: Reshuffles 3 cards. Costs 500 Scrap initially, doubling per use (500 → 1,000 → 2,000 → 4,000...), shared across co-op.
 * **Crits & Explosions**: Projectiles roll weapon crit chance (+ *Precision Optics*). Base crit multiplier is 2.0× (+ *Hollow-Point Rounds*). Explosions derive damage from initial hit damage and do not double-dip crits.
 * **Knockback Removal**: Player weapons have zero knockback on enemies to prevent stunlock exploits.
-* **Tesla Chaining**: Arcs sequentially up to 2–8 targets within 8.5m. Can bounce back and forth (ping-pong) between 2+ alive targets; prioritizes unhit targets first.
+* **Tesla Chaining**: Arcs sequentially up to 2–8 targets within 8.5m dealing 75% bullet damage (+50% damage boost). Does not trigger on ricochets (retains Plasma Core ricochet synergy). Can bounce back and forth (ping-pong) between 2+ alive targets; prioritizes unhit targets first.
 
 ### Perk Catalog
 
@@ -172,8 +172,8 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.5s invulnerability | 2 (1s max) |
 | **Null Barrier** | `Epic` | Nullifies damage instance every 10s (triggers invulnerability perks) | 1 |
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
-| **Tesla Arc Emitter** | `Epic` | Hits arc chain lightning to 2 targets (+2 per stack, up to 8 max within 8.5m). Synergizes with Plasma Core | 4 |
-| **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion & chain lightning per bounce | 2 |
+| **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 8 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 4 |
+| **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion per bounce (and Plasma Core chain lightning) | 2 |
 | **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, and Gunner Berserk Protocol active) | 3 |
 | **Emergency Defibrillator**| `Legendary`| Prevents fatal damage + 5s invulnerability. Recharges every 10 waves | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |

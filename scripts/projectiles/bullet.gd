@@ -354,9 +354,9 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 				if GameManager.cryo_slow and collider.has_method("apply_slow"):
 					collider.apply_slow(0.4, 3.0)
 			
-			# Standard Chain Lightning effect on enemy hit
-			if GameManager.chain_lightning:
-				_trigger_chain_lightning_at_pos(hit_pos, final_dmg * 0.5, collider)
+			# Standard Chain Lightning effect on enemy hit (does not trigger on ricochets)
+			if GameManager.chain_lightning and not is_ricochet:
+				_trigger_chain_lightning_at_pos(hit_pos, final_dmg * 0.75, collider)
 			
 			# Explosion on hit (purely based on initial hit damage)
 			_trigger_impact_effects(hit_pos, final_dmg)
@@ -379,13 +379,11 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if bounces_left > 0 and hit_normal != Vector3.ZERO:
 			bounces_left -= 1
 			
-			# Trigger on-hit effects for bounce
+			# Trigger on-hit effects for bounce (Plasma Core retains ricochet lightning synergy)
 			if is_plasma and GameManager.chain_lightning:
 				_trigger_plasma_chain_lightning(hit_pos, wall_hit_dmg, null, false)
 			else:
 				_trigger_impact_effects(hit_pos, wall_hit_dmg)
-				if GameManager.chain_lightning:
-					_trigger_chain_lightning_at_pos(hit_pos, wall_hit_dmg * 0.5, null)
 			
 			_ricochet_from(hit_pos, hit_normal, null)
 			return
@@ -455,7 +453,7 @@ func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct_enemy: Node, is_direct_crit: bool) -> void:
 	var explode_rad = 5.0 * (1.5 if GameManager.explosive_rounds else 1.0)
 	var explode_rad_sq = explode_rad * explode_rad
-	var chain_base_dmg = impact_dmg * 0.5
+	var chain_base_dmg = impact_dmg * 0.75
 	
 	var enemies = EnemyBase.all_enemies
 	var primary_targets: Array[Dictionary] = []

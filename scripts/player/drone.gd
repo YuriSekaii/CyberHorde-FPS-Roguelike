@@ -219,7 +219,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null,
 		# - Hyper-Penetrator (piercing)
 		# - Explosive Payload (detonates on hit)
 		# - Tesla Arc Emitter (chain lightning)
-		# - Smart Bouncing Core (ricochets with on-bounce explosion and lightning)
+		# - Smart Bouncing Core (ricochets with on-bounce explosion and Plasma Core lightning)
 		# - Cryo Rounds (slows enemies)
 		# - Precision Optics & Hollow-Point Rounds (critical hits)
 		# - Gunner Passive (+25% critical strike chance)
