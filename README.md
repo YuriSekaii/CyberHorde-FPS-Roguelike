@@ -88,7 +88,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
 | **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters spread (0.103125 cone) |
-| **Plasma Core** | `3` | Hold-to-Charge, Release-to-Fire | 150 direct + 150 AoE | 1 | 0.20 shot/s (5.0s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow heavy orb (~23.3 m/s), ~2.5m effective capture width, 5.0m AoE (7.5m with *Explosive Payload*), Tesla Arc radial synergy |
+| **Plasma Core** | `3` | Hold-to-Charge, Release-to-Fire | 150 direct + 150 AoE | 1 | 0.20 shot/s (5.0s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow heavy orb (~23.3 m/s), ~2.5m effective capture width, 5.0m AoE (6.375m with *Explosive Payload*), Tesla Arc radial synergy |
 
 ### Weapon Mechanics Notes
 * **Plasma Core Charge Cycle**: Requires holding `LMB` for at least 0.18s before releasing to fire. Releasing early cancels without ammo cost or cooldown. The core glow shifts to Warning Red during cooldown/reload, popping to Neon Purple when ready.
@@ -168,7 +168,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | **Vampiric Siphon** | `Rare` | Restores +4 HP on enemy kill | 1 |
 | **Cryo Rounds** | `Rare` | Bullets slow targets by 40% for 3 seconds | 1 |
 | **Nanite Scavenger** | `Rare` | +40% XP and Scrap drops from defeated enemies | 1 |
-| **Explosive Payload** | `Epic` | Bullets explode on impact. Plasma Core AoE +50% (5.0m → 7.5m) | 1 |
+| **Explosive Payload** | `Epic` | Bullets explode on impact (2.975m AoE). Plasma Core AoE +27.5% (5.0m → 6.375m) | 1 |
 | **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.5s invulnerability | 2 (1s max) |
 | **Null Barrier** | `Epic` | Nullifies damage instance every 10s (triggers invulnerability perks) | 1 |
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
