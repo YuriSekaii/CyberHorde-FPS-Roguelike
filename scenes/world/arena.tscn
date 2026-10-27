@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/world/jump_pad.tscn" id="1_jpad"]
 
@@ -99,12 +99,6 @@ emission_enabled = true
 emission = Color(0.2, 0.9, 1, 1)
 emission_energy_multiplier = 2.2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trim_warm"]
-albedo_color = Color(1, 0.55, 0.15, 1)
-emission_enabled = true
-emission = Color(1, 0.55, 0.15, 1)
-emission_energy_multiplier = 2.0
-
 [sub_resource type="BoxMesh" id="BoxMesh_lowwall"]
 material = SubResource("StandardMaterial3D_cover")
 size = Vector3(5, 1.3, 0.8)
@@ -126,28 +120,6 @@ size = Vector3(4.5, 2.6, 0.9)
 [sub_resource type="BoxMesh" id="BoxMesh_barricade_trim"]
 material = SubResource("StandardMaterial3D_trim_cyan")
 size = Vector3(4.54, 0.14, 0.94)
-
-[sub_resource type="BoxMesh" id="BoxMesh_crate"]
-material = SubResource("StandardMaterial3D_cover")
-size = Vector3(2.4, 2.4, 2.4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_crate"]
-size = Vector3(2.4, 2.4, 2.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_crate_trim"]
-material = SubResource("StandardMaterial3D_trim_warm")
-size = Vector3(2.44, 0.14, 2.44)
-
-[sub_resource type="BoxMesh" id="BoxMesh_smallcrate"]
-material = SubResource("StandardMaterial3D_cover")
-size = Vector3(1.6, 1.6, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_smallcrate"]
-size = Vector3(1.6, 1.6, 1.6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_smallcrate_trim"]
-material = SubResource("StandardMaterial3D_trim_warm")
-size = Vector3(1.64, 0.1, 1.64)
 
 [node name="Arena" type="Node3D"]
 
@@ -345,20 +317,6 @@ cast_shadow = 0
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/LowWallWest"]
 shape = SubResource("BoxShape3D_lowwall")
 
-[node name="BarricadeSE_X" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 24, 1.3, 9)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSE_X"]
-mesh = SubResource("BoxMesh_barricade")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSE_X"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeSE_X"]
-shape = SubResource("BoxShape3D_barricade")
-
 [node name="BarricadeSE_Z" type="StaticBody3D" parent="Geometry/Cover"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.3, 24)
 
@@ -387,20 +345,6 @@ cast_shadow = 0
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNE_X"]
 shape = SubResource("BoxShape3D_barricade")
 
-[node name="BarricadeNE_Z" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.3, -24)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNE_Z"]
-mesh = SubResource("BoxMesh_barricade")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNE_Z"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNE_Z"]
-shape = SubResource("BoxShape3D_barricade")
-
 [node name="BarricadeSW_X" type="StaticBody3D" parent="Geometry/Cover"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -24, 1.3, 9)
 
@@ -413,34 +357,6 @@ mesh = SubResource("BoxMesh_barricade_trim")
 cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeSW_X"]
-shape = SubResource("BoxShape3D_barricade")
-
-[node name="BarricadeSW_Z" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.3, 24)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSW_Z"]
-mesh = SubResource("BoxMesh_barricade")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSW_Z"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeSW_Z"]
-shape = SubResource("BoxShape3D_barricade")
-
-[node name="BarricadeNW_X" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -24, 1.3, -9)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNW_X"]
-mesh = SubResource("BoxMesh_barricade")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNW_X"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNW_X"]
 shape = SubResource("BoxShape3D_barricade")
 
 [node name="BarricadeNW_Z" type="StaticBody3D" parent="Geometry/Cover"]
@@ -456,230 +372,6 @@ cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNW_Z"]
 shape = SubResource("BoxShape3D_barricade")
-
-[node name="BunkerSE_A" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 0.65, 27)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerSE_A"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerSE_A"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerSE_A"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerSE_B" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27, 0.65, 29.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerSE_B"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerSE_B"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerSE_B"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerNE_A" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 0.65, -27)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerNE_A"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerNE_A"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerNE_A"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerNE_B" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27, 0.65, -29.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerNE_B"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerNE_B"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerNE_B"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerSW_A" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0.65, 27)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerSW_A"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerSW_A"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerSW_A"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerSW_B" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -27, 0.65, 29.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerSW_B"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerSW_B"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerSW_B"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerNW_A" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0.65, -27)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerNW_A"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerNW_A"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerNW_A"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="BunkerNW_B" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -27, 0.65, -29.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/BunkerNW_B"]
-mesh = SubResource("BoxMesh_lowwall")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BunkerNW_B"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
-mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BunkerNW_B"]
-shape = SubResource("BoxShape3D_lowwall")
-
-[node name="CrateN" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.2, -31)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateN"]
-mesh = SubResource("BoxMesh_crate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateN"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_crate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateN"]
-shape = SubResource("BoxShape3D_crate")
-
-[node name="CrateN_Small" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0.906308, 0, -0.422618, 0, 1, 0, 0.422618, 0, 0.906308, 1.4, 0.8, -30.4)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateN_Small"]
-mesh = SubResource("BoxMesh_smallcrate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateN_Small"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_smallcrate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateN_Small"]
-shape = SubResource("BoxShape3D_smallcrate")
-
-[node name="CrateS" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.2, 31)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateS"]
-mesh = SubResource("BoxMesh_crate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateS"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_crate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateS"]
-shape = SubResource("BoxShape3D_crate")
-
-[node name="CrateS_Small" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0.906308, 0, -0.422618, 0, 1, 0, 0.422618, 0, 0.906308, -1.4, 0.8, 30.4)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateS_Small"]
-mesh = SubResource("BoxMesh_smallcrate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateS_Small"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_smallcrate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateS_Small"]
-shape = SubResource("BoxShape3D_smallcrate")
-
-[node name="CrateE" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 1.2, 1.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateE"]
-mesh = SubResource("BoxMesh_crate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateE"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_crate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateE"]
-shape = SubResource("BoxShape3D_crate")
-
-[node name="CrateE_Small" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0.906308, 0, -0.422618, 0, 1, 0, 0.422618, 0, 0.906308, 30.4, 0.8, -1.4)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateE_Small"]
-mesh = SubResource("BoxMesh_smallcrate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateE_Small"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_smallcrate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateE_Small"]
-shape = SubResource("BoxShape3D_smallcrate")
-
-[node name="CrateW" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, 1.2, -1.5)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateW"]
-mesh = SubResource("BoxMesh_crate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateW"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_crate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateW"]
-shape = SubResource("BoxShape3D_crate")
-
-[node name="CrateW_Small" type="StaticBody3D" parent="Geometry/Cover"]
-transform = Transform3D(0.906308, 0, -0.422618, 0, 1, 0, 0.422618, 0, 0.906308, -30.4, 0.8, 1.4)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/Cover/CrateW_Small"]
-mesh = SubResource("BoxMesh_smallcrate")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/CrateW_Small"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_smallcrate_trim")
-cast_shadow = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/CrateW_Small"]
-shape = SubResource("BoxShape3D_smallcrate")
 
 [node name="JumpPad1" parent="." instance=ExtResource("1_jpad")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.5, 0, -22.5)
