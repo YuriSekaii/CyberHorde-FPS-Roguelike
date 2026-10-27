@@ -30,9 +30,8 @@ glow_bloom = 0.12
 glow_blend_mode = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.78, 0.82, 0.87, 1)
-metallic = 0.15
-roughness = 0.55
+albedo_color = Color(0.18, 0.20, 0.24, 1)
+roughness = 0.85
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
@@ -42,9 +41,9 @@ size = Vector3(80, 1, 80)
 size = Vector3(80, 1, 80)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wall"]
-albedo_color = Color(0.70, 0.74, 0.79, 1)
-metallic = 0.2
-roughness = 0.5
+albedo_color = Color(0.28, 0.31, 0.36, 1)
+metallic = 0.1
+roughness = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_wall_z"]
 material = SubResource("StandardMaterial3D_wall")
@@ -70,9 +69,9 @@ size = Vector3(2, 40, 82)
 size = Vector3(82, 2, 82)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_platform"]
-albedo_color = Color(0.58, 0.64, 0.71, 1)
-metallic = 0.25
-roughness = 0.45
+albedo_color = Color(0.23, 0.26, 0.31, 1)
+metallic = 0.1
+roughness = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_platform"]
 material = SubResource("StandardMaterial3D_platform")
@@ -89,9 +88,9 @@ size = Vector3(2.5, 12, 2.5)
 size = Vector3(2.5, 12, 2.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cover"]
-albedo_color = Color(0.36, 0.40, 0.47, 1)
-metallic = 0.35
-roughness = 0.45
+albedo_color = Color(0.14, 0.16, 0.20, 1)
+metallic = 0.2
+roughness = 0.6
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trim_cyan"]
 albedo_color = Color(0.2, 0.9, 1, 1)
