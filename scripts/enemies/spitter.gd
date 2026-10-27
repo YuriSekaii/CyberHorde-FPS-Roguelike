@@ -47,11 +47,11 @@ func _behave(delta: float) -> void:
 	move_and_slide()
 	
 	# Keep within arena perimeter bounds
-	if absf(global_position.x) > 28.5:
-		global_position.x = clampf(global_position.x, -28.5, 28.5)
+	if absf(global_position.x) > 36.5:
+		global_position.x = clampf(global_position.x, -36.5, 36.5)
 		strafe_dir = -strafe_dir
-	if absf(global_position.z) > 28.5:
-		global_position.z = clampf(global_position.z, -28.5, 28.5)
+	if absf(global_position.z) > 36.5:
+		global_position.z = clampf(global_position.z, -36.5, 36.5)
 		strafe_dir = -strafe_dir
 	
 	# Randomly change strafe direction

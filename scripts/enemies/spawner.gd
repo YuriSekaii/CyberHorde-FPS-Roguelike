@@ -77,8 +77,8 @@ func _behave(delta: float) -> void:
 	move_and_slide()
 	
 	# Clamp inside arena
-	global_position.x = clampf(global_position.x, -27.0, 27.0)
-	global_position.z = clampf(global_position.z, -27.0, 27.0)
+	global_position.x = clampf(global_position.x, -35.0, 35.0)
+	global_position.z = clampf(global_position.z, -35.0, 35.0)
 	
 	if randf() < 0.008:
 		strafe_dir *= -1.0
@@ -139,8 +139,8 @@ func die() -> void:
 	
 	# Drop the upgrade box (Loot Cache) when dies
 	var chest_pos = Vector3(global_position.x, 0.5, global_position.z)
-	chest_pos.x = clampf(chest_pos.x, -26.0, 26.0)
-	chest_pos.z = clampf(chest_pos.z, -26.0, 26.0)
+	chest_pos.x = clampf(chest_pos.x, -34.0, 34.0)
+	chest_pos.z = clampf(chest_pos.z, -34.0, 34.0)
 	
 	if NetworkManager.is_multiplayer:
 		if NetworkManager.is_server:

@@ -223,8 +223,10 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 ## 💎 Pickups & Arena Elements
 
+* **Arena Layout**: 80×80m floor (walls at $|X|, |Z| = 40\text{m}$) with a raised center platform + N/S ramps, 4 tall pillars at $(\pm17.5, \pm17.5)$ and 4 jump pads at $(\pm22.5, \pm22.5)$.
+* **Cover**: 26 solid pieces that block shots both ways — waist-high cyan-trim walls flanking the platform (E/W), a ring of 8 tall 2.6m barricades at $(\pm24, \pm9)$ / $(\pm9, \pm24)$, L-shaped low-wall bunkers in all 4 corners, and orange-trim crate stacks at each wall midpoint. Ground enemies (Swarmer, Bomber, Brute, Charger stalk, Boss) slide along cover faces to route around it instead of getting stuck; a charging Charger still crashes into cover and stuns. Wave spawns and loot caches use a physics overlap check so nothing spawns inside pillars, ramps or cover.
 * **Arena Walls & Non-Intrusive Sky Barriers**: Standard 8m visible perimeter walls preserve the open-sky horizon. An invisible upper barrier (Layer 5, up to 48m) blocks operatives and enemies from dashing or flying into the abyss while letting all weapon projectiles pass freely through into the sky without exploding or ricocheting.
-* **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Any enemy unit that somehow ends up out of the arena (beyond perimeter walls $|X|, |Z| > 31.5\text{m}$, below floor $Y < -1.0\text{m}$, or above sky boundary $Y > 45.0\text{m}$) is instantly eliminated with all loot drops safely placed onto the arena floor.
+* **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Any enemy unit that somehow ends up out of the arena (beyond perimeter walls $|X|, |Z| > 39.5\text{m}$, below floor $Y < -1.0\text{m}$, or above sky boundary $Y > 45.0\text{m}$) is instantly eliminated with all loot drops safely placed onto the arena floor.
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 HP. Drops more frequently at low health.
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.

@@ -283,21 +283,21 @@ func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vecto
 	# Attempt up to 12 times to find an arena position at least 10m away from all players
 	for attempt in range(12):
 		var angle = randf() * TAU
-		var dist = randf_range(16.0, 28.0)
+		var dist = randf_range(16.0, 30.0)
 		var candidate = ref_player.global_position + Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
-		candidate.x = clampf(candidate.x, -27.0, 27.0)
-		candidate.z = clampf(candidate.z, -27.0, 27.0)
+		candidate.x = clampf(candidate.x, -35.0, 35.0)
+		candidate.z = clampf(candidate.z, -35.0, 35.0)
 		candidate.y = 0.5
-		
+
 		var min_p_dist = INF
 		for p in players:
 			if is_instance_valid(p) and p is CharacterBody3D:
 				var d = candidate.distance_to(p.global_position)
 				if d < min_p_dist:
 					min_p_dist = d
-		
-		# Avoid spawning inside or overlapping the 4 solid arena pillars at (±14, ±14)
-		if absf(absf(candidate.x) - 14.0) < 2.2 and absf(absf(candidate.z) - 14.0) < 2.2:
+
+		# Avoid spawning inside or overlapping pillars, ramps and cover
+		if _is_spot_blocked(candidate):
 			continue
 		
 		if min_p_dist >= 10.0:
@@ -314,14 +314,30 @@ func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vecto
 	var away_dir = -ref_player.global_position.normalized()
 	if away_dir.length_squared() < 0.05:
 		away_dir = Vector3(1, 0, 0)
-	var fallback = away_dir * randf_range(15.0, 25.0)
-	fallback.x = clampf(fallback.x, -27.0, 27.0)
-	fallback.z = clampf(fallback.z, -27.0, 27.0)
+	var fallback = away_dir * randf_range(18.0, 30.0)
+	fallback.x = clampf(fallback.x, -35.0, 35.0)
+	fallback.z = clampf(fallback.z, -35.0, 35.0)
 	fallback.y = 0.5
-	# If fallback is inside a pillar, shift it safely away
-	if absf(absf(fallback.x) - 14.0) < 2.2 and absf(absf(fallback.z) - 14.0) < 2.2:
-		fallback.x += 4.0 if fallback.x >= 0.0 else -4.0
+	# If fallback is inside solid geometry, nudge it to the first clear spot around it
+	if _is_spot_blocked(fallback):
+		for i in range(8):
+			var a = TAU * float(i) / 8.0
+			var nudged = fallback + Vector3(cos(a) * 3.5, 0.0, sin(a) * 3.5)
+			nudged.x = clampf(nudged.x, -35.0, 35.0)
+			nudged.z = clampf(nudged.z, -35.0, 35.0)
+			if not _is_spot_blocked(nudged):
+				return nudged
 	return fallback
+
+# True when a ground-level body at pos would overlap static level geometry (layer 1: pillars, ramps, cover)
+func _is_spot_blocked(pos: Vector3, radius: float = 1.0) -> bool:
+	var shape = SphereShape3D.new()
+	shape.radius = radius
+	var params = PhysicsShapeQueryParameters3D.new()
+	params.shape = shape
+	params.transform = Transform3D(Basis(), Vector3(pos.x, 0.3 + radius, pos.z))
+	params.collision_mask = 1
+	return not get_world_3d().direct_space_state.intersect_shape(params, 1).is_empty()
 
 func _create_spawn_indicator(type_id: int, spawn_pos: Vector3, net_name: String, delay: float) -> void:
 	var ind = SPAWN_INDICATOR_SCENE.instantiate()
@@ -374,10 +390,12 @@ func _clean_all_indicators() -> void:
 			ind.queue_free()
 
 func _spawn_loot_chest() -> void:
-	var pos_x = randf_range(-14.0, 14.0)
-	var pos_z = randf_range(-14.0, 14.0)
-	var spawn_pos = Vector3(pos_x, 0.5, pos_z)
-	
+	var spawn_pos = Vector3(randf_range(-18.0, 18.0), 0.5, randf_range(-18.0, 18.0))
+	for attempt in range(10):
+		if not _is_spot_blocked(spawn_pos):
+			break
+		spawn_pos = Vector3(randf_range(-18.0, 18.0), 0.5, randf_range(-18.0, 18.0))
+
 	if NetworkManager.is_multiplayer:
 		rpc_spawn_chest.rpc(spawn_pos)
 	else:

@@ -33,6 +33,9 @@ const DAMAGE_TYPE_CHAIN_LIGHTNING: int = 3
 const DAMAGE_TYPE_WEAKPOINT: int = 4 # Direct (non-ricochet) shot whose path passes through an enemy's weakpoint
 
 var _last_immune_feedback_msec: int = 0
+var _detour_dir: Vector3 = Vector3.ZERO
+var _detour_side: float = 1.0
+var _detour_timer: float = 0.0
 
 func _ready() -> void:
 	collision_mask |= 16 # Collide with invisible boundary barrier (Layer 5)
@@ -117,9 +120,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 func is_out_of_arena() -> bool:
-	# Arena floor is 64x64 (X: [-32, 32], Z: [-32, 32]), enclosed by 4 perimeter walls (inner faces at |X, Z| = 31.0).
+	# Arena floor is 80x80 (X: [-40, 40], Z: [-40, 40]), enclosed by 4 perimeter walls (inner faces at |X, Z| = 39.0).
 	# Floor surface is at Y = 0.0, ceiling boundary is at Y = 48.0m.
-	if absf(global_position.x) > 31.5 or absf(global_position.z) > 31.5:
+	if absf(global_position.x) > 39.5 or absf(global_position.z) > 39.5:
 		return true
 	if global_position.y < -1.0 or global_position.y > 45.0:
 		return true
@@ -128,6 +131,25 @@ func is_out_of_arena() -> bool:
 func _behave(_delta: float) -> void:
 	# Overridden in child classes
 	pass
+
+# Bends a direct chase direction around cover/pillars: when pressed head-on into a wall, commit to sliding along
+# its face (toward the side nearer the target) for a short time so the enemy rounds the obstacle instead of grinding on it.
+func steer_around_cover(dir: Vector3, delta: float) -> Vector3:
+	_detour_timer = maxf(_detour_timer - delta, 0.0)
+	if is_on_wall():
+		var n = get_wall_normal()
+		n.y = 0.0
+		if n.length_squared() > 0.01:
+			n = n.normalized()
+			if dir.dot(n) < -0.35:
+				var tangent = Vector3(-n.z, 0.0, n.x)
+				if _detour_timer <= 0.0:
+					_detour_side = 1.0 if tangent.dot(dir) >= 0.0 else -1.0
+				_detour_dir = tangent * _detour_side
+				_detour_timer = 0.6
+	if _detour_timer > 0.0:
+		return (_detour_dir + dir * 0.25).normalized()
+	return dir
 
 func is_immune_to(_damage_type: int) -> bool:
 	return false
@@ -220,9 +242,9 @@ func _drop_loot() -> void:
 	
 	# Clamp loot spawn to safe arena ground level so pickups are never lost outside the arena or in the abyss
 	var drop_pos = global_position
-	if drop_pos.y < 0.2 or drop_pos.y > 15.0 or absf(drop_pos.x) > 28.0 or absf(drop_pos.z) > 28.0:
-		drop_pos.x = clampf(drop_pos.x, -28.0, 28.0)
-		drop_pos.z = clampf(drop_pos.z, -28.0, 28.0)
+	if drop_pos.y < 0.2 or drop_pos.y > 15.0 or absf(drop_pos.x) > 36.0 or absf(drop_pos.z) > 36.0:
+		drop_pos.x = clampf(drop_pos.x, -36.0, 36.0)
+		drop_pos.z = clampf(drop_pos.z, -36.0, 36.0)
 		drop_pos.y = 0.5
 	
 	if is_rogue_kill and GameManager.show_damage_numbers:

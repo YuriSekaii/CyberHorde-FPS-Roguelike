@@ -83,8 +83,9 @@ func _process_stalking(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, target_rot, 7.0 * delta)
 		
 		var effective_speed = speed * slow_multiplier
-		velocity.x = dir.x * effective_speed
-		velocity.z = dir.z * effective_speed
+		var move_dir = steer_around_cover(dir, delta)
+		velocity.x = move_dir.x * effective_speed
+		velocity.z = move_dir.z * effective_speed
 		
 		# Animate 4 legs
 		walk_anim_timer += delta * effective_speed * 2.2
@@ -206,7 +207,7 @@ func _process_charging(delta: float) -> void:
 	var hit_wall = false
 	if is_on_wall():
 		hit_wall = true
-	elif absf(global_position.x) >= 28.5 or absf(global_position.z) >= 28.5:
+	elif absf(global_position.x) >= 36.5 or absf(global_position.z) >= 36.5:
 		hit_wall = true
 	else:
 		# Check slide collision normals

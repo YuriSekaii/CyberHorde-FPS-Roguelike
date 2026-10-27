@@ -324,8 +324,8 @@ func _summon_escort(type_ids: Array) -> void:
 		var angle = (TAU / float(type_ids.size())) * float(i)
 		var offset = Vector3(cos(angle) * 6.0, 0.5, sin(angle) * 6.0)
 		var spawn_pos = global_position + offset
-		spawn_pos.x = clampf(spawn_pos.x, -26.0, 26.0)
-		spawn_pos.z = clampf(spawn_pos.z, -26.0, 26.0)
+		spawn_pos.x = clampf(spawn_pos.x, -34.0, 34.0)
+		spawn_pos.z = clampf(spawn_pos.z, -34.0, 34.0)
 		spawn_pos.y = 3.9 if (absf(spawn_pos.x) <= 9.0 and absf(spawn_pos.z) <= 9.0) else 0.5
 		
 		# Wave 50 escorts use the upgraded basic units (Bomber replaces Swarmer after W30, Hornet replaces Spitter after W40)
@@ -389,8 +389,9 @@ func _process_stage_1(delta: float) -> void:
 		return
 	
 	# Normal pursuit
-	velocity.x = dir.x * eff_speed
-	velocity.z = dir.z * eff_speed
+	var move_dir = steer_around_cover(dir, delta)
+	velocity.x = move_dir.x * eff_speed
+	velocity.z = move_dir.z * eff_speed
 	move_and_slide()
 	
 	# Occasional projectile if player is too far (low dmg)
@@ -608,7 +609,7 @@ func _process_stage_3(delta: float) -> void:
 		Stage3SubState.FLIGHT_BARRAGE:
 			# Fast aerial flight weaving around the sky (32.0 m/s)
 			flight_orbit_angle += delta * 2.8
-			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 20.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 20.0)
+			var target_flight_pos = Vector3(cos(flight_orbit_angle) * 25.0, FLIGHT_ALTITUDE + sin(flight_orbit_angle * 1.5) * 2.5, sin(flight_orbit_angle) * 25.0)
 			var flight_dir = (target_flight_pos - global_position).normalized()
 			velocity = flight_dir * 32.0
 			move_and_slide()
