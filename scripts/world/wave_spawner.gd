@@ -9,12 +9,17 @@ const BRUTE_SCENE = preload("res://scenes/enemies/brute.tscn")
 const BOSS_SCENE = preload("res://scenes/enemies/boss.tscn")
 const CHARGER_SCENE = preload("res://scenes/enemies/charger.tscn")
 const SPAWNER_ENEMY_SCENE = preload("res://scenes/enemies/spawner.tscn")
+const BOMBER_SCENE = preload("res://scenes/enemies/bomber.tscn")
+const HORNET_SCENE = preload("res://scenes/enemies/hornet.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 const SPAWN_INDICATOR_SCENE = preload("res://scenes/world/spawn_indicator.tscn")
 
 const FINAL_WAVE: int = 50
 const SPAWN_DELAY: float = 3.0
 const MAX_CONCURRENT_ENEMIES: int = 40
+# Upgraded basic units fully replace their predecessors after these waves
+const BOMBER_AFTER_WAVE: int = 30
+const HORNET_AFTER_WAVE: int = 40
 
 var is_spawner_active: bool = false
 var current_wave: int = 1
@@ -174,7 +179,7 @@ func _spawn_one_enemy() -> void:
 	var enemy_name = "Enemy_%d_%d" % [current_wave, enemy_counter]
 	
 	# Determine enemy type
-	# 0=Swarmer, 1=Spitter, 2=Brute, 3=Boss, 4=Charger, 5=Spawner
+	# 0=Swarmer, 1=Spitter, 2=Brute, 3=Boss, 4=Charger, 5=Spawner, 6=Bomber, 7=Hornet
 	var type_id = 0
 	var spawn_pos: Vector3
 	var delay: float = SPAWN_DELAY
@@ -268,8 +273,8 @@ func _select_enemy_type(wave_num: int) -> int:
 		return 2 # Armored Goliath (Brute)
 	roll -= w_brute
 	if roll < w_spitter:
-		return 1 # Plasma Spitter
-	return 0 # Cyber Swarmer
+		return 7 if wave_num > HORNET_AFTER_WAVE else 1 # Photon Hornet / Plasma Spitter
+	return 6 if wave_num > BOMBER_AFTER_WAVE else 0 # Volt Bomber / Cyber Swarmer
 
 func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vector3:
 	var best_pos = Vector3.ZERO
@@ -344,6 +349,10 @@ func _instantiate_enemy(type_id: int, spawn_pos: Vector3, net_name: String) -> v
 		enemy_scene = CHARGER_SCENE
 	elif type_id == 5:
 		enemy_scene = SPAWNER_ENEMY_SCENE
+	elif type_id == 6:
+		enemy_scene = BOMBER_SCENE
+	elif type_id == 7:
+		enemy_scene = HORNET_SCENE
 	
 	var enemy = enemy_scene.instantiate()
 	enemy.name = net_name
@@ -413,6 +422,8 @@ func _on_boss_defeated() -> void:
 		_clean_all_indicators()
 		for e in active_enemies:
 			if is_instance_valid(e) and not e.is_queued_for_deletion():
+				if "detonate_on_death" in e:
+					e.detonate_on_death = false
 				if e.has_method("die"):
 					e.die()
 				else:
@@ -422,6 +433,8 @@ func _on_boss_defeated() -> void:
 		var remaining_enemies = get_tree().get_nodes_in_group("enemies")
 		for e in remaining_enemies:
 			if is_instance_valid(e) and not e.is_queued_for_deletion():
+				if "detonate_on_death" in e:
+					e.detonate_on_death = false
 				if e.has_method("die"):
 					e.die()
 				else:

@@ -194,6 +194,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 * **Speed & Attack Rate**: $+5\%$ compounding every 10 waves ($1.05^{\lfloor\text{Wave}/10\rfloor}$).
 * **Damage Reduction**: $+10\%$ every 10 waves (capped at 50% max at Wave 50).
 * **Basic Spawn Decay**: Swarmer & Spitter weights decay $5\%$ multiplicatively every 5 waves ($\text{Weight} \times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
+* **Basic Unit Upgrades**: From **Wave 31** the Volt Bomber fully replaces the Cyber Swarmer; from **Wave 41** the Photon Hornet fully replaces the Plasma Spitter (same spawn weights; Wave 50 boss escorts use the upgraded units).
 
 ### Enemy Stats
 
@@ -201,6 +202,8 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m 3D sphere, $\le 1.8$m height) | ~45–55% | Decays every 5 waves |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing orb (25.0m) | 30.0% | Wave 3+, decays every 5 waves |
+| **Volt Bomber** | 35.0 | 8.0 m/s | 30.0 | — | Suicide blast (3.0m radius); auto-detonates within 2.0m of an operative and on death | Swarmer's | Wave 31+, replaces Swarmer |
+| **Photon Hornet** | 90.0 | 5.5 m/s | 18.0 | 1.2s | Thin laser bolt, 48 m/s (28.0m); orbits target at ~11m, hovers ~3.5m up | Spitter's | Wave 41+, replaces Spitter |
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 30 m/s rush attack | ~4.0–4.25% | Wave 11+, wall crash causes 3.5s self-stun |
 | **Void Spawner** | 4,000.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns Spawnlings | 0.25% | Wave 20+, drops Loot Cache on defeat |
@@ -247,12 +250,13 @@ CyberHorde-FPS-Roguelike/
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (target selection, health, damage)
 │   │   ├── swarmer.gd / spitter.gd   # Basic swarmer and ranged spitter AI
+│   │   ├── bomber.gd / hornet.gd     # Late-wave suicide bomber and laser gunship drone AI
 │   │   ├── brute.gd / charger.gd     # Heavy ground-slammer and charging bull AI
 │   │   ├── spawner.gd / spawnling.gd # Sky carrier spawner and drill minion AI
 │   │   └── boss.gd                   # Wave 50 Apex Overlord multi-stage boss AI
 │   ├── projectiles/
 │   │   ├── bullet.gd                 # Projectile simulation, pierce, ricochet, explosions, Tesla arcs
-│   │   ├── enemy_projectile.gd       # Spitter plasma orb
+│   │   ├── enemy_projectile.gd       # Spitter plasma orb / Hornet laser (enemy_laser.tscn)
 │   │   └── explosion.gd              # Static pooled AoE blast and particle system
 │   ├── loot/
 │   │   ├── loot_pickup.gd            # Pickups (XP, Stim, Scrap) and magnet logic

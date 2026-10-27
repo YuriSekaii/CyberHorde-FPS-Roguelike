@@ -88,6 +88,14 @@ func _apply_theme() -> void:
 			type_name = "Void Spawner"
 			theme_color = Color(0.75, 0.15, 1.0, 1.0)
 			base_radius = 2.8
+		6: # Volt Bomber
+			type_name = "Bomber"
+			theme_color = Color(1.0, 0.3, 0.05, 1.0)
+			base_radius = 1.3
+		7: # Photon Hornet
+			type_name = "Hornet"
+			theme_color = Color(0.45, 1.0, 0.15, 1.0)
+			base_radius = 1.5
 		_:
 			type_name = "Enemy"
 			theme_color = Color(1.0, 0.4, 0.1, 1.0)

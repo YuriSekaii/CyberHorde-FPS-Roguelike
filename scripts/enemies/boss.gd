@@ -90,6 +90,8 @@ const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 const LOCK_INDICATOR_SCENE = preload("res://scenes/enemies/boss_lock_indicator.tscn")
 const SWARMER_SCENE = preload("res://scenes/enemies/swarmer.tscn")
 const SPITTER_SCENE = preload("res://scenes/enemies/spitter.tscn")
+const BOMBER_SCENE = preload("res://scenes/enemies/bomber.tscn")
+const HORNET_SCENE = preload("res://scenes/enemies/hornet.tscn")
 
 var core_material: StandardMaterial3D
 var visor_material: StandardMaterial3D
@@ -282,7 +284,8 @@ func _summon_escort(type_ids: Array) -> void:
 		spawn_pos.z = clampf(spawn_pos.z, -26.0, 26.0)
 		spawn_pos.y = 3.9 if (absf(spawn_pos.x) <= 9.0 and absf(spawn_pos.z) <= 9.0) else 0.5
 		
-		var scn = SWARMER_SCENE if t_id == 0 else SPITTER_SCENE
+		# Wave 50 escorts use the upgraded basic units (Bomber replaces Swarmer after W30, Hornet replaces Spitter after W40)
+		var scn = BOMBER_SCENE if t_id == 0 else HORNET_SCENE
 		var escort = scn.instantiate()
 		escort.name = "BossEscort_%d_%d" % [Time.get_ticks_msec(), i]
 		parent_node.call_deferred("add_child", escort)

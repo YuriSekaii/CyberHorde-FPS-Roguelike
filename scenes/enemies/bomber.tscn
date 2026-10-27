@@ -1,0 +1,127 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/bomber.gd" id="1_bomber"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell"]
+albedo_color = Color(0.12, 0.12, 0.14, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_shell"]
+material = SubResource("StandardMaterial3D_shell")
+radius = 0.42
+height = 0.84
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hazard"]
+shading_mode = 0
+albedo_color = Color(1, 0.45, 0.05, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_band"]
+material = SubResource("StandardMaterial3D_hazard")
+inner_radius = 0.4
+outer_radius = 0.47
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cap"]
+material = SubResource("StandardMaterial3D_shell")
+top_radius = 0.06
+bottom_radius = 0.1
+height = 0.16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beacon"]
+shading_mode = 0
+albedo_color = Color(1, 0.08, 0.05, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_beacon"]
+material = SubResource("StandardMaterial3D_beacon")
+radius = 0.08
+height = 0.16
+
+[sub_resource type="SphereMesh" id="SphereMesh_eye"]
+material = SubResource("StandardMaterial3D_hazard")
+radius = 0.07
+height = 0.14
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+material = SubResource("StandardMaterial3D_shell")
+size = Vector3(0.07, 0.36, 0.07)
+
+[node name="Bomber" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_bomber")
+enemy_name = "Volt Bomber"
+max_health = 35.0
+speed = 8.0
+attack_damage = 30.0
+xp_reward = 15
+scrap_reward = 10
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+
+[node name="Shell" type="MeshInstance3D" parent="MeshRoot"]
+mesh = SubResource("SphereMesh_shell")
+
+[node name="BandH" type="MeshInstance3D" parent="MeshRoot"]
+mesh = SubResource("TorusMesh_band")
+
+[node name="BandV" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("TorusMesh_band")
+
+[node name="FuseCap" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+mesh = SubResource("CylinderMesh_cap")
+
+[node name="Beacon" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, 0)
+mesh = SubResource("SphereMesh_beacon")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.08, -0.38)
+mesh = SubResource("SphereMesh_eye")
+
+[node name="EyeRight" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.08, -0.38)
+mesh = SubResource("SphereMesh_eye")
+
+[node name="LegFL" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, -0.5, 0, 0.5, 0.866025, 0, 0, 0, 1, -0.32, -0.22, -0.22)
+
+[node name="Mesh" type="MeshInstance3D" parent="MeshRoot/LegFL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegFR" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0, 1, 0.32, -0.22, -0.22)
+
+[node name="Mesh" type="MeshInstance3D" parent="MeshRoot/LegFR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegBL" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, -0.5, 0, 0.5, 0.866025, 0, 0, 0, 1, -0.32, -0.22, 0.22)
+
+[node name="Mesh" type="MeshInstance3D" parent="MeshRoot/LegBL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="LegBR" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0, 1, 0.32, -0.22, 0.22)
+
+[node name="Mesh" type="MeshInstance3D" parent="MeshRoot/LegBR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("BoxMesh_leg")
+
+[node name="CoreLight" type="OmniLight3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+light_color = Color(1, 0.3, 0.05, 1)
+light_energy = 1.5
+omni_range = 3.0
