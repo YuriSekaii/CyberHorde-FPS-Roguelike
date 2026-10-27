@@ -979,7 +979,7 @@ func take_damage(amount: float) -> void:
 		else:
 			die()
 	else:
-		# Survived hit: check Epic perk Reactive Phase-Shield (0.5s invulnerability per stack, max 1s)
+		# Survived hit: check Epic perk Reactive Phase-Shield (0.25s invulnerability, 1 stack max)
 		if GameManager.hit_invulnerability_duration > 0.0:
 			trigger_invulnerability(GameManager.hit_invulnerability_duration)
 

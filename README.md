@@ -178,7 +178,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Cryo Rounds** | `Rare` | Bullets slow targets by 40% for 3 seconds | 1 |
 | **Nanite Scavenger** | `Rare` | +40% XP and Scrap drops from defeated enemies | 1 |
 | **Explosive Payload** | `Epic` | Bullets explode on impact (2.5m AoE). Plasma Core AoE +25% (5.0m → 6.25m) | 1 |
-| **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.5s invulnerability | 2 (1s max) |
+| **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.25s invulnerability | 1 |
 | **Null Barrier** | `Epic` | Nullifies damage instance every 10s (triggers invulnerability perks) | 1 |
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
 | **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 8 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 4 |

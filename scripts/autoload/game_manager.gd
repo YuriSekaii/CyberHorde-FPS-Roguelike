@@ -252,10 +252,10 @@ var upgrade_database: Dictionary = {
 	"reactive_barrier": {
 		"id": "reactive_barrier",
 		"name": "Reactive Phase-Shield",
-		"desc": "When taking damage, gain 0.5s of invulnerability (Max 2 stacks: 1s).",
+		"desc": "When taking damage, gain 0.25s of invulnerability.",
 		"rarity": "Epic",
 		"color": Color(1.0, 0.6, 0.1),
-		"max_stacks": 2
+		"max_stacks": 1
 	},
 	"null_barrier": {
 		"id": "null_barrier",
@@ -825,7 +825,7 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 		"hardened_alloy":
 			player_damage_reduction = minf(0.50, player_damage_reduction + 0.10)
 		"reactive_barrier":
-			hit_invulnerability_duration = minf(1.0, hit_invulnerability_duration + 0.5)
+			hit_invulnerability_duration = minf(0.25, hit_invulnerability_duration + 0.25)
 		"null_barrier":
 			null_barrier_unlocked = true
 		"loot_greed":
