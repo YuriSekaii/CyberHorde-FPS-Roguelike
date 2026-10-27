@@ -1227,6 +1227,8 @@ func _activate_gunner_skill() -> void:
 	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
 	skill_ready = false
+	# Invulnerable for the full active duration
+	trigger_invulnerability(GUNNER_ACTIVE_DURATION)
 	
 	if is_reloading:
 		is_reloading = false
@@ -1243,7 +1245,7 @@ func _activate_gunner_skill() -> void:
 	
 	SoundManager.play("level_up", 0.25, 0.6)
 	shake_intensity = 0.22
-	_spawn_floating_text("BERSERK OVERDRIVE!", Color(1.0, 0.2, 0.2))
+	_spawn_floating_text("BERSERK OVERDRIVE! (INVULN 5s)", Color(1.0, 0.2, 0.2))
 	
 	var cur_w = weapons[active_weapon_idx]
 	ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)
