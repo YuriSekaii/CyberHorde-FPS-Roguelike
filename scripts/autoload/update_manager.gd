@@ -52,6 +52,29 @@ func _detect_local_git_info() -> void:
 		if not commit.is_empty():
 			current_commit_hash = commit
 
+# Windows Explorer / cloud sync tools drop hidden desktop.ini files into folders.
+# Inside .git/refs git reads them as refs ("fatal: bad object refs/desktop.ini"),
+# which breaks fetch and pull. They are never valid git data, so delete them.
+func _purge_desktop_ini(proj_dir: String) -> void:
+	var out: Array = []
+	var err = OS.execute("git", ["-C", proj_dir, "rev-parse", "--absolute-git-dir"], out, true)
+	if err != 0 or out.is_empty():
+		return
+	var git_dir = out[0].strip_edges()
+	if not git_dir.is_empty():
+		_purge_desktop_ini_in(git_dir)
+
+func _purge_desktop_ini_in(dir_path: String) -> void:
+	var dir = DirAccess.open(dir_path)
+	if dir == null:
+		return
+	dir.include_hidden = true
+	for file_name in dir.get_files():
+		if file_name.to_lower() == "desktop.ini":
+			dir.remove(file_name)
+	for sub_dir in dir.get_directories():
+		_purge_desktop_ini_in(dir_path.path_join(sub_dir))
+
 func check_for_updates() -> void:
 	if is_checking or is_updating:
 		return
@@ -87,6 +110,7 @@ func _worker_check_updates() -> void:
 	var commit = out[0].strip_edges() if (err == 0 and out.size() > 0) else "unknown"
 	
 	# 3. Fetch remote
+	_purge_desktop_ini(proj_dir)
 	out.clear()
 	err = OS.execute("git", ["-C", proj_dir, "fetch", "origin", branch], out, true)
 	if err != 0:
@@ -157,6 +181,7 @@ func _worker_pull_updates() -> void:
 	var out: Array = []
 	
 	# Execute git pull origin <branch>
+	_purge_desktop_ini(proj_dir)
 	var err = OS.execute("git", ["-C", proj_dir, "pull", "origin", branch], out, true)
 	if err != 0:
 		out.clear()
