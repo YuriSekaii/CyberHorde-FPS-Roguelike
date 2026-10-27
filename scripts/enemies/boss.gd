@@ -4,7 +4,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Multi-Stage Climactic Battle:
 ## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg, 14.25m radius) & occasional long-range cannon fire (low dmg).
 ## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg, 6.75m AoE), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg, 15.75m AoE).
-## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a 7s bullet-hell barrage of ice needles from both hands and both wings simultaneously with tighter focused spread (65 m/s, 6 projectiles/volley). Needles that hit the ground pin in as ice spikes (needle dmg every 0.5s on contact). Ends with a giant slow mega orb (18.0m AoE) whose impact detonates every spike (3m radius, 2x needle dmg), enters 8s exhaustion cooldown (increased by 5s), then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s, 17.25m AoE) that erupts ice spikes across the whole AoE. Loops until death.
+## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with ice-spike wings and an exposed, fractured purple plasma core. Direct shots through the core deal 2x damage; all other damage (body, ricochet, chain, explosive) is halved on top of the base reduction. Flies at high speed (32 m/s), unleashing a 7s bullet-hell barrage of ice needles from both hands and both wings simultaneously with tighter focused spread (65 m/s, 6 projectiles/volley). Needles that hit the ground pin in as ice spikes (needle dmg every 0.5s on contact). Ends with a giant slow mega orb (18.0m AoE) whose impact detonates every spike (3m radius, 2x needle dmg), enters 8s exhaustion cooldown (increased by 5s), then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s, 17.25m AoE) that erupts ice spikes across the whole AoE. Loops until death.
 
 enum BossStage {
 	STAGE_1,
@@ -52,6 +52,10 @@ var s3_machine_shots: int = 0
 var flight_orbit_angle: float = 0.0
 const FLIGHT_ALTITUDE: float = 14.0
 const DIVE_SPIKE_COUNT: int = 70
+const PLASMA_CORE_RADIUS: float = 0.35 # same size as a Spitter projectile
+const CORE_HIT_DMG_MULT: float = 2.0
+const NON_CORE_DMG_MULT: float = 0.5
+const PLASMA_PURPLE := Color(0.62, 0.18, 1.0)
 
 var locked_impact_pos: Vector3 = Vector3.ZERO
 var active_indicator: Node = null
@@ -82,6 +86,7 @@ var ice_spike_field: Node3D = null
 @onready var angel_core: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelCore
 @onready var angel_visor: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelHead/AngelVisor
 @onready var dark_halo: MeshInstance3D = $MeshRoot/TrueFormRoot/AngelHead/DarkHalo
+@onready var core_cracks: Node3D = $MeshRoot/TrueFormRoot/CoreCracks
 @onready var left_hand_muzzle: Node3D = $MeshRoot/TrueFormRoot/LeftArm/LeftHandMuzzle
 @onready var right_hand_muzzle: Node3D = $MeshRoot/TrueFormRoot/RightArm/RightHandMuzzle
 @onready var left_wing_muzzle1: Node3D = $MeshRoot/TrueFormRoot/LeftAngelWing/WingMuzzle1
@@ -100,6 +105,9 @@ const ICE_SPIKE_FIELD_SCRIPT = preload("res://scripts/enemies/boss_ice_spike_fie
 
 var core_material: StandardMaterial3D
 var visor_material: StandardMaterial3D
+var plasma_core_material: StandardMaterial3D
+var plasma_crack_material: StandardMaterial3D
+var core_hit_flash: float = 0.0
 
 func _ready() -> void:
 	enemy_name = "Apex Overlord"
@@ -159,11 +167,31 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 	if current_stage == BossStage.STAGE_2_TRANSITION or current_stage == BossStage.STAGE_3_TRANSITION:
 		amount *= 0.25
 	
+	# Stage 3: exposed plasma core is the only weak spot (stacks with the base wave damage reduction)
+	if current_stage == BossStage.STAGE_3:
+		if damage_type == EnemyBase.DAMAGE_TYPE_WEAKPOINT:
+			amount *= CORE_HIT_DMG_MULT
+			is_crit = true # crit sound + number as core-hit feedback
+			core_hit_flash = 1.0
+		else:
+			amount *= NON_CORE_DMG_MULT
+	
 	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 	
 	if not is_dead:
 		GameManager.boss_health_updated.emit(current_health, max_health)
 		_check_phase_transitions()
+
+## Called by bullets: does a shot travelling along this ray pass through the Stage 3 plasma core?
+func is_weakpoint_hit(ray_origin: Vector3, ray_dir: Vector3, pad: float = 0.0) -> bool:
+	if current_stage != BossStage.STAGE_3 or angel_core == null:
+		return false
+	var oc = angel_core.global_position - ray_origin
+	var t = oc.dot(ray_dir)
+	if t < 0.0:
+		return false
+	var r = PLASMA_CORE_RADIUS + pad
+	return (oc - ray_dir * t).length_squared() <= r * r
 
 func _check_phase_transitions() -> void:
 	var hp_ratio = current_health / max_health
@@ -245,19 +273,30 @@ func _start_stage_3_transition() -> void:
 	if true_form_root:
 		true_form_root.visible = true
 	
-	# Solid Metal Fallen Angel glowing core and visor
+	# Solid Metal Fallen Angel glowing visor/halo, exposed purple plasma core with energy fractures
 	var angel_glow_mat = StandardMaterial3D.new()
 	angel_glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	angel_glow_mat.albedo_color = Color(1.0, 0.12, 0.3)
-	if angel_core:
-		angel_core.material_override = angel_glow_mat
 	if angel_visor:
 		angel_visor.material_override = angel_glow_mat
 	if dark_halo:
 		dark_halo.material_override = angel_glow_mat
 	
+	plasma_core_material = StandardMaterial3D.new()
+	plasma_core_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	plasma_core_material.albedo_color = PLASMA_PURPLE
+	if angel_core:
+		angel_core.material_override = plasma_core_material
+	plasma_crack_material = StandardMaterial3D.new()
+	plasma_crack_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	plasma_crack_material.albedo_color = PLASMA_PURPLE
+	if core_cracks:
+		for crack in core_cracks.get_children():
+			if crack is MeshInstance3D:
+				crack.material_override = plasma_crack_material
+	
 	if core_light:
-		core_light.light_color = Color(1.0, 0.12, 0.3)
+		core_light.light_color = PLASMA_PURPLE
 		core_light.light_energy = 10.0
 		core_light.omni_range = 18.0
 	
@@ -563,6 +602,8 @@ func _process_stage_3(delta: float) -> void:
 		var target_rot = atan2(-flat_to_player.x, -flat_to_player.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, 7.5 * delta)
 	
+	_animate_plasma_core(delta)
+	
 	match s3_state:
 		Stage3SubState.FLIGHT_BARRAGE:
 			# Fast aerial flight weaving around the sky (32.0 m/s)
@@ -654,6 +695,20 @@ func _process_stage_3(delta: float) -> void:
 				s3_machine_shots = 0
 				state_timer = 0.0
 				attack_timer = 0.4
+
+func _animate_plasma_core(delta: float) -> void:
+	# Unstable plasma throb; flashes white-hot on core hits
+	core_hit_flash = maxf(0.0, core_hit_flash - delta * 6.0)
+	var t = Time.get_ticks_msec() * 0.001
+	var throb = 0.5 + 0.5 * sin(t * 7.0)
+	if plasma_core_material:
+		plasma_core_material.albedo_color = PLASMA_PURPLE.lerp(Color(0.95, 0.75, 1.0), throb * 0.35).lerp(Color.WHITE, core_hit_flash)
+	if plasma_crack_material:
+		var flicker = 0.75 + 0.25 * sin(t * 23.0) * sin(t * 9.0)
+		plasma_crack_material.albedo_color = (PLASMA_PURPLE * flicker).lerp(Color(0.9, 0.6, 1.0), core_hit_flash)
+	if angel_core:
+		var sc = 1.0 + throb * 0.06 + core_hit_flash * 0.15
+		angel_core.scale = Vector3(sc, sc, sc)
 
 func _fire_stage3_machine_gun() -> void:
 	var target_center = target_player.global_position + Vector3(0.0, 0.85, 0.0)

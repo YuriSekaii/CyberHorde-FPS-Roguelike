@@ -30,6 +30,7 @@ const DAMAGE_TYPE_DIRECT: int = 0
 const DAMAGE_TYPE_RICOCHET: int = 1
 const DAMAGE_TYPE_EXPLOSIVE: int = 2
 const DAMAGE_TYPE_CHAIN_LIGHTNING: int = 3
+const DAMAGE_TYPE_WEAKPOINT: int = 4 # Direct (non-ricochet) shot whose path passes through an enemy's weakpoint
 
 var _last_immune_feedback_msec: int = 0
 

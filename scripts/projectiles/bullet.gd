@@ -339,7 +339,7 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 		if is_plasma and GameManager.chain_lightning:
 			_trigger_plasma_chain_lightning(hit_pos, final_dmg, collider, is_crit)
 		else:
-			var hit_dmg_type = EnemyBase.DAMAGE_TYPE_RICOCHET if is_ricochet else EnemyBase.DAMAGE_TYPE_DIRECT
+			var hit_dmg_type = _get_direct_hit_type(collider, hit_pos)
 			var is_immune = collider.has_method("is_immune_to") and collider.is_immune_to(hit_dmg_type)
 			var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 			
@@ -440,6 +440,17 @@ func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore
 					best_target = enemy
 	return best_target
 
+## Direct hit type: ricochets never count as weakpoint shots; otherwise ask the enemy whether this shot's path crosses its weakpoint
+func _get_direct_hit_type(enemy: Object, hit_pos: Vector3) -> int:
+	if is_ricochet:
+		return EnemyBase.DAMAGE_TYPE_RICOCHET
+	if enemy.has_method("is_weakpoint_hit"):
+		# Hitboxes enclose the weakpoint, so trace the flight line from well before the surface hit
+		var pad = 0.3 if is_plasma else 0.0
+		if enemy.is_weakpoint_hit(hit_pos - direction * 3.0, direction, pad):
+			return EnemyBase.DAMAGE_TYPE_WEAKPOINT
+	return EnemyBase.DAMAGE_TYPE_DIRECT
+
 func _trigger_impact_effects(pos: Vector3, initial_hit_dmg: float) -> void:
 	if is_explosive:
 		var rad = GameManager.explosion_radius
@@ -493,7 +504,7 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 	
 	# Direct hit damage
 	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.is_dead:
-		var direct_dmg_type = EnemyBase.DAMAGE_TYPE_RICOCHET if is_ricochet else EnemyBase.DAMAGE_TYPE_DIRECT
+		var direct_dmg_type = _get_direct_hit_type(direct_enemy, hit_pos)
 		var direct_immune = direct_enemy.has_method("is_immune_to") and direct_enemy.is_immune_to(direct_dmg_type)
 		if direct_enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
 			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position, direct_dmg_type)
