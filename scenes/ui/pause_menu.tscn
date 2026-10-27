@@ -29,16 +29,16 @@ grow_vertical = 2
 color = Color(0, 0, 0, 0.6)
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(440, 560)
+custom_minimum_size = Vector2(440, 606)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -220.0
-offset_top = -280.0
+offset_top = -303.0
 offset_right = 220.0
-offset_bottom = 280.0
+offset_bottom = 303.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -184,6 +184,21 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "💥 VISIBLE [ON]"
 
+[node name="FpsLimitContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/FpsLimitContainer"]
+custom_minimum_size = Vector2(115, 0)
+layout_mode = 2
+text = "FPS Limit:"
+
+[node name="FpsLimitBtn" type="Button" parent="Panel/VBoxContainer/FpsLimitContainer"]
+custom_minimum_size = Vector2(195, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "60 FPS"
+
 [node name="HSeparator3" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
@@ -197,4 +212,5 @@ text = "QUIT TO DESKTOP"
 [connection signal="pressed" from="Panel/VBoxContainer/RestartBtn" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/DisplayContainer/WindowModeBtn" to="." method="_on_window_mode_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/DmgNumberContainer/DmgNumberBtn" to="." method="_on_dmg_number_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/FpsLimitContainer/FpsLimitBtn" to="." method="_on_fps_limit_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/QuitBtn" to="." method="_on_quit_pressed"]

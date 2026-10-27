@@ -58,6 +58,8 @@ var skill_pulse_timer: float = 0.0
 var class_label: Label = null
 
 var local_player: Node = null
+var fps_label: Label = null
+var fps_update_timer: float = 0.0
 var hitmarker_timer: float = 0.0
 
 func _ready() -> void:
@@ -100,6 +102,23 @@ func _ready() -> void:
 		class_label.text = "[CLASS: %s]" % GameManager.player_class.to_upper()
 		bottom_left.add_child(class_label)
 		bottom_left.move_child(class_label, 0)
+	
+	# F3 FPS counter
+	fps_label = Label.new()
+	fps_label.name = "FpsLabel"
+	fps_label.position = Vector2(12, 8)
+	fps_label.set("theme_override_font_sizes/font_size", 14)
+	fps_label.modulate = Color(0.4, 1.0, 0.6)
+	fps_label.visible = false
+	add_child(fps_label)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F3 or event.physical_keycode == KEY_F3:
+			fps_label.visible = not fps_label.visible
+			fps_update_timer = 0.0
+			RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), fps_label.visible)
+			get_viewport().set_input_as_handled()
 
 func connect_player(player: Node) -> void:
 	local_player = player
@@ -145,6 +164,14 @@ func connect_spawner(spawner: Node) -> void:
 		spawner.intermission_tick.connect(_on_intermission_tick)
 
 func _process(delta: float) -> void:
+	if fps_label and fps_label.visible:
+		fps_update_timer -= delta
+		if fps_update_timer <= 0.0:
+			fps_update_timer = 0.5
+			var limit = "UNLIMITED" if Engine.max_fps == 0 else str(Engine.max_fps)
+			var gpu_ms = RenderingServer.viewport_get_measured_render_time_gpu(get_viewport().get_viewport_rid())
+			fps_label.text = "FPS: %d  (limit %s)  |  GPU: %.2f ms / frame" % [Engine.get_frames_per_second(), limit, gpu_ms]
+	
 	if hitmarker.visible:
 		hitmarker_timer -= delta
 		if hitmarker_timer <= 0.0:

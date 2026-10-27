@@ -70,6 +70,8 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Pause Menu** | `Escape` | Audio volume, mouse sensitivity, display options |
 | **Toggle Window / Fullscreen**| `F11`, `Alt + Enter`, `M` (menus) | Cycles Windowed and Borderless Fullscreen |
 | **Toggle Damage Numbers** | `F8` or Pause Menu | Toggles floating damage labels ON/OFF |
+| **FPS Limit** | Pause Menu | Cycles 30 / 60 (default) / Unlimited; saved to settings |
+| **FPS / GPU Readout** | `F3` | Shows FPS, active limit and measured GPU ms per frame |
 
 ---
 
@@ -80,7 +82,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 * **Optimized AoE**: Synchronous single-pass queries using `EnemyBase.all_enemies` with 2D AABB pre-filtering (`absf(dx) > r or absf(dz) > r`) eliminate `sqrt()` math. Bullets/explosions keep physics monitoring disabled.
 * **Horde Limits**: Arena enemy limit capped at 40 (`MAX_CONCURRENT_ENEMIES`). Pairwise enemy-on-enemy collision solving is disabled via `collision_mask = 5` (world + player only).
 * **Damage Label Throttling**: Active damage numbers capped at 35; toggleable via `F8`.
-* **GPU Render Budget**: FXAA only (MSAA off). Sun shadow uses 2 PSSM splits with a 60 m max distance, which covers the 64 m arena. Render FPS drops to 30 while the window is unfocused (`GameManager.BACKGROUND_MAX_FPS`); physics stays at 60 Hz.
+* **GPU Render Budget**: FXAA only (MSAA off). Sun shadow uses 2 PSSM splits with a 60 m max distance, which covers the 64 m arena. Hard FPS cap via `Engine.max_fps` (30 / 60 / Unlimited, independent of VSync); drops to 30 while unfocused (`GameManager.BACKGROUND_MAX_FPS`). Physics stays at 60 Hz. Note: Task Manager GPU % is relative to the current clock — at a 60 FPS cap the driver downclocks the GPU, so ~30–40% is normal (measured on an RTX 3090: 450 MHz of 2115 MHz, ~2.5 ms/frame at that clock vs ~0.26 ms at full clock).
 
 ---
 

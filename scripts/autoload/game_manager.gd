@@ -20,6 +20,7 @@ signal enemy_killed(enemy_type: String)
 signal upgrade_requested()
 signal window_mode_changed(is_fullscreen: bool)
 signal damage_numbers_toggled(enabled: bool)
+signal fps_limit_changed(limit: int)
 signal fever_updated(tier_name: String, tier_index: int, duration: float, max_duration: float)
 signal fever_tier_promoted(new_tier_name: String, new_tier_index: int)
 signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
@@ -295,17 +296,36 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_inputs()
 	wave_cleared.connect(_on_wave_cleared)
+	_apply_fps_limit()
 	load_display_settings()
 
-# Throttle rendering while the window is unfocused (alt-tabbed, co-op test window).
+# Hard FPS cap. VSync alone is unreliable (driver overrides, Parsec/virtual displays),
+# and an uncapped frame loop pins a CPU core and the GPU for no visible gain.
+# Rendering also drops to BACKGROUND_MAX_FPS while unfocused (alt-tabbed, co-op test window).
 # Physics still ticks at 60 Hz, so gameplay and netcode are unaffected.
+const FPS_LIMIT_OPTIONS: Array[int] = [30, 60, 0] # 0 = unlimited
 const BACKGROUND_MAX_FPS: int = 30
+var fps_limit: int = 60
+var _window_focused: bool = true
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		Engine.max_fps = BACKGROUND_MAX_FPS
+		_window_focused = false
+		_apply_fps_limit()
 	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		Engine.max_fps = 0
+		_window_focused = true
+		_apply_fps_limit()
+
+func _apply_fps_limit() -> void:
+	Engine.max_fps = fps_limit if _window_focused else BACKGROUND_MAX_FPS
+
+func cycle_fps_limit() -> int:
+	var idx = FPS_LIMIT_OPTIONS.find(fps_limit)
+	fps_limit = FPS_LIMIT_OPTIONS[(idx + 1) % FPS_LIMIT_OPTIONS.size()]
+	_apply_fps_limit()
+	save_display_settings()
+	fps_limit_changed.emit(fps_limit)
+	return fps_limit
 
 func _on_wave_cleared(_wave_num: int) -> void:
 	if second_wind_unlocked and not second_wind_available:
@@ -395,12 +415,17 @@ func save_display_settings() -> void:
 	var _err = config.load(SETTINGS_PATH)
 	config.set_value("display", "fullscreen", is_fullscreen())
 	config.set_value("gameplay", "show_damage_numbers", show_damage_numbers)
+	config.set_value("display", "fps_limit", fps_limit)
 	config.save(SETTINGS_PATH)
 
 func load_display_settings() -> void:
 	var config = ConfigFile.new()
 	if config.load(SETTINGS_PATH) == OK:
 		show_damage_numbers = config.get_value("gameplay", "show_damage_numbers", true)
+		var saved_limit = int(config.get_value("display", "fps_limit", fps_limit))
+		if saved_limit in FPS_LIMIT_OPTIONS:
+			fps_limit = saved_limit
+			_apply_fps_limit()
 		for arg in OS.get_cmdline_args():
 			if "resolution" in arg or "position" in arg:
 				return
