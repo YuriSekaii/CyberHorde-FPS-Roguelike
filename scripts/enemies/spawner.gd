@@ -157,4 +157,4 @@ func rpc_drop_chest(pos: Vector3) -> void:
 func _drop_chest(pos: Vector3) -> void:
 	var chest = CHEST_SCENE.instantiate()
 	get_parent().call_deferred("add_child", chest)
-	chest.global_position = pos
+	chest.position = pos

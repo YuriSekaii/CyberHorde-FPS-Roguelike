@@ -289,7 +289,7 @@ func _summon_escort(type_ids: Array) -> void:
 		var escort = scn.instantiate()
 		escort.name = "BossEscort_%d_%d" % [Time.get_ticks_msec(), i]
 		parent_node.call_deferred("add_child", escort)
-		escort.global_position = spawn_pos
+		escort.position = spawn_pos
 
 # ----------------- MAIN BEHAVIOR LOOP -----------------
 
@@ -749,7 +749,7 @@ func die() -> void:
 	for i in range(4):
 		var hp = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", hp)
-		hp.global_position = global_position + Vector3(randf_range(-2.5, 2.5), 0.5, randf_range(-2.5, 2.5))
+		hp.position = global_position + Vector3(randf_range(-2.5, 2.5), 0.5, randf_range(-2.5, 2.5))
 		hp.setup(1, 50)
 	
 	queue_free()

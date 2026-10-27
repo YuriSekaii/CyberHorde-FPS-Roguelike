@@ -202,7 +202,7 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
 | **Cyber Swarmer** | 35.0 | 7.0 m/s | 10.0 | 0.8s | Melee bite (1.6m 3D sphere, $\le 1.8$m height) | ~45–55% | Decays every 5 waves |
 | **Plasma Spitter** | 75.0 | 4.5 m/s | 18.0 | 2.4s | Homing orb (25.0m) | 30.0% | Wave 3+, decays every 5 waves |
-| **Volt Bomber** | 35.0 | 8.0 m/s | 30.0 | — | Suicide blast (3.0m radius); auto-detonates within 2.0m of an operative and on death | Swarmer's | Wave 31+, replaces Swarmer |
+| **Volt Bomber** | 35.0 | 8.0 m/s | 25.0 | — | Suicide blast (3.0m radius); auto-detonates within 2.0m of an operative and on death | Swarmer's | Wave 31+, replaces Swarmer |
 | **Photon Hornet** | 90.0 | 5.5 m/s | 18.0 | 1.2s | Thin laser bolt, 48 m/s (28.0m); orbits target at ~11m, hovers ~3.5m up | Spitter's | Wave 41+, replaces Spitter |
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 30 m/s rush attack | ~4.0–4.25% | Wave 11+, wall crash causes 3.5s self-stun |

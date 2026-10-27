@@ -227,20 +227,22 @@ func _drop_loot() -> void:
 	if is_rogue_kill and GameManager.show_damage_numbers:
 		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
 		get_parent().call_deferred("add_child", dnum)
-		dnum.global_position = drop_pos + Vector3(0, 1.8, 0)
+		dnum.position = drop_pos + Vector3(0, 1.8, 0)
 		dnum.setup_text("+300% BOUNTY", Color(1.0, 0.85, 0.1))
 	
+	# Pickups are added deferred (die() can run mid-physics), so set local `position`:
+	# the parent is the scene root at the origin, and global_position errors before entering the tree.
 	# 1. Drop XP Gem
 	var xp = LOOT_SCENE.instantiate()
 	get_parent().call_deferred("add_child", xp)
-	xp.global_position = drop_pos + Vector3(0, 0.5, 0)
+	xp.position = drop_pos + Vector3(0, 0.5, 0)
 	xp.setup(0, int(xp_reward * loot_mult * fever_mult))
 	
 	# 2. Chance of Scrap
 	if randf() < 0.45 or is_rogue_kill:
 		var scrap = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", scrap)
-		scrap.global_position = drop_pos + Vector3(0, 0.5, 0)
+		scrap.position = drop_pos + Vector3(0, 0.5, 0)
 		scrap.setup(2, int(scrap_reward * loot_mult * fever_mult))
 	
 	# 3. Chance of Health Stim
@@ -250,5 +252,5 @@ func _drop_loot() -> void:
 	if randf() < health_chance:
 		var hp = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", hp)
-		hp.global_position = drop_pos + Vector3(0, 0.5, 0)
+		hp.position = drop_pos + Vector3(0, 0.5, 0)
 		hp.setup(1, 25)

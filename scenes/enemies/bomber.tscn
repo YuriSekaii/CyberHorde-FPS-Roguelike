@@ -55,7 +55,7 @@ script = ExtResource("1_bomber")
 enemy_name = "Volt Bomber"
 max_health = 35.0
 speed = 8.0
-attack_damage = 30.0
+attack_damage = 25.0
 xp_reward = 15
 scrap_reward = 10
 
