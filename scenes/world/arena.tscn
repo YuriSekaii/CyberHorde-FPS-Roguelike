@@ -99,8 +99,6 @@ light_color = Color(1, 0.97, 0.9, 1)
 light_energy = 2.4
 shadow_enabled = true
 shadow_bias = 0.03
-directional_shadow_mode = 1
-directional_shadow_max_distance = 60.0
 
 [node name="Geometry" type="Node3D" parent="."]
 
