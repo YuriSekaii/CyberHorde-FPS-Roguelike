@@ -29,6 +29,8 @@ signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
 const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
 const FEVER_MAX_DURATION: float = 20.0
 const FEVER_KILL_DURATION_BONUS: float = 2.0
+const FEVER_HIT_PENALTY: float = 10.0
+const FEVER_DEMOTE_DURATION: float = 19.0
 var fever_tier_index: int = 0
 var fever_duration: float = 0.0
 var _fever_sync_timer: float = 0.0
@@ -579,18 +581,44 @@ func add_fever_kill() -> void:
 	if NetworkManager.is_multiplayer and NetworkManager.is_server:
 		rpc_sync_fever.rpc(fever_tier_index, fever_duration)
 
+# Called by the local player whenever a hit actually lands (not nullified / invulnerable).
+func report_fever_hit() -> void:
+	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
+		rpc_fever_hit.rpc_id(1)
+	else:
+		_apply_fever_hit_penalty()
+
+@rpc("any_peer", "reliable")
+func rpc_fever_hit() -> void:
+	if NetworkManager.is_server:
+		_apply_fever_hit_penalty()
+
+# Hit penalty only drains the current tier down to 0s; leftover penalty is discarded on demotion.
+func _apply_fever_hit_penalty() -> void:
+	if fever_tier_index == 0 and fever_duration <= 0.0:
+		return
+	fever_duration -= FEVER_HIT_PENALTY
+	if fever_duration <= 0.0:
+		_demote_fever_tier()
+	fever_updated.emit(FEVER_TIERS[fever_tier_index], fever_tier_index, fever_duration, FEVER_MAX_DURATION)
+	if NetworkManager.is_multiplayer and NetworkManager.is_server:
+		rpc_sync_fever.rpc(fever_tier_index, fever_duration)
+
+func _demote_fever_tier() -> void:
+	if fever_tier_index > 0:
+		fever_tier_index -= 1
+		fever_duration = FEVER_DEMOTE_DURATION
+		fever_tier_demoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
+		SoundManager.play("empty_ammo", 0.1, -1.0)
+	else:
+		fever_duration = 0.0
+
 func _process_fever(delta: float) -> void:
 	if not NetworkManager.is_multiplayer or NetworkManager.is_server:
 		if fever_duration > 0.0 or fever_tier_index > 0:
 			fever_duration -= delta
 			if fever_duration <= 0.0:
-				if fever_tier_index > 0:
-					fever_tier_index -= 1
-					fever_duration = 19.0
-					fever_tier_demoted.emit(FEVER_TIERS[fever_tier_index], fever_tier_index)
-					SoundManager.play("empty_ammo", 0.1, -1.0)
-				else:
-					fever_duration = 0.0
+				_demote_fever_tier()
 				fever_updated.emit(FEVER_TIERS[fever_tier_index], fever_tier_index, fever_duration, FEVER_MAX_DURATION)
 				if NetworkManager.is_multiplayer:
 					rpc_sync_fever.rpc(fever_tier_index, fever_duration)

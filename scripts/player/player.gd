@@ -944,6 +944,10 @@ func take_damage(amount: float) -> void:
 			trigger_invulnerability(GameManager.hit_invulnerability_duration)
 		return
 	
+	# Fever penalty: every hit that lands drains squad fever duration
+	if is_local_player and not is_downed:
+		GameManager.report_fever_hit()
+	
 	# Rare perk: Hardened Alloy (10% Dmg Reduction per stack, max 50%)
 	if GameManager.player_damage_reduction > 0.0:
 		amount *= (1.0 - GameManager.player_damage_reduction)

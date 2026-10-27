@@ -128,7 +128,7 @@ The HUD features custom cyberpunk vector icons positioned at the bottom-left dir
 
 ## 🔥 Squad Fever System
 
-Operatives channel combat momentum into a squad-shared **Fever** gauge displayed under the wave/XP bar:
+Operatives channel combat momentum into a squad-shared **Fever** rank shown in the top-right corner as a large tier letter (D gray, C cyan, B green, A orange, S pink) that fills from bottom to top with the current tier's duration:
 
 | Fever Tier | Duration Window | Drop XP & Scrap | Spawn Rate (Less Interval) | Concurrent Enemy Cap | Intermission Delay | Common Weight Formula |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -142,6 +142,8 @@ Operatives channel combat momentum into a squad-shared **Fever** gauge displayed
 * **Progression**: Start at **Tier D** (0.0s). Each enemy kill increases the active tier duration by **+2.0s**.
 * **Promotion**: Reaching **20.0s** immediately promotes to the next tier, starting at **1.0s** of the new tier (caps at 20.0s at Tier S).
 * **Demotion**: If current tier duration decays to **0.0s**, demotes to the lower tier at **19.0s** (clamps at 0.0s at Tier D).
+* **Hit Penalty**: Every hit taken drains **10.0s** from the current tier. The drain stops at 0.0s of the current tier, which then demotes to the lower tier at **19.0s**; any leftover penalty is discarded. Hits nullified by Null Barrier or blocked by invulnerability (dash, skills, Phase-Shield) cost nothing.
+* **Promotion Callout**: Each promotion flashes a short fade-out text under the rank letter listing what the new tier grants.
 * **Economy & Horde Buffs**: Tier D provides no bonuses. Each tier above D grants **+25% MORE** XP and Scrap drops, **+25% MORE** enemy spawn rate (halving spawn interval at S), expands concurrent enemy cap up to 80, and reduces round intermission delay down to 2.25s at Tier S to sustain combat momentum.
 * **Rarer Perk Upgrades**: Common perk base weight is increased by 25% from 64 to 80. Advancing Fever tiers decays Common weight by $80 \times 0.75^{\text{tier}}$, more than doubling the offering probability of Rare, Epic, and Legendary cards at Tier S.
 
