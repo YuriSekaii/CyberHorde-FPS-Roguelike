@@ -4,7 +4,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Multi-Stage Climactic Battle:
 ## Stage 1: Slow-moving armored juggernaut with ground Slam AoE (high dmg, 14.25m radius) & occasional long-range cannon fire (low dmg).
 ## Stage 2: Transforms armor into wings, ascends to sky. Standing still shooting slow explosive projectiles (medium dmg, 6.75m AoE), then charges energy, flashes red aura, locks player position (0.7s), and dives at extreme speed (60 m/s) causing massive shockwave (massive dmg, 15.75m AoE).
-## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a massive bullet-hell barrage from both hands and both wings simultaneously with tighter focused spread (65 m/s, 6 projectiles/volley). Ends with a giant slow mega orb (18.0m AoE), enters 8s exhaustion cooldown (increased by 5s), then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s, 17.25m AoE). Loops until death.
+## Stage 3: Detonates outer armor, revealing a Solid Metal Fallen Angel with massive spread wings. Flies at high speed (32 m/s), unleashing a 7s bullet-hell barrage of ice needles from both hands and both wings simultaneously with tighter focused spread (65 m/s, 6 projectiles/volley). Needles that hit the ground pin in as ice spikes (needle dmg every 0.5s on contact). Ends with a giant slow mega orb (18.0m AoE) whose impact detonates every spike (3m radius, 2x needle dmg), enters 8s exhaustion cooldown (increased by 5s), then flashes red aura, locks position (0.7s - same as Stage 2), and charges in a supersonic dive (105 m/s, 17.25m AoE) that erupts ice spikes across the whole AoE. Loops until death.
 
 enum BossStage {
 	STAGE_1,
@@ -51,6 +51,7 @@ var s2_shots_fired: int = 0
 var s3_machine_shots: int = 0
 var flight_orbit_angle: float = 0.0
 const FLIGHT_ALTITUDE: float = 14.0
+const DIVE_SPIKE_COUNT: int = 70
 
 var locked_impact_pos: Vector3 = Vector3.ZERO
 var active_indicator: Node = null
@@ -59,6 +60,9 @@ var fire_left_next: bool = true
 # Escort summon flags
 var has_summoned_phase2: bool = false
 var has_summoned_phase3: bool = false
+
+# Stage 3 ice spike field (needles pinned into the ground)
+var ice_spike_field: Node3D = null
 
 # Node references - Stage 1 & 2
 @onready var core_mesh: MeshInstance3D = $MeshRoot/ArmorRoot/ReactorCore
@@ -92,6 +96,7 @@ const SWARMER_SCENE = preload("res://scenes/enemies/swarmer.tscn")
 const SPITTER_SCENE = preload("res://scenes/enemies/spitter.tscn")
 const BOMBER_SCENE = preload("res://scenes/enemies/bomber.tscn")
 const HORNET_SCENE = preload("res://scenes/enemies/hornet.tscn")
+const ICE_SPIKE_FIELD_SCRIPT = preload("res://scripts/enemies/boss_ice_spike_field.gd")
 
 var core_material: StandardMaterial3D
 var visor_material: StandardMaterial3D
@@ -573,8 +578,8 @@ func _process_stage_3(delta: float) -> void:
 				_fire_stage3_machine_gun()
 				s3_machine_shots += 1
 			
-			# Sustained machine gun barrage: 6.0 seconds
-			if state_timer >= 6.0:
+			# Sustained machine gun barrage: 7.0 seconds
+			if state_timer >= 7.0:
 				velocity = Vector3.ZERO
 				s3_state = Stage3SubState.MEGA_PROJECTILE_CHARGE
 				state_timer = 0.0
@@ -628,6 +633,8 @@ func _process_stage_3(delta: float) -> void:
 			
 			if global_position.y <= locked_impact_pos.y + 1.2 or dive_dist <= 3.0 or is_on_floor():
 				_execute_dive_impact(17.25, 2.5)
+				# Impact erupts an ice spike field across the whole AoE (spikes persist until the next mega orb detonates them)
+				_get_ice_spike_field().scatter_spikes(global_position, 17.25, DIVE_SPIKE_COUNT, attack_damage * 0.09)
 				s3_state = Stage3SubState.IMPACT_RECOVERY
 				state_timer = 0.0
 		
@@ -661,6 +668,8 @@ func _fire_stage3_machine_gun() -> void:
 		{"node": right_wing_muzzle2, "h_spread": randf_range(0.03, 0.14), "v_spread": randf_range(-0.04, 0.04)}
 	]
 	
+	var field = _get_ice_spike_field()
+	
 	for m_data in muzzles:
 		var m_node: Node3D = m_data["node"]
 		var spawn_pos = m_node.global_position if m_node else (global_position + Vector3(0.0, 1.2, 0.0))
@@ -676,7 +685,10 @@ func _fire_stage3_machine_gun() -> void:
 		get_parent().add_child(proj)
 		proj.global_position = spawn_pos
 		proj.setup(spread_dir, attack_damage * 0.09, 65.0, false)
-		proj.set_projectile_visual(Color(1.0, 0.15, 0.35), Vector3(0.42, 0.42, 0.42))
+		proj.set_needle_visual(Color(0.55, 0.9, 1.0))
+		# Ice needles that miss pin into the ground as damaging spikes
+		proj.pin_on_ground = true
+		proj.pinned.connect(field.add_spike)
 	
 	SoundManager.play("shoot_rifle", 0.18, 0.2)
 
@@ -690,7 +702,15 @@ func _fire_stage3_mega_projectile() -> void:
 	proj.global_position = muzzle_pos
 	proj.setup(dir, attack_damage * 2.8, 7.5, true, 18.0, attack_damage * 2.8)
 	proj.set_projectile_visual(Color(0.9, 0.05, 0.45), Vector3(3.6, 3.6, 3.6))
+	# Orb impact chain-detonates every pinned ice spike
+	proj.exploded.connect(_get_ice_spike_field().detonate)
 	SoundManager.play("shoot_plasma", 0.2, -3.5)
+
+func _get_ice_spike_field() -> Node3D:
+	if ice_spike_field == null or not is_instance_valid(ice_spike_field):
+		ice_spike_field = ICE_SPIKE_FIELD_SCRIPT.new()
+		get_parent().add_child(ice_spike_field)
+	return ice_spike_field
 
 func _trigger_stage3_lock_on() -> void:
 	if aura_light:
@@ -728,6 +748,9 @@ func die() -> void:
 		aura_light.visible = false
 	if aura_shell:
 		aura_shell.visible = false
+	if ice_spike_field and is_instance_valid(ice_spike_field):
+		ice_spike_field.queue_free()
+		ice_spike_field = null
 	
 	GameManager.boss_defeated.emit()
 	SoundManager.play("explosion", 0.3, -3.0)

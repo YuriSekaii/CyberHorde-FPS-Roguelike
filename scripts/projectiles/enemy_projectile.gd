@@ -1,5 +1,10 @@
 extends Area3D
 
+## Emitted when an explosive projectile detonates (used by the final boss to chain-detonate ice spikes)
+signal exploded(pos: Vector3)
+## Emitted when a pin_on_ground projectile embeds into a floor-like surface
+signal pinned(pos: Vector3, dir: Vector3, normal: Vector3, dmg: float)
+
 @export var speed: float = 24.0
 @export var damage: float = 15.0
 
@@ -11,6 +16,7 @@ var is_explosive: bool = false
 var explosion_radius: float = 4.5
 var explosion_damage: float = -1.0
 var has_exploded: bool = false
+var pin_on_ground: bool = false
 
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
@@ -39,6 +45,17 @@ func set_projectile_visual(color: Color, p_scale: Vector3 = Vector3.ONE) -> void
 		if p_scale.x > 1.5:
 			light.omni_range = 10.0
 			light.light_energy = 5.0
+
+## Ice needle look: stretches only the mesh along the flight axis (-Z) so the collision shape stays uniformly scaled
+func set_needle_visual(color: Color, p_scale: float = 0.42) -> void:
+	set_projectile_visual(color, Vector3(p_scale, p_scale, p_scale))
+	if mesh_instance:
+		mesh_instance.scale = Vector3(0.45, 0.45, 3.2)
+		var mat: StandardMaterial3D = mesh_instance.material_override
+		if mat:
+			mat.emission_enabled = true
+			mat.emission = color
+			mat.emission_energy_multiplier = 1.5
 
 func _physics_process(delta: float) -> void:
 	timer += delta
@@ -73,6 +90,7 @@ func _explode() -> void:
 	exp_inst.global_position = global_position
 	exp_inst.setup(0.0, explosion_radius)
 	SoundManager.play("explosion", 0.15, -1.0)
+	exploded.emit(global_position)
 	queue_free()
 
 func _on_body_entered(body: Node3D) -> void:
@@ -89,4 +107,20 @@ func _on_body_entered(body: Node3D) -> void:
 		queue_free()
 	else:
 		# Hit wall / floor
+		if pin_on_ground:
+			_try_pin()
 		queue_free()
+
+func _try_pin() -> void:
+	# Area3D overlaps carry no contact normal, so raycast along the flight path to find the surface hit
+	var space = get_world_3d().direct_space_state
+	var from = global_position - direction * maxf(speed * 0.05, 1.0)
+	var to = global_position + direction * 1.5
+	var query = PhysicsRayQueryParameters3D.create(from, to, 1)
+	var hit = space.intersect_ray(query)
+	if hit.is_empty():
+		return
+	var n: Vector3 = hit["normal"]
+	# Only floor-like surfaces (ground, platform top, ramps) hold a spike; walls just shatter the needle
+	if n.y >= 0.55:
+		pinned.emit(hit["position"], direction, n, damage)
