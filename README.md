@@ -79,6 +79,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 * **Optimized AoE**: Synchronous single-pass queries using `EnemyBase.all_enemies` with 2D AABB pre-filtering (`absf(dx) > r or absf(dz) > r`) eliminate `sqrt()` math. Bullets/explosions keep physics monitoring disabled.
 * **Horde Limits**: Arena enemy limit capped at 40 (`MAX_CONCURRENT_ENEMIES`). Pairwise enemy-on-enemy collision solving is disabled via `collision_mask = 5` (world + player only).
 * **Damage Label Throttling**: Active damage numbers capped at 35; toggleable via `F8`.
+* **GPU Render Budget**: FXAA only (MSAA off). Sun shadow uses 2 PSSM splits with a 60 m max distance, which covers the 64 m arena. Render FPS drops to 30 while the window is unfocused (`GameManager.BACKGROUND_MAX_FPS`); physics stays at 60 Hz.
 
 ---
 

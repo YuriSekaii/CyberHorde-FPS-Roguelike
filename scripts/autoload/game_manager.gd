@@ -297,6 +297,16 @@ func _ready() -> void:
 	wave_cleared.connect(_on_wave_cleared)
 	load_display_settings()
 
+# Throttle rendering while the window is unfocused (alt-tabbed, co-op test window).
+# Physics still ticks at 60 Hz, so gameplay and netcode are unaffected.
+const BACKGROUND_MAX_FPS: int = 30
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		Engine.max_fps = BACKGROUND_MAX_FPS
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		Engine.max_fps = 0
+
 func _on_wave_cleared(_wave_num: int) -> void:
 	if second_wind_unlocked and not second_wind_available:
 		second_wind_cooldown_waves -= 1
