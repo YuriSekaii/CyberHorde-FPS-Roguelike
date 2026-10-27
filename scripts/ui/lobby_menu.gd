@@ -27,7 +27,10 @@ var pending_class_target: ClassSelectTarget = ClassSelectTarget.SOLO
 @onready var start_squad_btn: Button = $Panel/VBoxContainer/HostContainer/StartSquadBtn
 @onready var peer_list_label: Label = $Panel/VBoxContainer/HostContainer/PeerListLabel
 
+@onready var host_port_container: HBoxContainer = $Panel/VBoxContainer/HostContainer/PortContainer
+@onready var join_ip_label: Label = $Panel/VBoxContainer/JoinContainer/IPContainer/Label
 @onready var join_ip_input: LineEdit = $Panel/VBoxContainer/JoinContainer/IPContainer/JoinIPInput
+@onready var join_port_container: HBoxContainer = $Panel/VBoxContainer/JoinContainer/PortContainer
 @onready var join_port_input: LineEdit = $Panel/VBoxContainer/JoinContainer/PortContainer/JoinPortInput
 @onready var connect_btn: Button = $Panel/VBoxContainer/JoinContainer/ConnectBtn
 
@@ -35,6 +38,10 @@ var pending_class_target: ClassSelectTarget = ClassSelectTarget.SOLO
 @onready var boss_status_label: Label = $Panel/VBoxContainer/BossContainer/KeyStatusLabel
 
 const BOSS_BATTLE_KEY: String = "HereComeTheChallenger"
+
+# true while the host/join panels are driving an online (lobby code) session instead of LAN
+var online_mode: bool = false
+var lan_join_ip: String = "127.0.0.1"
 
 @onready var update_btn: Button = $Panel/VBoxContainer/MainButtons/UpdateBtn
 @onready var window_mode_btn: Button = $Panel/VBoxContainer/MainButtons/WindowModeBtn
@@ -58,6 +65,7 @@ func _ready() -> void:
 	NetworkManager.peer_connected_signal.connect(_on_peers_updated)
 	NetworkManager.peer_disconnected_signal.connect(_on_peers_updated)
 	NetworkManager.peer_class_updated.connect(_on_peer_class_updated)
+	NetworkManager.online_lobby_ready.connect(_on_online_lobby_ready)
 	
 	UpdateManager.check_completed.connect(_on_update_check_completed)
 	UpdateManager.update_completed.connect(_on_update_completed)
@@ -146,6 +154,7 @@ func _on_host_menu_pressed() -> void:
 	if class_select_container:
 		class_select_container.visible = false
 	_set_panel_width(520.0)
+	_set_online_mode(false)
 	
 	var local_ip = NetworkManager.get_local_ip()
 	host_ip_label.text = "YOUR LOCAL IP: %s" % local_ip
@@ -153,6 +162,42 @@ func _on_host_menu_pressed() -> void:
 	NetworkManager.start_host(port)
 	_update_class_button_highlights()
 	_update_peer_list()
+
+func _on_online_host_pressed() -> void:
+	_on_host_menu_pressed()
+	_set_online_mode(true)
+	host_ip_label.text = "ONLINE LOBBY CODE: connecting..."
+	NetworkManager.host_online_lobby()
+	_update_peer_list()
+
+func _on_online_join_pressed() -> void:
+	_on_join_menu_pressed()
+	_set_online_mode(true)
+	status_label.text = "Enter the 5-character lobby code from your host, then click Connect."
+	join_ip_input.grab_focus()
+
+func _on_online_lobby_ready(code: String) -> void:
+	if NetworkManager.is_server:
+		host_ip_label.text = "ONLINE LOBBY CODE: %s   (share with up to %d friends)" % [code, NetworkManager.max_clients - 1]
+	_update_peer_list()
+
+func _set_online_mode(enabled: bool) -> void:
+	if enabled == online_mode:
+		return
+	online_mode = enabled
+	host_port_container.visible = not enabled
+	join_port_container.visible = not enabled
+	if enabled:
+		lan_join_ip = join_ip_input.text
+		join_ip_label.text = "Lobby Code: "
+		join_ip_input.text = ""
+		join_ip_input.placeholder_text = "e.g. K7QXM"
+		join_ip_input.max_length = 5
+	else:
+		join_ip_label.text = "Host IP: "
+		join_ip_input.max_length = 0
+		join_ip_input.text = lan_join_ip
+		join_ip_input.placeholder_text = "192.168.x.x or IP"
 
 func _on_join_menu_pressed() -> void:
 	GameManager.reset_game()
@@ -165,10 +210,14 @@ func _on_join_menu_pressed() -> void:
 	if class_select_container:
 		class_select_container.visible = false
 	_set_panel_width(520.0)
+	_set_online_mode(false)
 	_update_class_button_highlights()
 	status_label.text = "Enter Host IP and Port, then click Connect."
 
 func _on_connect_pressed() -> void:
+	if online_mode:
+		NetworkManager.join_online_lobby(join_ip_input.text)
+		return
 	var ip = join_ip_input.text.strip_edges()
 	if ip.is_empty():
 		ip = "127.0.0.1"
@@ -318,6 +367,7 @@ func _on_deploy_boss_host_pressed() -> void:
 		main_buttons.visible = false
 		boss_container.visible = false
 		host_container.visible = true
+		_set_online_mode(false)
 		
 		var local_ip = NetworkManager.get_local_ip()
 		host_ip_label.text = "YOUR LOCAL IP: %s (BOSS BATTLE HOST)" % local_ip

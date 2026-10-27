@@ -23,8 +23,10 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 ### Game Modes
 * **Single Player**: Standard horde survival starting from Wave 1.
-* **Host Co-op (Server)**: Hosts an ENet multiplayer squad lobby (default port: `7777`).
-* **Join Co-op (Client)**: Connects to a host IP (`127.0.0.1` for local multi-instance testing).
+* **Host LAN Co-op (Server)**: Hosts an ENet multiplayer squad lobby on your network (default port: `7777`).
+* **Join LAN Co-op (Client)**: Connects to a host IP (`127.0.0.1` for local multi-instance testing).
+* **Host Online Lobby (Internet)**: Creates an online lobby and shows a 5-character code (e.g. `K7QXM`). Share it with up to 3 friends anywhere on the internet. No port forwarding needed.
+* **Join Online Lobby (Code)**: Enter the host's lobby code and click Connect.
 * **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to the **Wave 50 Apex Overlord** fight without grinding earlier waves.
   * **Authorization Key**: Requires entering `HereComeTheChallenger`.
   * **Loadout**: Automatically equips all perks fully maxed (infinite-stack perks get 10 stacks each).
@@ -43,7 +45,8 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 ## 🌐 Co-op Multiplayer Protocol
 
-* **Networking**: High-level ENet multiplayer (`ENetMultiplayerPeer`) over UDP port `7777`.
+* **LAN Networking**: High-level ENet multiplayer (`ENetMultiplayerPeer`) over UDP port `7777`.
+* **Online Networking**: The same high-level RPCs, sent through the CyberHorde lobby relay at `wss://phu-ai-lab.tailbca584.ts.net/cyberhorde` (Tailscale Funnel → [`server/lobby_relay.py`](server/lobby_relay.py) on port `8095`). The lobby creator is the authoritative host (peer 1). Joiners get ids 2–4, and a lobby holds max 4 players. When the host leaves, the lobby closes.
 * **Squad Avatars**: Host (Player 1) has Neon Cyan accents; Client (Player 2) has Neon Amber accents. Overhead tags show name and live HP bar.
 * **Shared Economy**: XP and Scrap are squad-shared. Upgrade card selection is simultaneous; choosing cards activates an **Aegis Stasis** protective shield.
 * **Revive System**: Downed players enter a crawling beacon state. Teammates hold `E` for 5 seconds within 3m to revive them with 50% HP and 3s invulnerability (4.0s for Medics).
@@ -239,11 +242,16 @@ CyberHorde-FPS-Roguelike/
 ├── Test_Coop_2Players.bat            # 2-player local co-op launcher
 ├── Open_In_Godot_Editor.bat          # Godot Editor launcher
 ├── Push_To_GitHub.bat                # Git commit & push script
+├── server/
+│   ├── lobby_relay.py                # Online lobby relay (WebSocket, lobby codes, max 4 players)
+│   └── run_relay.bat                 # Starts the relay hidden in the background (port 8095)
 ├── scripts/
 │   ├── autoload/
 │   │   ├── game_manager.gd           # ★ Perk catalog (`upgrade_database`), stats, level/reroll logic
-│   │   ├── network_manager.gd        # ENet multiplayer squad management & signals
+│   │   ├── network_manager.gd        # LAN (ENet) + online lobby squad management & signals
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM procedural audio
+│   ├── network/
+│   │   └── relay_peer.gd             # MultiplayerPeerExtension that sends multiplayer packets through the lobby relay
 │   ├── player/
 │   │   ├── player.gd                 # First/third-person controller, defensive perks, weapons
 │   │   └── drone.gd                  # Companion drone perk AI
@@ -276,7 +284,9 @@ CyberHorde-FPS-Roguelike/
 ## 🛠️ Developer Guide: Architecture & Extending the Game
 
 ### 1. Multiplayer Networking Architecture
-* **Autoload**: [`scripts/autoload/network_manager.gd`](scripts/autoload/network_manager.gd) manages `ENetMultiplayerPeer`, peer connections, and lobby events.
+* **Autoload**: [`scripts/autoload/network_manager.gd`](scripts/autoload/network_manager.gd) manages `ENetMultiplayerPeer` (LAN) or the relay peer (online), peer connections, and lobby events.
+* **Online Relay**: [`scripts/network/relay_peer.gd`](scripts/network/relay_peer.gd) connects one WebSocket to the relay. Binary frames carry an int32 LE header: the target peer when sending (`0` = all, `<0` = all except), the source peer when receiving. Text frames carry JSON control messages (`create`, `join`, `peer_connected`, `peer_disconnected`, `error`). The relay is TCP, so every packet arrives reliable and ordered.
+* **Running the Relay** (only on the Funnel PC): run `server/run_relay.bat`. On startup it adds the route `tailscale funnel --bg --set-path=/cyberhorde http://127.0.0.1:8095`. Health check: `https://phu-ai-lab.tailbca584.ts.net/cyberhorde` returns `CyberHorde lobby relay OK`.
 * **Player Ownership**: Each player node is named `"Player_%d" % peer_id`. `set_multiplayer_authority(id)` controls authority. Local players run first-person rigs; remote peers show third-person models and overhead HP tags.
 * **RPC Rule**: Any RPC sent from client to server must specify `@rpc("any_peer", ...)` to prevent authority rejection in Godot 4.
 
@@ -304,5 +314,5 @@ CyberHorde-FPS-Roguelike/
 
 ### 5. Web Export Roadmap
 * Switch `project.godot` renderer to `gl_compatibility` (WebGL2).
-* Replace `ENetMultiplayerPeer` with `WebSocketMultiplayerPeer` or `WebRTCMultiplayerPeer` for browser socket support.
+* Online lobbies already run over WebSocket (`relay_peer.gd`), so a browser build can use them directly. LAN mode stays desktop-only (ENet).
 * Serve with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers for `SharedArrayBuffer`.

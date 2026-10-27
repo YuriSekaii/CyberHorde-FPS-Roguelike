@@ -1,7 +1,10 @@
 extends Node
 
 ## Network Manager for CyberHorde Co-op
-## Manages ENet multiplayer peer, hosting, joining, peer discovery, and co-op game states.
+## Manages ENet (LAN) and relay (online lobby code) multiplayer peers, hosting, joining, and co-op game states.
+
+const RelayPeer = preload("res://scripts/network/relay_peer.gd")
+const ONLINE_RELAY_URL: String = "wss://phu-ai-lab.tailbca584.ts.net/cyberhorde"
 
 signal connection_status_changed(status_text: String)
 signal peer_connected_signal(peer_id: int)
@@ -10,6 +13,7 @@ signal peer_class_updated(peer_id: int, new_class: String)
 signal game_started()
 signal game_reset_signal()
 signal mission_toast(message: String)
+signal online_lobby_ready(code: String)
 
 enum NetworkRole { NONE, SINGLEPLAYER, HOST, CLIENT }
 var current_role: NetworkRole = NetworkRole.NONE
@@ -18,6 +22,8 @@ var is_multiplayer: bool = false
 var is_server: bool = false
 var server_port: int = 7777
 var max_clients: int = 4
+var is_online: bool = false
+var online_lobby_code: String = ""
 
 var local_peer_id: int = 1
 var connected_peers: Array[int] = []
@@ -90,6 +96,52 @@ func join_host(ip: String = "127.0.0.1", port: int = 7777) -> Error:
 	connection_status_changed.emit("Connecting to %s:%d..." % [ip, server_port])
 	return OK
 
+func host_online_lobby() -> Error:
+	cleanup_network()
+	var peer = RelayPeer.new()
+	var error = peer.create_lobby(ONLINE_RELAY_URL)
+	if error != OK:
+		connection_status_changed.emit("Failed to reach online lobby server (Error: %s)" % error)
+		return error
+	_attach_relay_peer(peer)
+	current_role = NetworkRole.HOST
+	is_server = true
+	local_peer_id = 1
+	connected_peers = [1]
+	players_info[1] = {"name": "Host (P1)", "color": Color(0, 0.95, 1.0), "class": GameManager.player_class}
+	connection_status_changed.emit("Creating online lobby...")
+	return OK
+
+func join_online_lobby(code: String) -> Error:
+	cleanup_network()
+	code = code.strip_edges().to_upper()
+	if code.length() != 5:
+		connection_status_changed.emit("Enter the 5-character lobby code from your host.")
+		return ERR_INVALID_PARAMETER
+	var peer = RelayPeer.new()
+	var error = peer.join_lobby(ONLINE_RELAY_URL, code)
+	if error != OK:
+		connection_status_changed.emit("Failed to reach online lobby server (Error: %s)" % error)
+		return error
+	_attach_relay_peer(peer)
+	current_role = NetworkRole.CLIENT
+	is_server = false
+	connection_status_changed.emit("Joining online lobby %s..." % code)
+	return OK
+
+func _attach_relay_peer(peer) -> void:
+	peer.lobby_ready.connect(_on_online_lobby_ready)
+	peer.lobby_error.connect(func(msg: String): connection_status_changed.emit(msg))
+	multiplayer.multiplayer_peer = peer
+	is_multiplayer = true
+	is_online = true
+
+func _on_online_lobby_ready(code: String, peer_id: int) -> void:
+	online_lobby_code = code
+	if peer_id == 1:
+		connection_status_changed.emit("Online lobby %s is open! Share the code - up to %d players." % [code, max_clients])
+	online_lobby_ready.emit(code)
+
 func cleanup_network() -> void:
 	if multiplayer.multiplayer_peer:
 		multiplayer.multiplayer_peer.close()
@@ -99,6 +151,8 @@ func cleanup_network() -> void:
 	current_role = NetworkRole.NONE
 	is_multiplayer = false
 	is_server = false
+	is_online = false
+	online_lobby_code = ""
 
 func _on_peer_connected(peer_id: int) -> void:
 	if not connected_peers.has(peer_id):
@@ -134,12 +188,15 @@ func _on_connected_to_server() -> void:
 	connection_status_changed.emit("Connected to Host! Waiting for Host to launch mission...")
 
 func _on_connection_failed() -> void:
+	var was_online = is_online
 	cleanup_network()
-	connection_status_changed.emit("Connection failed! Verify Host IP and port.")
+	if not was_online:
+		connection_status_changed.emit("Connection failed! Verify Host IP and port.")
 
 func _on_server_disconnected() -> void:
+	var was_online = is_online
 	cleanup_network()
-	connection_status_changed.emit("Host closed the server.")
+	connection_status_changed.emit("Disconnected from online lobby." if was_online else "Host closed the server.")
 
 # RPC to start the game synchronously for all connected peers
 @rpc("call_local", "reliable")

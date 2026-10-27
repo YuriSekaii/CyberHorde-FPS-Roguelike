@@ -283,7 +283,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🌐  HOST CO-OP MISSION (SERVER)"
+text = "🌐  HOST LAN CO-OP (SERVER)"
 
 [node name="JoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -291,7 +291,23 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🔗  JOIN CO-OP MISSION (CLIENT)"
+text = "🔗  JOIN LAN CO-OP (CLIENT)"
+
+[node name="OnlineHostBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🛰️  HOST ONLINE LOBBY (INTERNET)"
+
+[node name="OnlineJoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "📡  JOIN ONLINE LOBBY (CODE)"
 
 [node name="BossBattleBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -909,6 +925,8 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/SoloBtn" to="." method="_on_solo_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/HostBtn" to="." method="_on_host_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/JoinBtn" to="." method="_on_join_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/OnlineHostBtn" to="." method="_on_online_host_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/OnlineJoinBtn" to="." method="_on_online_join_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/UpdateBtn" to="." method="_on_update_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/WindowModeBtn" to="." method="_on_window_mode_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/StartSquadBtn" to="." method="_on_start_squad_pressed"]

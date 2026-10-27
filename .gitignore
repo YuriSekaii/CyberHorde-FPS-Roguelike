@@ -13,3 +13,4 @@ godot*.exe
 # OS generated files
 .DS_Store
 Thumbs.db
+relay_runtime.log
