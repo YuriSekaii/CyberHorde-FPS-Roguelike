@@ -94,7 +94,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag | Reload | Base Crit | Key Mechanics |
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
-| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (180 total) | 10 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters spread (0.103125 cone) |
+| **Scatter Cannon** | `2` | Semi-Auto | 16.0 / pellet (192 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters spread (0.10828125 cone) |
 | **Plasma Core** | `3` | Hold-to-Charge, Release-to-Fire | 150 direct + 150 AoE | 1 | 0.20 shot/s (5.0s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow heavy orb (~23.3 m/s), ~2.5m effective capture width, 5.0m AoE (6.25m with *Explosive Payload*), Tesla Arc radial synergy |
 
 ### Weapon Mechanics Notes
