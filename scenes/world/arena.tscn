@@ -263,6 +263,20 @@ mesh = SubResource("PrismMesh_ramp")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampNorth"]
 shape = SubResource("ConvexPolygonShape3D_ramp_north")
 
+[node name="NavBlockLeft" type="NavigationObstacle3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+height = 5.0
+vertices = PackedVector3Array(-4.3, 0, -6, -4.0, 0, -6, -4.0, 0, 6, -4.3, 0, 6)
+affect_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="NavBlockRight" type="NavigationObstacle3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+height = 5.0
+vertices = PackedVector3Array(4.0, 0, -6, 4.3, 0, -6, 4.3, 0, 6, 4.0, 0, 6)
+affect_navigation_mesh = true
+avoidance_enabled = false
+
 [node name="RampSouth" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
 
@@ -272,6 +286,20 @@ mesh = SubResource("PrismMesh_ramp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampSouth"]
 shape = SubResource("ConvexPolygonShape3D_ramp_south")
+
+[node name="NavBlockLeft" type="NavigationObstacle3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+height = 5.0
+vertices = PackedVector3Array(-4.3, 0, -6, -4.0, 0, -6, -4.0, 0, 6, -4.3, 0, 6)
+affect_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="NavBlockRight" type="NavigationObstacle3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+height = 5.0
+vertices = PackedVector3Array(4.0, 0, -6, 4.3, 0, -6, 4.3, 0, 6, 4.0, 0, 6)
+affect_navigation_mesh = true
+avoidance_enabled = false
 
 [node name="PillarNE" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 6, -17.5)

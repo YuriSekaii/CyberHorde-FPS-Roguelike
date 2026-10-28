@@ -98,9 +98,16 @@ func _process_stalking(delta: float) -> void:
 	
 	move_and_slide()
 	
-	# Check if inside attack range to wind up
-	if dist_3d <= ATTACK_RANGE and absf(full_to_player.y) <= 3.0 and charge_cooldown <= 0.0:
+	# Check if inside attack range to wind up (only with a clear charge lane, so it doesn't ram ramp sides or cover the player is behind)
+	if dist_3d <= ATTACK_RANGE and absf(full_to_player.y) <= 3.0 and charge_cooldown <= 0.0 and _has_charge_lane():
 		_start_windup()
+
+# True when nothing in the static level (layer 1) blocks the straight line from this charger to the player at body height
+func _has_charge_lane() -> bool:
+	var from = global_position + Vector3.UP * 0.8
+	var to = target_player.global_position + Vector3.UP * 0.8
+	var query = PhysicsRayQueryParameters3D.create(from, to, 1, [get_rid()])
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 func _start_windup() -> void:
 	current_state = State.WINDUP
