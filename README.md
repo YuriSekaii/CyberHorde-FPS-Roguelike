@@ -225,8 +225,8 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 ## 💎 Pickups & Arena Elements
 
-* **Arena Layout**: 80×80m floor (walls at $|X|, |Z| = 40\text{m}$) with a raised center platform + N/S ramps, 4 tall pillars at $(\pm17.5, \pm17.5)$ and 4 jump pads at $(\pm22.5, \pm22.5)$. Matte slate-grey palette (darker floor, lighter walls) keeps glare low so neon enemies and pickups stand out.
-* **Cover**: 6 solid cyan-trim pieces that block shots both ways — 2 waist-high walls flanking the platform (E/W) and 4 tall 2.6m barricades in a pinwheel at $(24, -9)$, $(9, 24)$, $(-24, 9)$, $(-9, -24)$. Ground enemies (Swarmer, Bomber, Brute, Charger stalk, Boss) slide along cover faces to route around it instead of getting stuck; a charging Charger still crashes into cover and stuns. Wave spawns and loot caches use a physics overlap check so nothing spawns inside pillars, ramps or cover.
+* **Arena Layout**: 80×80m floor (walls at $|X|, |Z| = 40\text{m}$) with a raised center platform (top at 3.9m) reached by N/S walkable ramps (18° slope, flush with the floor, side rails — no jump needed), 4 tall pillars at $(\pm17.5, \pm17.5)$ and 4 jump pads at $(\pm22.5, \pm22.5)$. Matte slate-grey palette (darker floor, lighter walls) keeps glare low so neon enemies and pickups stand out.
+* **Cover**: 6 solid cyan-trim pieces that block shots both ways — 2 waist-high walls flanking the platform (E/W) and 4 tall 2.6m barricades in a pinwheel at $(24, -9)$, $(9, 24)$, $(-24, 9)$, $(-9, -24)$. Ground enemies (Swarmer, Bomber, Brute, Charger stalk) follow a navmesh baked from the arena colliders at load, so they take the ramps to reach operatives on the platform, and still slide along cover faces when bumped (the Boss only slides); a charging Charger still crashes into cover and stuns. Wave spawns and loot caches use a physics overlap check so nothing spawns inside pillars, ramps or cover.
 * **Arena Walls & Non-Intrusive Sky Barriers**: Standard 8m visible perimeter walls preserve the open-sky horizon. An invisible upper barrier (Layer 5, up to 48m) blocks operatives and enemies from dashing or flying into the abyss while letting all weapon projectiles pass freely through into the sky without exploding or ricocheting.
 * **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Any enemy unit that somehow ends up out of the arena (beyond perimeter walls $|X|, |Z| > 39.5\text{m}$, below floor $Y < -1.0\text{m}$, or above sky boundary $Y > 45.0\text{m}$) is instantly eliminated with all loot drops safely placed onto the arena floor.
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
@@ -279,6 +279,7 @@ CyberHorde-FPS-Roguelike/
 │   │   └── pause_menu.gd / game_over.gd
 │   └── world/
 │       ├── wave_spawner.gd           # Wave director, enemy weights, Wave 50 boss battle director
+│       ├── arena_navigation.gd       # Bakes the ground-enemy navmesh from arena colliders at load
 │       └── jump_pad.gd / spawn_indicator.gd
 └── scenes/                           # Godot .tscn files mirroring the scripts directory structure
 ```
