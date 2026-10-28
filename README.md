@@ -219,7 +219,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinite horde (0.2s spawn interval, 40 concurrent cap). Victory triggers only when the boss is slain.
 * **Stage 1 (100%–66% HP)**: Ground pursuit. Close Slam AoE (14.25m radius, 1.6× damage + knockup) or long-range dual plasma (0.45× damage).
 * **Stage 2 (66%–33% HP)**: Aerial flight (Y ≈ 14m). Plasma bombs (6.75m AoE, 0.85× damage), Red Aura target lock (0.7s telegraph), and Hyper Dive (60 m/s, 15.75m AoE, 2.2× damage).
-* **Stage 3 (<33% HP)**: Winged Fallen Angel. 6-muzzle needle curtain (65 m/s, 0.09× damage per needle), Cataclysmic Mega Orb (18.0m AoE, 2.8× damage), 8.0s exhaustion vulnerability window, and Supersonic Dive (105 m/s, 17.25m AoE, 2.5× damage).
+* **Stage 3 (<33% HP)**: Winged Fallen Angel. 6-muzzle needle curtain (65 m/s, 0.09× damage per needle), Cataclysmic Mega Orb (18.0m AoE, 2.8× damage), 8.0s exhaustion vulnerability window, and Supersonic Dive (105 m/s, 17.25m AoE, 2.5× damage). Needles that hit the ground (and the dive impact) leave ice spikes that deal needle damage every 0.5s on contact; the Mega Orb impact detonates them all in a ripple (3m radius, 2× needle damage). The spike blast also punches 4.5m straight down, so spikes on the platform still hit operatives hiding under it.
 
 ---
 

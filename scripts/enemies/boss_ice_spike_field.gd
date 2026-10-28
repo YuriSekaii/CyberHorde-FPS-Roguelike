@@ -5,12 +5,14 @@ extends Node3D
 ## Players standing in a spike take that needle's damage every 0.5s (non-stacking per player).
 ## The post-exhaustion dive also erupts a spike field across its AoE.
 ## When the mega plasma orb lands, every spike detonates in an outward ripple (3m radius, 2x needle damage each).
+## The blast is a column that also reaches 4.5m below the spike, so spikes on the platform hit players hiding underneath.
 ## All spikes share one MultiMesh so hundreds of them cost a single draw call.
 
 const MAX_SPIKES: int = 480
 const CONTACT_RADIUS: float = 0.75 # player capsule radius (0.45) + spike girth
 const CONTACT_TICK: float = 0.5
 const DETONATION_RADIUS: float = 3.0
+const DETONATION_DOWN_REACH: float = 4.5 # blast reaches this far below a spike (covers the 3.9m platform underside)
 const DETONATION_DMG_MULT: float = 2.0
 const RIPPLE_SPEED: float = 45.0 # m/s outward from the orb impact
 const SPIKE_HEIGHT: float = 1.0
@@ -192,7 +194,15 @@ func _explode_spike(slot: int, players: Array) -> void:
 	var blast_dmg = _dmg[slot] * DETONATION_DMG_MULT
 	for p in players:
 		if is_instance_valid(p) and p is CharacterBody3D:
-			if (p.global_position + Vector3(0.0, 0.9, 0.0)).distance_to(sp) <= DETONATION_RADIUS:
+			# Column blast: 3m around the spike, but punches straight down through the platform slab
+			# so hiding under the stage doesn't dodge spikes pinned on top of it
+			var chest: Vector3 = p.global_position + Vector3(0.0, 0.9, 0.0)
+			var dy = chest.y - sp.y
+			if dy > DETONATION_RADIUS or dy < -DETONATION_DOWN_REACH:
+				continue
+			var dx = chest.x - sp.x
+			var dz = chest.z - sp.z
+			if dx * dx + dz * dz <= DETONATION_RADIUS * DETONATION_RADIUS:
 				if p.has_method("take_damage"):
 					p.take_damage(blast_dmg)
 
