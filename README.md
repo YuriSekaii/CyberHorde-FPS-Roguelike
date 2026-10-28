@@ -111,7 +111,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 | Class | Accent | Role | Passive Specialization | Active Skill (`Q`) |
 | :--- | :---: | :--- | :--- | :--- |
 | **Medic** | Neon Mint | Support & Sustain | **Nano-Regen & Quick Revive**: All squadmates regenerate 5 HP/s (**Stackable** across multiple Medics). Revive downed teammates **25% faster** (4.0s vs 5.0s). | **Cellular Restore** (20s cd): Instantly recovers 20% Max Shield and 20% Max HP, and grants 2s invulnerability to ALL players. |
-| **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed, jump speed, and reload speed**. | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer) and **instantly reload all weapons**. Sky/air capable. |
+| **Rogue** | Neon Amber | Agility & Economy | **Bounty & Thrusters**: Enemies killed by me drop **+300% more XP and Scrap** (4× yield). Gain **+25% MORE movement speed, jump speed, and reload speed** (reload bonus also applies to companion drones). | **Quantum Dash** (10s cd): Dash 15m in aim direction with complete invulnerability (+0.5s buffer) and **instantly reload all weapons**. Sky/air capable. |
 | **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons and companion drones, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (60s cd): For 5s, gain **invulnerability**, **+500% MORE fire rate** and **unlimited magazine** across player weapons and companion drones. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons and companion drones reload to full magazine when the skill ends. |
 
 > [!NOTE]
@@ -183,7 +183,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
 | **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 8 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 4 |
 | **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion per bounce (and Plasma Core chain lightning) | 2 |
-| **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, and Gunner Berserk Protocol active) | 3 |
+| **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, Gunner Berserk Protocol active, and Rogue passive reload speed). Drones never target Spawnlings | 3 |
 | **Emergency Defibrillator**| `Legendary`| Prevents fatal damage + 5s invulnerability. Recharges every 10 waves | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
 
@@ -212,7 +212,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 30 m/s rush attack | ~4.0–4.25% | Wave 11+, rushes only with a clear lane; wall crash causes 3.5s self-stun |
 | **Void Spawner** | 4,000.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns Spawnlings | 0.25% | Wave 20+, drops Loot Cache on defeat |
-| **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only** |
+| **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only. Ignored by companion drones** |
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
 
 ### 👑 Wave 50 Final Boss: Apex Overlord Stages
