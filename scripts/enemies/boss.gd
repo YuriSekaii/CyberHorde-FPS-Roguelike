@@ -53,7 +53,6 @@ var flight_orbit_angle: float = 0.0
 const FLIGHT_ALTITUDE: float = 14.0
 const DIVE_SPIKE_COUNT: int = 70
 const PLASMA_CORE_RADIUS: float = 0.35 # same size as a Spitter projectile
-const CORE_HIT_DMG_MULT: float = 2.0
 const NON_CORE_DMG_MULT: float = 0.5
 const PLASMA_PURPLE := Color(0.62, 0.18, 1.0)
 
@@ -167,10 +166,10 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 	if current_stage == BossStage.STAGE_2_TRANSITION or current_stage == BossStage.STAGE_3_TRANSITION:
 		amount *= 0.25
 	
-	# Stage 3: exposed plasma core is the only weak spot (stacks with the base wave damage reduction)
+	# Stage 3: exposed plasma core is the only weak spot. Core hits take only the base wave
+	# damage reduction; everything else is additionally halved (stacks with it)
 	if current_stage == BossStage.STAGE_3:
 		if damage_type == EnemyBase.DAMAGE_TYPE_WEAKPOINT:
-			amount *= CORE_HIT_DMG_MULT
 			is_crit = true # crit sound + number as core-hit feedback
 			core_hit_flash = 1.0
 		else:
