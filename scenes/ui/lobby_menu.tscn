@@ -811,7 +811,6 @@ theme_override_font_sizes/font_size = 11
 text = "• Dash 15m in aim direction (sky/air capable).
 • Full invulnerability during dash + 0.5s after.
 • Instantly reloads all weapons.
-• Refreshes Plasma Core cooldown (fire instantly).
 • Rapid 10s cooldown (5s with Cooldown Reduction)."
 autowrap_mode = 2
 

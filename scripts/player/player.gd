@@ -1200,9 +1200,6 @@ func _start_dash() -> void:
 		_cancel_charge()
 	for w in weapons:
 		w.current_ammo = w.max_ammo
-	# Refresh Slot 3 (Plasma Core) fire cooldown: can shoot immediately after dashing
-	if weapons.size() > 2:
-		weapons[2].cooldown = 0.0
 	for d in active_drones:
 		if is_instance_valid(d):
 			if d.assigned_weapon_idx >= 0 and d.assigned_weapon_idx < weapons.size():
