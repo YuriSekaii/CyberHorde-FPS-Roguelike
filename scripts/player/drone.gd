@@ -13,7 +13,6 @@ var reload_timer: float = 0.0
 var idle_timer: float = 0.0
 var _visuals_applied: bool = false
 var _was_berserk: bool = false
-var _player_ref: Node3D = null
 
 @onready var light: OmniLight3D = $DroneLight
 @onready var ring: MeshInstance3D = $DroneRing
@@ -47,7 +46,6 @@ func _apply_weapon_visuals() -> void:
 func update_drone(delta: float, player_ref: Node3D, total_drones: int) -> void:
 	if not is_instance_valid(player_ref) or player_ref.weapons.is_empty():
 		return
-	_player_ref = player_ref
 	
 	if not _visuals_applied:
 		_apply_weapon_visuals()
@@ -157,9 +155,8 @@ func _start_reload(w) -> void:
 	if is_reloading:
 		return
 	is_reloading = true
-	# Matches assigned weapon's reload speed, scaled by Rapid Loader upgrades and Rogue Passive (+25% MORE)
-	var rogue_reload_mult: float = 1.25 if (is_instance_valid(_player_ref) and _player_ref.get("player_class") == "rogue") else 1.0
-	reload_timer = w.base_reload_time / (GameManager.reload_speed_mult * rogue_reload_mult)
+	# Matches assigned weapon's reload speed, scaled by Rapid Loader upgrades and Rogue Passive (+25% MORE, via weapon reload_time)
+	reload_timer = w.reload_time
 	SoundManager.play("reload", 0.08, -4.0)
 
 func _find_target() -> void:
