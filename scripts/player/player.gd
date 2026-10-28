@@ -57,7 +57,7 @@ var player_class: String = "medic":
 const MEDIC_COOLDOWN: float = 20.0
 const MEDIC_ACTIVE_DURATION: float = 2.0
 const ROGUE_COOLDOWN: float = 10.0
-const GUNNER_COOLDOWN: float = 60.0
+const GUNNER_COOLDOWN: float = 45.0
 const GUNNER_ACTIVE_DURATION: float = 5.0
 
 var skill_cooldown_timer: float = 0.0
@@ -463,11 +463,11 @@ func _physics_process(delta: float) -> void:
 				GameManager.current_shield = current_shield
 				shield_changed.emit(current_shield, GameManager.shield_max)
 
-	# Medic Passive: 5 HP/s regeneration across all players per active Medic (Stackable)
+	# Medic Passive: 5% Max HP/s regeneration across all players per active Medic (Stackable)
 	if not is_downed and current_health < max_health:
 		var total_medic_regen = _get_total_medic_regen()
 		if total_medic_regen > 0.0:
-			heal(total_medic_regen * delta)
+			heal(max_health * total_medic_regen * delta)
 	
 	# Remote player interpolation
 	if not is_local_player:
@@ -1123,7 +1123,7 @@ func _get_total_medic_regen() -> float:
 	for p in players:
 		if is_instance_valid(p) and p.get("is_downed") == false and p.get("player_class") == "medic":
 			medic_count += 1
-	return float(medic_count) * 5.0
+	return float(medic_count) * 0.05 # Fraction of Max HP per second
 
 func _spawn_floating_text(text_msg: String, color: Color) -> void:
 	var scene_root = get_tree().current_scene if get_tree() else get_parent()
@@ -1246,7 +1246,7 @@ func _end_dash() -> void:
 	var exit_speed = BASE_WALK_SPEED * GameManager.speed_mult
 	velocity = dash_direction * exit_speed
 
-# --- GUNNER ACTIVE: BERSERK OVERDRIVE (60s cd, 5s duration) ---
+# --- GUNNER ACTIVE: BERSERK OVERDRIVE (45s cd, 5s duration) ---
 func _activate_gunner_skill() -> void:
 	is_gunner_active = true
 	gunner_timer = GUNNER_ACTIVE_DURATION

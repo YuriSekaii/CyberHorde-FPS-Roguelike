@@ -267,7 +267,7 @@ func die() -> void:
 
 func _drop_loot() -> void:
 	var is_rogue_kill = last_hit_by_rogue or (GameManager.player_class == "rogue" and not NetworkManager.is_multiplayer)
-	var loot_mult: float = 4.0 if is_rogue_kill else 1.0 # 300% more = 4x value
+	var loot_mult: float = 3.0 if is_rogue_kill else 1.0 # 200% more = 3x value
 	var fever_mult: float = GameManager.get_fever_loot_mult()
 	
 	# Clamp loot spawn to safe arena ground level so pickups are never lost outside the arena or in the abyss
@@ -281,7 +281,7 @@ func _drop_loot() -> void:
 		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
 		get_parent().call_deferred("add_child", dnum)
 		dnum.position = drop_pos + Vector3(0, 1.8, 0)
-		dnum.setup_text("+300% BOUNTY", Color(1.0, 0.85, 0.1))
+		dnum.setup_text("+200% BOUNTY", Color(1.0, 0.85, 0.1))
 	
 	# Pickups are added deferred (die() can run mid-physics), so set local `position`:
 	# the parent is the scene root at the origin, and global_position errors before entering the tree.
@@ -292,7 +292,7 @@ func _drop_loot() -> void:
 	xp.setup(0, int(xp_reward * loot_mult * fever_mult))
 	
 	# 2. Chance of Scrap
-	if randf() < 0.45 or is_rogue_kill:
+	if randf() < 0.45:
 		var scrap = LOOT_SCENE.instantiate()
 		get_parent().call_deferred("add_child", scrap)
 		scrap.position = drop_pos + Vector3(0, 0.5, 0)
