@@ -1,6 +1,7 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=37 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/world/jump_pad.tscn" id="1_jpad"]
+[ext_resource type="Script" path="res://scripts/world/arena_navigation.gd" id="2_nav"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.35, 0.62, 0.94, 1)
@@ -80,6 +81,30 @@ size = Vector3(20, 0.8, 20)
 [sub_resource type="BoxShape3D" id="BoxShape3D_platform"]
 size = Vector3(20, 0.8, 20)
 
+[sub_resource type="PrismMesh" id="PrismMesh_ramp"]
+material = SubResource("StandardMaterial3D_platform")
+left_to_right = 1.0
+size = Vector3(12, 3.9, 8)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ramp_north"]
+points = PackedVector3Array(-4, 0, -6, 4, 0, -6, -4, 0, 6, 4, 0, 6, -4, 3.9, 6, 4, 3.9, 6)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_ramp_south"]
+points = PackedVector3Array(-4, 0, 6, 4, 0, 6, -4, 0, -6, 4, 0, -6, -4, 3.9, -6, 4, 3.9, -6)
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
+geometry_parsed_geometry_type = 1
+geometry_collision_mask = 1
+geometry_source_geometry_mode = 1
+geometry_source_group_name = &"navigation_geometry"
+cell_size = 0.25
+cell_height = 0.25
+agent_height = 2.25
+agent_radius = 1.0
+agent_max_climb = 0.25
+agent_max_slope = 40.0
+region_min_size = 8.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_pillar"]
 material = SubResource("StandardMaterial3D_wall")
 size = Vector3(2.5, 12, 2.5)
@@ -120,6 +145,17 @@ size = Vector3(4.5, 2.6, 0.9)
 material = SubResource("StandardMaterial3D_trim_cyan")
 size = Vector3(4.54, 0.14, 0.94)
 
+[sub_resource type="BoxMesh" id="BoxMesh_ramp_rail"]
+material = SubResource("StandardMaterial3D_cover")
+size = Vector3(0.3, 1.6, 12.62)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ramp_rail"]
+size = Vector3(0.3, 1.6, 12.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ramp_rail_trim"]
+material = SubResource("StandardMaterial3D_trim_cyan")
+size = Vector3(0.34, 0.1, 12.66)
+
 [node name="Arena" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -132,7 +168,7 @@ light_energy = 2.4
 shadow_enabled = true
 shadow_bias = 0.03
 
-[node name="Geometry" type="Node3D" parent="."]
+[node name="Geometry" type="Node3D" parent="." groups=["navigation_geometry"]]
 
 [node name="Floor" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
@@ -229,27 +265,75 @@ mesh = SubResource("BoxMesh_platform")
 shape = SubResource("BoxShape3D_platform")
 
 [node name="RampNorth" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0.956305, 0.292372, 0, -0.292372, 0.956305, 0, 1.7, -15.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/RampNorth"]
-mesh = SubResource("BoxMesh_platform")
-transform = Transform3D(0.4, 0, 0, 0, 1, 0, 0, 0, 0.6, 0, 0, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 1.95, 0)
+mesh = SubResource("PrismMesh_ramp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampNorth"]
-transform = Transform3D(0.4, 0, 0, 0, 1, 0, 0, 0, 0.6, 0, 0, 0)
-shape = SubResource("BoxShape3D_platform")
+shape = SubResource("ConvexPolygonShape3D_ramp_north")
 
+[node name="RailLeft" type="MeshInstance3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, -3.85, 2.2353, -0.0927)
+mesh = SubResource("BoxMesh_ramp_rail")
+
+[node name="Trim" type="MeshInstance3D" parent="Geometry/RampNorth/RailLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("BoxMesh_ramp_rail_trim")
+cast_shadow = 0
+
+[node name="RailLeftCollision" type="CollisionShape3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, -3.85, 2.2353, -0.0927)
+shape = SubResource("BoxShape3D_ramp_rail")
+
+[node name="RailRight" type="MeshInstance3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, 3.85, 2.2353, -0.0927)
+mesh = SubResource("BoxMesh_ramp_rail")
+
+[node name="Trim" type="MeshInstance3D" parent="Geometry/RampNorth/RailRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("BoxMesh_ramp_rail_trim")
+cast_shadow = 0
+
+[node name="RailRightCollision" type="CollisionShape3D" parent="Geometry/RampNorth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, 3.85, 2.2353, -0.0927)
+shape = SubResource("BoxShape3D_ramp_rail")
 [node name="RampSouth" type="StaticBody3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0.956305, -0.292372, 0, 0.292372, 0.956305, 0, 1.7, 15.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Geometry/RampSouth"]
-mesh = SubResource("BoxMesh_platform")
-transform = Transform3D(0.4, 0, 0, 0, 1, 0, 0, 0, 0.6, 0, 0, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 1.95, 0)
+mesh = SubResource("PrismMesh_ramp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampSouth"]
-transform = Transform3D(0.4, 0, 0, 0, 1, 0, 0, 0, 0.6, 0, 0, 0)
-shape = SubResource("BoxShape3D_platform")
+shape = SubResource("ConvexPolygonShape3D_ramp_south")
 
+[node name="RailLeft" type="MeshInstance3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, -3.85, 2.2353, 0.0927)
+mesh = SubResource("BoxMesh_ramp_rail")
+
+[node name="Trim" type="MeshInstance3D" parent="Geometry/RampSouth/RailLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("BoxMesh_ramp_rail_trim")
+cast_shadow = 0
+
+[node name="RailLeftCollision" type="CollisionShape3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, -3.85, 2.2353, 0.0927)
+shape = SubResource("BoxShape3D_ramp_rail")
+
+[node name="RailRight" type="MeshInstance3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, 3.85, 2.2353, 0.0927)
+mesh = SubResource("BoxMesh_ramp_rail")
+
+[node name="Trim" type="MeshInstance3D" parent="Geometry/RampSouth/RailRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("BoxMesh_ramp_rail_trim")
+cast_shadow = 0
+
+[node name="RailRightCollision" type="CollisionShape3D" parent="Geometry/RampSouth"]
+transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, 3.85, 2.2353, 0.0927)
+shape = SubResource("BoxShape3D_ramp_rail")
 [node name="PillarNE" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 6, -17.5)
 
@@ -383,3 +467,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.5, 0, 22.5)
 
 [node name="JumpPad4" parent="." instance=ExtResource("1_jpad")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 0, 22.5)
+
+[node name="Navigation" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_arena")
+script = ExtResource("2_nav")

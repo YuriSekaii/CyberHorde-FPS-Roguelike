@@ -104,7 +104,6 @@ omni_range = 3.6
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
 billboard = 1
-no_depth_test = true
 modulate = Color(1, 0.42, 0.08, 1)
 outline_modulate = Color(0, 0, 0, 0.95)
 text = "⚠ SWARMER (3.0s)"

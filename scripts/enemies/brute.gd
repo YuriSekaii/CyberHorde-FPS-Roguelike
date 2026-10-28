@@ -25,9 +25,7 @@ func _behave(delta: float) -> void:
 	
 	var full_to_player = target_player.global_position - global_position
 	var dist_3d = full_to_player.length()
-	var to_player_horiz = Vector3(full_to_player.x, 0.0, full_to_player.z)
-	var horiz_dist = to_player_horiz.length()
-	var dir = to_player_horiz.normalized()
+	var dir = nav_direction_to(target_player.global_position, delta)
 	
 	if is_charging_slam:
 		charge_timer += delta
@@ -39,7 +37,7 @@ func _behave(delta: float) -> void:
 			_execute_slam()
 		return
 	
-	if horiz_dist > 0.1:
+	if dir != Vector3.ZERO:
 		var target_rot = atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, target_rot, 6.0 * delta)
 		

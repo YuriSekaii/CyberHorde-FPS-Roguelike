@@ -36,6 +36,10 @@ var _last_immune_feedback_msec: int = 0
 var _detour_dir: Vector3 = Vector3.ZERO
 var _detour_side: float = 1.0
 var _detour_timer: float = 0.0
+var _nav_path: PackedVector3Array = PackedVector3Array()
+var _nav_index: int = 0
+var _nav_repath_timer: float = 0.0
+const NAV_REPATH_INTERVAL: float = 0.3
 
 func _ready() -> void:
 	collision_mask |= 16 # Collide with invisible boundary barrier (Layer 5)
@@ -131,6 +135,24 @@ func is_out_of_arena() -> bool:
 func _behave(_delta: float) -> void:
 	# Overridden in child classes
 	pass
+
+# Horizontal direction to walk toward target_pos along the arena navmesh, so ground units take the ramps up to
+# the center platform (and back down) instead of pushing into its sides. Falls back to a straight line when no path exists.
+func nav_direction_to(target_pos: Vector3, delta: float) -> Vector3:
+	_nav_repath_timer -= delta
+	if _nav_repath_timer <= 0.0:
+		_nav_repath_timer = NAV_REPATH_INTERVAL
+		_nav_path = NavigationServer3D.map_get_path(get_world_3d().navigation_map, global_position, target_pos, true)
+		_nav_index = 0
+	while _nav_index < _nav_path.size():
+		var to_wp = _nav_path[_nav_index] - global_position
+		var horiz = Vector3(to_wp.x, 0.0, to_wp.z)
+		if horiz.length() > 0.6 or absf(to_wp.y) > 1.5:
+			if horiz.length_squared() > 0.0001:
+				return horiz.normalized()
+		_nav_index += 1
+	var direct = Vector3(target_pos.x - global_position.x, 0.0, target_pos.z - global_position.z)
+	return direct.normalized() if direct.length_squared() > 0.01 else Vector3.ZERO
 
 # Bends a direct chase direction around cover/pillars: when pressed head-on into a wall, commit to sliding along
 # its face (toward the side nearer the target) for a short time so the enemy rounds the obstacle instead of grinding on it.
