@@ -1003,10 +1003,15 @@ func take_damage(amount: float) -> void:
 
 func _trigger_second_wind() -> void:
 	GameManager.trigger_second_wind()
-	current_health = 45.0
+	# Fully restore HP and Shield
+	current_health = max_health
+	current_shield = GameManager.shield_max
 	trigger_invulnerability(5.0)
 	SoundManager.play("level_up", 0.2, 2.0)
 	health_changed.emit(current_health, max_health)
+	shield_changed.emit(current_shield, GameManager.shield_max)
+	if status_label:
+		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
 
 func heal(amount: float) -> void:
 	current_health = minf(max_health, current_health + amount)

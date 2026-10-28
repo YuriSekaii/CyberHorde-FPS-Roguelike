@@ -184,7 +184,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 4 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 2 |
 | **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion per bounce (and Plasma Core chain lightning) | 2 |
 | **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, Gunner Berserk Protocol active, and Rogue passive reload speed). Drones never target Spawnlings | 3 |
-| **Emergency Defibrillator**| `Legendary`| Prevents fatal damage + 5s invulnerability. Recharges every 10 waves | 1 |
+| **Emergency Defibrillator**| `Legendary`| Prevents fatal damage, fully restores HP & Shield + 5s invulnerability. Recharges every 10 waves | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
 
 ---

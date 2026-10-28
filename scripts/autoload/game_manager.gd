@@ -220,7 +220,7 @@ var upgrade_database: Dictionary = {
 	"second_wind": {
 		"id": "second_wind",
 		"name": "Emergency Defibrillator",
-		"desc": "Survive fatal damage, gaining 5s of invulnerability. Reactivates after 10 waves.",
+		"desc": "Survive fatal damage, fully restoring HP and Shield and gaining 5s of invulnerability. Reactivates after 10 waves.",
 		"rarity": "Legendary",
 		"color": Color(1.0, 0.9, 0.2),
 		"max_stacks": 1
