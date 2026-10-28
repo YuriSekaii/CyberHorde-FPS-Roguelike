@@ -67,6 +67,10 @@ var skill_ready: bool = true
 # Medic Active: Cellular Restore
 var is_medic_active: bool = false
 var medic_timer: float = 0.0
+# Cellular Restore follow-up regen: +2% Max HP & Shield per second for 10s (refreshes, no stacking)
+const MEDIC_REGEN_DURATION: float = 10.0
+const MEDIC_REGEN_RATE: float = 0.02
+var medic_regen_timer: float = 0.0
 
 func get_skill_max_cooldown() -> float:
 	var mult = GameManager.get_skill_cooldown_mult()
@@ -444,7 +448,21 @@ func _physics_process(delta: float) -> void:
 		if medic_timer <= 0.0:
 			is_medic_active = false
 			medic_timer = 0.0
-	
+
+	# Medic Active follow-up: regen 2% Max HP & Shield per second for 10s
+	if medic_regen_timer > 0.0:
+		medic_regen_timer = maxf(0.0, medic_regen_timer - delta)
+		if is_downed:
+			medic_regen_timer = 0.0
+		else:
+			if current_health < max_health:
+				heal(max_health * MEDIC_REGEN_RATE * delta)
+			# Shield is mirrored in GameManager, so only the local player's copy drives it
+			if is_local_player and GameManager.shield_max > 0.0 and current_shield < GameManager.shield_max:
+				current_shield = minf(GameManager.shield_max, current_shield + GameManager.shield_max * MEDIC_REGEN_RATE * delta)
+				GameManager.current_shield = current_shield
+				shield_changed.emit(current_shield, GameManager.shield_max)
+
 	# Medic Passive: 5 HP/s regeneration across all players per active Medic (Stackable)
 	if not is_downed and current_health < max_health:
 		var total_medic_regen = _get_total_medic_regen()
@@ -1161,7 +1179,9 @@ func _apply_medic_heal_all() -> void:
 				p.shield_changed.emit(p.current_shield, GameManager.shield_max)
 			if p.has_method("trigger_invulnerability"):
 				p.trigger_invulnerability(2.0)
-	_spawn_floating_text("+20% HP & SHIELD (INVULN 2s)", Color(0.2, 1.0, 0.6))
+			if "medic_regen_timer" in p:
+				p.medic_regen_timer = MEDIC_REGEN_DURATION
+	_spawn_floating_text("+20% HP & SHIELD (INVULN 2s, +20% REGEN 10s)", Color(0.2, 1.0, 0.6))
 
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
