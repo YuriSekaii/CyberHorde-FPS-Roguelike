@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3]
+[gd_scene load_steps=34 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/world/jump_pad.tscn" id="1_jpad"]
 [ext_resource type="Script" path="res://scripts/world/arena_navigation.gd" id="2_nav"]
@@ -145,17 +145,6 @@ size = Vector3(4.5, 2.6, 0.9)
 material = SubResource("StandardMaterial3D_trim_cyan")
 size = Vector3(4.54, 0.14, 0.94)
 
-[sub_resource type="BoxMesh" id="BoxMesh_ramp_rail"]
-material = SubResource("StandardMaterial3D_cover")
-size = Vector3(0.3, 1.6, 12.62)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ramp_rail"]
-size = Vector3(0.3, 1.6, 12.62)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ramp_rail_trim"]
-material = SubResource("StandardMaterial3D_trim_cyan")
-size = Vector3(0.34, 0.1, 12.66)
-
 [node name="Arena" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -274,31 +263,6 @@ mesh = SubResource("PrismMesh_ramp")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampNorth"]
 shape = SubResource("ConvexPolygonShape3D_ramp_north")
 
-[node name="RailLeft" type="MeshInstance3D" parent="Geometry/RampNorth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, -3.85, 2.2353, -0.0927)
-mesh = SubResource("BoxMesh_ramp_rail")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/RampNorth/RailLeft"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_ramp_rail_trim")
-cast_shadow = 0
-
-[node name="RailLeftCollision" type="CollisionShape3D" parent="Geometry/RampNorth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, -3.85, 2.2353, -0.0927)
-shape = SubResource("BoxShape3D_ramp_rail")
-
-[node name="RailRight" type="MeshInstance3D" parent="Geometry/RampNorth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, 3.85, 2.2353, -0.0927)
-mesh = SubResource("BoxMesh_ramp_rail")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/RampNorth/RailRight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_ramp_rail_trim")
-cast_shadow = 0
-
-[node name="RailRightCollision" type="CollisionShape3D" parent="Geometry/RampNorth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, 0.309086, 0, -0.309086, 0.951034, 3.85, 2.2353, -0.0927)
-shape = SubResource("BoxShape3D_ramp_rail")
 [node name="RampSouth" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
 
@@ -309,31 +273,6 @@ mesh = SubResource("PrismMesh_ramp")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/RampSouth"]
 shape = SubResource("ConvexPolygonShape3D_ramp_south")
 
-[node name="RailLeft" type="MeshInstance3D" parent="Geometry/RampSouth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, -3.85, 2.2353, 0.0927)
-mesh = SubResource("BoxMesh_ramp_rail")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/RampSouth/RailLeft"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_ramp_rail_trim")
-cast_shadow = 0
-
-[node name="RailLeftCollision" type="CollisionShape3D" parent="Geometry/RampSouth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, -3.85, 2.2353, 0.0927)
-shape = SubResource("BoxShape3D_ramp_rail")
-
-[node name="RailRight" type="MeshInstance3D" parent="Geometry/RampSouth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, 3.85, 2.2353, 0.0927)
-mesh = SubResource("BoxMesh_ramp_rail")
-
-[node name="Trim" type="MeshInstance3D" parent="Geometry/RampSouth/RailRight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("BoxMesh_ramp_rail_trim")
-cast_shadow = 0
-
-[node name="RailRightCollision" type="CollisionShape3D" parent="Geometry/RampSouth"]
-transform = Transform3D(1, 0, 0, 0, 0.951034, -0.309086, 0, 0.309086, 0.951034, 3.85, 2.2353, 0.0927)
-shape = SubResource("BoxShape3D_ramp_rail")
 [node name="PillarNE" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 6, -17.5)
 
