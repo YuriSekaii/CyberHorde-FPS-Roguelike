@@ -188,7 +188,7 @@ var upgrade_database: Dictionary = {
 	"cryo_rounds": {
 		"id": "cryo_rounds",
 		"name": "Cryo Rounds",
-		"desc": "Bullets chill targets, slowing them by 40% for 3s.",
+		"desc": "All your damage (AoE, ricochet, chain lightning, drone) chills targets, slowing them by 25% for 3s.",
 		"rarity": "Rare",
 		"color": Color(0.8, 0.3, 1.0),
 		"max_stacks": 1

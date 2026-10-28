@@ -32,6 +32,9 @@ const DAMAGE_TYPE_EXPLOSIVE: int = 2
 const DAMAGE_TYPE_CHAIN_LIGHTNING: int = 3
 const DAMAGE_TYPE_WEAKPOINT: int = 4 # Direct (non-ricochet) shot whose path passes through an enemy's weakpoint
 
+const CRYO_SLOW_FACTOR: float = 0.25
+const CRYO_SLOW_DURATION: float = 3.0
+
 var _last_immune_feedback_msec: int = 0
 var _detour_dir: Vector3 = Vector3.ZERO
 var _detour_side: float = 1.0
@@ -232,6 +235,11 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 func apply_slow(factor: float, duration: float) -> void:
 	slow_multiplier = clampf(1.0 - factor, 0.2, 1.0)
 	slow_timer = duration
+
+## Cryo Rounds: every damage instance the player deals (direct, ricochet, explosive, chain lightning, drone) chills the target
+func apply_cryo_chill() -> void:
+	if GameManager.cryo_slow:
+		apply_slow(CRYO_SLOW_FACTOR, CRYO_SLOW_DURATION)
 
 func _flash_hit() -> void:
 	if not mesh_root or _is_flashing:

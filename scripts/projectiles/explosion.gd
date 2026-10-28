@@ -98,6 +98,8 @@ static func _deal_static_damage(pos: Vector3, dmg: float, rad: float, attacker: 
 				enemy.take_damage(dmg, false, pos, EnemyBase.DAMAGE_TYPE_EXPLOSIVE, attacker)
 			if not is_immune:
 				GameManager.record_damage(dmg, false)
+				if enemy.has_method("apply_cryo_chill"):
+					enemy.apply_cryo_chill()
 
 func _process(delta: float) -> void:
 	if not is_active:

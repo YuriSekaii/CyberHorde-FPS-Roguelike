@@ -350,9 +350,8 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			
 			if not is_immune:
 				GameManager.record_damage(final_dmg, is_crit)
-				# Cryo slow
-				if GameManager.cryo_slow and collider.has_method("apply_slow"):
-					collider.apply_slow(0.4, 3.0)
+				if collider.has_method("apply_cryo_chill"):
+					collider.apply_cryo_chill()
 			
 			# Standard Chain Lightning effect on enemy hit (does not trigger on ricochets)
 			if GameManager.chain_lightning and not is_ricochet:
@@ -492,8 +491,8 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 				
 				if not is_immune:
 					GameManager.record_damage(bolt_dmg, is_crit)
-					if GameManager.cryo_slow and enemy.has_method("apply_slow"):
-						enemy.apply_slow(0.3, 2.0)
+					if enemy.has_method("apply_cryo_chill"):
+						enemy.apply_cryo_chill()
 				
 				hit_count += 1
 				if hit_count >= 10:
@@ -513,8 +512,8 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 		
 		if not direct_immune:
 			GameManager.record_damage(impact_dmg, is_direct_crit)
-			if GameManager.cryo_slow and direct_enemy.has_method("apply_slow"):
-				direct_enemy.apply_slow(0.4, 3.0)
+			if direct_enemy.has_method("apply_cryo_chill"):
+				direct_enemy.apply_cryo_chill()
 	
 	# Detonate plasma explosion AoE damage
 	_trigger_impact_effects(hit_pos, impact_dmg)
@@ -566,8 +565,8 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 			
 			if not is_target_immune:
 				GameManager.record_damage(chain_dmg, chain_is_crit)
-				if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
-					best_cand.apply_slow(0.3, 2.0)
+				if best_cand.has_method("apply_cryo_chill"):
+					best_cand.apply_cryo_chill()
 			
 			secondary_hits += 1
 	
@@ -640,8 +639,8 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, init
 		
 		if not is_target_immune:
 			GameManager.record_damage(final_dmg, is_crit)
-			if GameManager.cryo_slow and best_cand.has_method("apply_slow"):
-				best_cand.apply_slow(0.3, 2.0)
+			if best_cand.has_method("apply_cryo_chill"):
+				best_cand.apply_cryo_chill()
 		
 		hit_count += 1
 		# Advance chain

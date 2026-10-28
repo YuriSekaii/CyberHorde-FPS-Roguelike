@@ -175,7 +175,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Hyper-Penetrator** | `Rare` | Projectiles pierce through +1 enemy | 2 |
 | **Aegis Energy Shield** | `Rare` | +25 Regenerating Shield capacity (grants shield on pick) | Infinite |
 | **Vampiric Siphon** | `Rare` | Restores +4 HP on enemy kill | 1 |
-| **Cryo Rounds** | `Rare` | Bullets slow targets by 40% for 3 seconds | 1 |
+| **Cryo Rounds** | `Rare` | Every damage instance you deal (direct, ricochet, explosion AoE, chain lightning, drone) slows the target by 25% for 3 seconds | 1 |
 | **Nanite Scavenger** | `Rare` | +40% XP and Scrap drops from defeated enemies | 1 |
 | **Explosive Payload** | `Epic` | Bullets explode on impact (2.5m AoE). Plasma Core AoE +25% (5.0m → 6.25m) | 1 |
 | **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.25s invulnerability | 1 |
