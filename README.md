@@ -240,7 +240,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 ### 🌲 Stage 2 Arena: Nightfall Jungle
 * Same 80×80m footprint, perimeter walls (dark hedge) and invisible sky barriers as Stage 1. All flat ground covered in wind-swayed grass. Tree trunks are the only cover and block shots and movement. Silhouette treeline beyond the walls.
-* **The Moon is the only light source** (52° high, cool blue, energy 1.625 for both the night moon and the Red Moon). Ambient light is near zero, so the moon shadow of every canopy is an almost pitch-black pool on the ground. Wave 50 turns it into a **Red Moon** (light, moon disc, sky and fog fade to blood red).
+* **The Moon is the only light source** (52° high, cool blue, energy 2.03 for both the night moon and the Red Moon). Ambient light is near zero, so the moon shadow of every canopy is an almost pitch-black pool on the ground. Wave 50 turns it into a **Red Moon** (light, moon disc, sky and fog fade to blood red).
 * The tree layout uses a fixed seed, so every co-op peer builds the same jungle. Ground enemies path on a navmesh baked from the trunks at load. The squad spawn area (9m radius around the center) has no trees.
 
 ### 🕷️ Stage 2 Enemy Stats
@@ -262,7 +262,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **Pin (Trap)** | Blood Ghoul leap | Held until you press `A`/`D` **10 times**. The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
 | **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**. Drains HP directly, bypassing shield and damage reduction. **All healing received −75%** (stims, Vampiric, Medic skill & regen) | Each hit **adds 1s** (base 1s, no cap): a long pin builds a long bleed |
 
-* Damage-over-time ticks (Poison, Engulf) don't consume Null Barrier, don't trigger Reactive Phase-Shield and don't cost Fever. Invulnerability (dash, skills, Second Wind) blocks traps and pauses all ticks. Going down clears all effects.
+* Status-effect damage (Poison, Engulf, Bleed ticks) never triggers Reactive Phase-Shield, doesn't consume Null Barrier and doesn't cost Fever. Invulnerability (dash, skills, Second Wind) blocks traps and pauses all ticks. Going down clears all effects.
 * The HUD tints the screen (green engulf, pulsing red pin), shows a `MASH [A] [D] TO ESCAPE` prompt with a progress bar, and lists active effects with timers above the hotbar.
 
 ### 🩸 Wave 50 Final Boss: Blood Ghoul
