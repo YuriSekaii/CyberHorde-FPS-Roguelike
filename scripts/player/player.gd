@@ -127,6 +127,17 @@ var trap_presses_needed: int = 0 # >0: escape after this many presses instead of
 var trap_presses_done: int = 0
 var trap_immunity_timer: float = 0.0
 
+# Pinned flat on your back (Blood Ghoul): camera drops to the ground and locks onto the attacker
+const STAND_HEAD_HEIGHT: float = 1.6
+const PINNED_HEAD_HEIGHT: float = 0.3
+const PIN_VIEW_BLEND_TIME: float = 0.25 # Seconds to fall onto your back / get back up
+const PIN_STRIKE_ROLL: float = 0.14 # Camera roll (rad) kicked by each claw strike
+const PIN_WEAPON_OFFSET: Vector3 = Vector3(0.1, -0.28, 0.08)
+const TP_STAND_HEIGHT: float = 0.9
+const TP_PINNED_HEIGHT: float = 0.25
+var pin_view_blend: float = 0.0 # 0 = standing, 1 = flat on your back
+var pin_roll: float = 0.0
+
 var bob_time: float = 0.0
 var shake_intensity: float = 0.0
 
@@ -401,6 +412,8 @@ func _input(event: InputEvent) -> void:
 	
 	# Mouse look & Weapon sway
 	if event is InputEventMouseMotion:
+		if is_pinned_down():
+			return # Flat on your back: the view stays locked on whatever is pinning you
 		var sens = mouse_sensitivity * (0.65 if is_aiming else 1.0)
 		rotate_y(-event.relative.x * sens)
 		head.rotate_x(-event.relative.y * sens)
@@ -501,6 +514,7 @@ func _physics_process(delta: float) -> void:
 		if tp_head:
 			tp_head.rotation.x = target_net_head_pitch
 		_animate_third_person_legs(delta)
+		_animate_third_person_pin(delta)
 		return
 	
 	# Broadcast transform to squad peers
@@ -520,6 +534,7 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	_handle_movement(delta)
+	_handle_pin_view(delta)
 	_handle_weapons(delta)
 	_handle_shield_regen(delta)
 	_handle_drone(delta)
@@ -911,6 +926,7 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	
 	if weapon_rig:
 		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
+		final_target_pos += PIN_WEAPON_OFFSET * smoothstep(0.0, 1.0, pin_view_blend)
 		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
 		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
 		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
@@ -960,6 +976,14 @@ func _animate_third_person_legs(delta: float) -> void:
 		else:
 			tp_left_leg.rotation.x = lerpf(tp_left_leg.rotation.x, 0.0, 10.0 * delta)
 			tp_right_leg.rotation.x = lerpf(tp_right_leg.rotation.x, 0.0, 10.0 * delta)
+
+## Remote view of a pinned operative: the body lies flat on its back
+func _animate_third_person_pin(delta: float) -> void:
+	if not third_person_model:
+		return
+	var lying = is_pinned_down()
+	third_person_model.rotation.x = lerpf(third_person_model.rotation.x, PI * 0.5 if lying else 0.0, 12.0 * delta)
+	third_person_model.position.y = lerpf(third_person_model.position.y, TP_PINNED_HEIGHT if lying else TP_STAND_HEIGHT, 12.0 * delta)
 
 func _update_third_person_weapon(idx: int) -> void:
 	if tp_rifle: tp_rifle.visible = (idx == 0)
@@ -1119,6 +1143,43 @@ func get_trap_progress() -> float:
 	if trap_max_time <= 0.0 or is_inf(trap_max_time):
 		return 0.0
 	return clampf(1.0 - trap_timer / trap_max_time, 0.0, 1.0)
+
+## True while the trap holds you flat on your back (sources that expose a focus point, i.e. the Blood Ghoul pin)
+func is_pinned_down() -> bool:
+	return is_trapped and is_instance_valid(trap_source) and trap_source.has_method("get_pin_focus_point")
+
+## Pinned: drop the camera to the ground and keep it locked on the attacker clawing above you
+func _handle_pin_view(delta: float) -> void:
+	var pinned = is_pinned_down()
+	if not pinned and pin_view_blend <= 0.0:
+		return
+	pin_view_blend = move_toward(pin_view_blend, 1.0 if pinned else 0.0, delta / PIN_VIEW_BLEND_TIME)
+	var t = smoothstep(0.0, 1.0, pin_view_blend)
+	head.position.y = lerpf(STAND_HEAD_HEIGHT, PINNED_HEAD_HEIGHT, t)
+	if pinned:
+		var to_focus: Vector3 = trap_source.get_pin_focus_point() - head.global_position
+		var flat_len = Vector2(to_focus.x, to_focus.z).length()
+		if flat_len > 0.05:
+			rotation.y = lerp_angle(rotation.y, atan2(-to_focus.x, -to_focus.z), 10.0 * delta)
+		var pitch = clampf(atan2(to_focus.y, flat_len), -deg_to_rad(88.0), deg_to_rad(88.0))
+		head.rotation.x = lerpf(head.rotation.x, pitch, 10.0 * delta)
+	else:
+		# Getting back up: ease the gaze back toward the horizon
+		head.rotation.x = lerpf(head.rotation.x, 0.0, 6.0 * delta)
+	pin_roll = lerpf(pin_roll, 0.0, 10.0 * delta)
+	head.rotation.z = pin_roll * t if pin_view_blend > 0.0 else 0.0
+
+## A pinning claw strike landed: jolt the view toward the swinging arm (side: -1 / 1)
+func pin_strike_jolt(side: float) -> void:
+	if not is_local_player:
+		return
+	pin_roll = side * PIN_STRIKE_ROLL
+	shake_intensity = maxf(shake_intensity, 0.12)
+
+func _reset_pin_view() -> void:
+	pin_view_blend = 0.0
+	pin_roll = 0.0
+	head.rotation.z = 0.0
 
 func clear_status_effects() -> void:
 	poison_timer = 0.0
@@ -1289,6 +1350,7 @@ func rpc_set_downed(downed: bool) -> void:
 	if downed:
 		SoundManager.play("player_hurt", 0.2, -4.0)
 		if is_local_player:
+			_reset_pin_view()
 			head.position.y = 0.7 # Lower camera to ground crawl
 		if status_label:
 			status_label.text = "DOWNED!"
@@ -1299,7 +1361,7 @@ func rpc_set_downed(downed: bool) -> void:
 		current_health = max_health * 0.5
 		health_changed.emit(current_health, max_health)
 		if is_local_player:
-			head.position.y = 1.6
+			head.position.y = STAND_HEAD_HEIGHT
 		if status_label:
 			status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
 			status_label.modulate = Color(0.1, 1, 0.6)

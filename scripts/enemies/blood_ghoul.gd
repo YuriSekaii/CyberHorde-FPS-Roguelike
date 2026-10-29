@@ -6,9 +6,10 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   HIDE      Crouches in a tree's moon shadow (almost invisible). Waits until an operative is within 25m.
 ##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator)
 ##   LEAP      and jumps at it extremely fast. Touching an operative mid-jump pins them down.
-##   PIN       Claws the pinned operative every 0.3s (medium damage, heals the Ghoul 1% Max HP per landed strike)
-##             until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY fast to a
-##             random tree to hide again.
+##   PIN       Knocks the operative flat on their back and straddles them, raking with alternating claws every 0.3s
+##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
+##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
+##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
@@ -31,6 +32,10 @@ const PIN_ESCAPE_PRESSES: int = 10
 const PIN_LIFESTEAL: float = 0.01
 const PIN_HIT_DMG_MULT: float = 0.2
 const POUNCE_DMG_MULT: float = 0.5
+const PIN_STRADDLE_DIST: float = 1.0 # Crouches over the pinned operative, this far from their head
+const PIN_LEAN: float = 0.5 # Forward lean over the pinned operative; each strike lunges deeper
+const PIN_LUNGE_LEAN: float = 0.85
+const PIN_RAKE_HEIGHT: float = 0.85 # Claws rake through this height above the pinned operative (just over their face)
 const FLEE_SPEED: float = 24.0
 const FLEE_TIMEOUT: float = 7.0
 const HIDE_ARRIVE_DIST: float = 1.0
@@ -52,14 +57,22 @@ var leap_vy: float = 0.0
 var overshoot_speed: float = 0.0
 var pinned_player: Node = null
 var pin_hit_timer: float = 0.0
+var pin_dir: Vector3 = Vector3.FORWARD # Flat direction from the pinned operative to the Ghoul
+var pin_time: float = 0.0 # Drives the claw swipes, in step with the strikes
+var arm_pivots: Array[Node3D] = [] # [left, right] shoulder pivots
+var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
 
 @onready var body_root: Node3D = $MeshRoot/Body
+@onready var head_mesh: Node3D = $MeshRoot/Body/Head
 
 func _ready() -> void:
 	enemy_name = "Blood Ghoul"
 	super._ready()
+	if body_root:
+		body_base_y = body_root.position.y
+	_build_arm_pivots()
 	hide_spot = global_position
 	hide_spot.y = 0.0
 	hide_index = _nearest_hide_index(global_position)
@@ -227,6 +240,9 @@ func _try_pin_nearby() -> bool:
 			add_collision_exception_with(p)
 			p.add_collision_exception_with(self)
 			velocity = Vector3.ZERO
+			var flat = Vector3(global_position.x - p.global_position.x, 0.0, global_position.z - p.global_position.z)
+			pin_dir = flat.normalized() if flat.length_squared() > 0.01 else -leap_dir
+			pin_time = 0.0
 			_set_state(GhoulState.PINNING)
 			SoundManager.play_pitch("charger_crash", 1.3, -2.0)
 			_strike(POUNCE_DMG_MULT, false)
@@ -239,21 +255,21 @@ func _process_pinning(delta: float) -> void:
 		_release_pin()
 		_start_flee()
 		return
-	# Crouch over the operative, facing them
+	# Straddle the operative lying on their back, facing down at them
 	var p_pos: Vector3 = pinned_player.global_position
-	var fwd = Vector3.FORWARD
-	if pinned_player.has_method("get_look_direction"):
-		fwd = pinned_player.get_look_direction()
-	fwd.y = 0.0
-	fwd = fwd.normalized() if fwd.length_squared() > 0.01 else Vector3.FORWARD
-	global_position = global_position.lerp(p_pos + fwd * 0.9, 20.0 * delta)
-	rotation.y = atan2(fwd.x, fwd.z)
+	global_position = global_position.lerp(p_pos + pin_dir * PIN_STRADDLE_DIST, 20.0 * delta)
+	rotation.y = atan2(pin_dir.x, pin_dir.z)
 	velocity = Vector3.ZERO
 
+	pin_time += delta
 	pin_hit_timer -= delta
 	if pin_hit_timer <= 0.0:
-		pin_hit_timer = PIN_HIT_INTERVAL
+		pin_hit_timer += PIN_HIT_INTERVAL # Accumulate so the claw swipes stay in step with the hits
 		_strike(PIN_HIT_DMG_MULT, true)
+
+## Where a pinned operative's camera looks: the Ghoul's face looming over them
+func get_pin_focus_point() -> Vector3:
+	return head_mesh.global_position if head_mesh else global_position + Vector3(0.0, 1.4, 0.0)
 
 ## A Ghoul attack: damage + Bleed; pin strikes also heal it 1% Max HP when they land
 func _strike(dmg_mult: float, lifesteal: bool) -> void:
@@ -267,13 +283,16 @@ func _strike(dmg_mult: float, lifesteal: bool) -> void:
 	if victim.get("is_downed") != true and victim.has_method("apply_bleed"):
 		victim.apply_bleed()
 	SoundManager.play_pitch("enemy_hit", 0.6, -3.0)
+	# Strikes alternate left / right claw (matching _animate_arms); jolt the victim's view with the swing
+	if victim.has_method("pin_strike_jolt"):
+		victim.pin_strike_jolt(-1.0 if roundi(pin_time / PIN_HIT_INTERVAL) % 2 == 0 else 1.0)
 	if lifesteal:
 		current_health = minf(max_health, current_health + max_health * PIN_LIFESTEAL)
 		GameManager.boss_health_updated.emit(current_health, max_health)
 	if body_root:
-		body_root.rotation.x = 0.9
+		body_root.rotation.x = -PIN_LUNGE_LEAN
 		var tw = create_tween()
-		tw.tween_property(body_root, "rotation:x", 0.45, 0.15)
+		tw.tween_property(body_root, "rotation:x", -PIN_LEAN, 0.15)
 
 ## Called by the player when the pin ends
 func on_trap_released(player: Node, escaped: bool) -> void:
@@ -377,6 +396,50 @@ func _pick_hide_index() -> int:
 
 # ----------------- VISUALS -----------------
 
+## Groups each arm's meshes under a shoulder pivot so the claws can swing
+func _build_arm_pivots() -> void:
+	if not body_root:
+		return
+	for side in ["L", "R"]:
+		var shoulder = body_root.get_node_or_null("Shoulder" + side) as Node3D
+		if shoulder == null:
+			continue
+		var pivot = Node3D.new()
+		pivot.name = "ArmPivot" + side
+		body_root.add_child(pivot)
+		pivot.position = shoulder.position
+		for part in ["Shoulder%s", "UpperArm%s", "Forearm%s", "ForearmBlood%s", "Claw%s0", "Claw%s1", "Claw%s2"]:
+			var node = body_root.get_node_or_null(part % side)
+			if node:
+				node.reparent(pivot)
+		arm_pivots.append(pivot)
+
+## Pinning: alternating claw rakes aimed at the pinned operative's face (windup overhead -> slash -> recover)
+func _animate_arms(delta: float) -> void:
+	var pinning = state == GhoulState.PINNING and is_instance_valid(pinned_player)
+	var rake_point = pinned_player.global_position + Vector3(0.0, PIN_RAKE_HEIGHT, 0.0) if pinning else Vector3.ZERO
+	for i in range(arm_pivots.size()):
+		var pivot = arm_pivots[i]
+		if not pinning:
+			pivot.quaternion = pivot.quaternion.slerp(Quaternion.IDENTITY, 10.0 * delta)
+			continue
+		var side = -1.0 if i == 0 else 1.0
+		var to_local = pivot.get_parent().global_transform.basis.inverse()
+		var outward = global_transform.basis.x * side
+		# Slash: the arm (rest axis -Y) rakes down just over the face; windup: cocked high behind the shoulder
+		var slash_dir = (to_local * (rake_point - pivot.global_position)).normalized()
+		var windup_dir = (to_local * (Vector3.UP + outward * 0.5 + pin_dir * 0.5)).normalized()
+		var slash = Quaternion(Vector3.DOWN, slash_dir)
+		var windup = Quaternion(Vector3.DOWN, windup_dir)
+		var reach = Quaternion.IDENTITY.slerp(slash, 0.5)
+		var t = fmod(pin_time + i * PIN_HIT_INTERVAL, PIN_HIT_INTERVAL * 2.0)
+		if t < 0.07:
+			pivot.quaternion = windup.slerp(slash, t / 0.07)
+		elif t < PIN_HIT_INTERVAL:
+			pivot.quaternion = slash.slerp(reach, smoothstep(0.07, PIN_HIT_INTERVAL, t))
+		else:
+			pivot.quaternion = reach.slerp(windup, smoothstep(PIN_HIT_INTERVAL, PIN_HIT_INTERVAL * 2.0, t))
+
 func _animate_pose(delta: float) -> void:
 	if not body_root:
 		return
@@ -404,9 +467,11 @@ func _animate_pose(delta: float) -> void:
 		GhoulState.FLEEING:
 			target_tilt = 0.95 + sin(anim_time * 18.0) * 0.08
 	body_root.rotation.z = lerpf(body_root.rotation.z, target_roll, 10.0 * delta)
-	body_root.position.y = lerpf(body_root.position.y, target_drop, 10.0 * delta)
+	body_root.position.y = lerpf(body_root.position.y, body_base_y + target_drop, 10.0 * delta)
+	# Tilt > 0 leans toward the face (-Z), which is a negative X rotation
 	if state != GhoulState.PINNING:
-		body_root.rotation.x = lerpf(body_root.rotation.x, target_tilt, 10.0 * delta)
+		body_root.rotation.x = lerpf(body_root.rotation.x, -target_tilt, 10.0 * delta)
+	_animate_arms(delta)
 
 func die() -> void:
 	if is_dead:

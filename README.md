@@ -259,7 +259,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | :--- | :--- | :--- | :--- |
 | **Poison** | Venom Wyvern glob hit; standing in a Spore Pit puddle | −25% move speed and 5 dmg/s for 3s (× the wave damage factor $1.05^{\text{ScalingWave}-1}$). Hits shield first | Doesn't stack: a new hit refreshes the duration |
 | **Engulf (Trap)** | Bog Slime touch | Can't move or jump for 3s while taking 10 dmg/s (× wave damage factor). Other enemies and projectiles still hit you. Each `A`/`D` press removes 0.5s | 3s trap immunity after release |
-| **Pin (Trap)** | Blood Ghoul leap | Held until you press `A`/`D` **10 times**. The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
+| **Pin (Trap)** | Blood Ghoul leap | Knocked flat on your back, camera locked looking up at the Ghoul (no mouse look). Held until you press `A`/`D` **10 times**. The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
 | **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**. Drains HP directly, bypassing shield and damage reduction. **All healing received −75%** (stims, Vampiric, Medic skill & regen) | Each hit **adds 1.5s** (base 1.5s, no cap): a long pin builds a long bleed |
 
 * Status-effect damage (Poison, Engulf, Bleed ticks) never triggers Reactive Phase-Shield, doesn't consume Null Barrier and doesn't cost Fever. Invulnerability (dash, skills, Second Wind, Phase-Shield) blocks new traps and nullifies status-effect damage, but effect durations keep counting down. Going down clears all effects.
@@ -268,7 +268,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 ### 🩸 Wave 50 Final Boss: Blood Ghoul
 A pitch-dark ghoul caked in old, dried blood. In a canopy shadow it's practically invisible: only the dark-red blood smears are barely noticeable. It spawns hidden (no spawn telegraph) under the tree farthest from the squad.
 * **Hide**: Crouches in a tree's moon shadow. Once an operative stays within **25m for 2s**, it silently locks their current position (no sound, flash or indicator) and leaps at it at 42 m/s.
-* **Pin**: Touching an operative mid-leap pins them (0.5× damage pounce), then claws every **0.3s** (0.2× damage, heals the Ghoul **1% Max HP** per landed strike) until they mash `A`/`D` 10 times. On escape it's knocked down for 1s, then flees at 24 m/s to a random tree (preferring ones ≥14m from every operative) and hides again.
+* **Pin**: Touching an operative mid-leap pins them flat on their back (0.5× damage pounce): their camera drops to the ground and stays locked on the Ghoul straddling them, which rakes with alternating claws every **0.3s** (each hit jolts the view) (0.2× damage, heals the Ghoul **1% Max HP** per landed strike) until they mash `A`/`D` 10 times. On escape it's knocked down for 1s, then flees at 24 m/s to a random tree (preferring ones ≥14m from every operative) and hides again.
 * **Miss**: If the leap touches no one, momentum drags it 5m past the locked spot (or into a trunk) and it falls, **stunned for 3s**, then flees.
 * **Hidden**: While hiding it only takes **direct bullet hits** (immune to explosions, ricochets and chain lightning, like a Spawnling) and companion drones ignore it. After losing **1% Max HP** while hidden, it flees to another random tree (the counter resets each time it hides).
 * All its attacks inflict **Bleed**. Damage = $120 \times$ wave damage factor (capped at 600); 50% damage reduction at the Stage 2 final wave.
