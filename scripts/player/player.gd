@@ -108,7 +108,7 @@ var slayer_timer: float:
 # Stage 2 status effects (processed on the local player only)
 const POISON_DURATION: float = 3.0
 const POISON_SLOW: float = 0.25
-const BLEED_DURATION: float = 1.0 # Added per application; stacks with no cap
+const BLEED_DURATION: float = 1.5 # Added per application; stacks with no cap
 const BLEED_RATE_IDLE: float = 0.01 # Fraction of Max HP lost per second
 const BLEED_RATE_MOVING: float = 0.05
 const BLEED_HEAL_REDUCTION: float = 0.75 # All healing received is cut by 75% while bleeding
@@ -1067,7 +1067,7 @@ func apply_poison(dps: float) -> void:
 	poison_timer = POISON_DURATION
 
 ## Bleed: lose 1% Max HP/s (5% while moving), straight to HP, and healing is cut by 75%.
-## Each application adds 1s to the remaining duration (no cap).
+## Each application adds 1.5s to the remaining duration (no cap). Invulnerability nullifies the drain but the timer keeps running.
 func apply_bleed() -> void:
 	if is_downed:
 		return

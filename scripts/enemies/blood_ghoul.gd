@@ -10,7 +10,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY fast to a
 ##             random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
-## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1s per hit and stacking, bypasses shield).
+## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
 ## while hidden it relocates to another random tree.
 

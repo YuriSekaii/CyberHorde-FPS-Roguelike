@@ -260,9 +260,9 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **Poison** | Venom Wyvern glob hit; standing in a Spore Pit puddle | −25% move speed and 5 dmg/s for 3s (× the wave damage factor $1.05^{\text{ScalingWave}-1}$). Hits shield first | Doesn't stack: a new hit refreshes the duration |
 | **Engulf (Trap)** | Bog Slime touch | Can't move or jump for 3s while taking 10 dmg/s (× wave damage factor). Other enemies and projectiles still hit you. Each `A`/`D` press removes 0.5s | 3s trap immunity after release |
 | **Pin (Trap)** | Blood Ghoul leap | Held until you press `A`/`D` **10 times**. The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
-| **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**. Drains HP directly, bypassing shield and damage reduction. **All healing received −75%** (stims, Vampiric, Medic skill & regen) | Each hit **adds 1s** (base 1s, no cap): a long pin builds a long bleed |
+| **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**. Drains HP directly, bypassing shield and damage reduction. **All healing received −75%** (stims, Vampiric, Medic skill & regen) | Each hit **adds 1.5s** (base 1.5s, no cap): a long pin builds a long bleed |
 
-* Status-effect damage (Poison, Engulf, Bleed ticks) never triggers Reactive Phase-Shield, doesn't consume Null Barrier and doesn't cost Fever. Invulnerability (dash, skills, Second Wind) blocks traps and pauses all ticks. Going down clears all effects.
+* Status-effect damage (Poison, Engulf, Bleed ticks) never triggers Reactive Phase-Shield, doesn't consume Null Barrier and doesn't cost Fever. Invulnerability (dash, skills, Second Wind, Phase-Shield) blocks new traps and nullifies status-effect damage, but effect durations keep counting down. Going down clears all effects.
 * The HUD tints the screen (green engulf, pulsing red pin), shows a `MASH [A] [D] TO ESCAPE` prompt with a progress bar, and lists active effects with timers above the hotbar.
 
 ### 🩸 Wave 50 Final Boss: Blood Ghoul
