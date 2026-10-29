@@ -22,12 +22,13 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **`Push_To_GitHub.bat`** | Stages, commits, and pushes local changes to `origin main`. |
 
 ### Game Modes
-* **Single Player**: Standard horde survival starting from Wave 1.
+* **Single Player**: Standard horde survival starting from Stage 1 (Day) Wave 1. Beating the Wave 50 boss continues into Stage 2 (Night) Wave 1 (see [Stages](#-stages)).
 * **Host LAN Co-op (Server)**: Hosts an ENet multiplayer squad lobby on your network (default port: `7777`).
 * **Join LAN Co-op (Client)**: Connects to a host IP (`127.0.0.1` for local multi-instance testing).
 * **Host Online Lobby (Internet)**: Creates an online lobby and shows a 5-character code (e.g. `K7QXM`). Share it with up to 3 friends anywhere on the internet. No port forwarding needed.
 * **Join Online Lobby (Code)**: Enter the host's lobby code and click Connect.
-* **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to the **Wave 50 Apex Overlord** fight without grinding earlier waves.
+* **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to a late-game target without grinding earlier waves.
+  * **Target** (dropdown): `Stage 1 · Wave 50 — Apex Overlord`, `Stage 2 · Wave 50 — Blood Ghoul (Blood Moon)`, or `Stage 2 · Wave 1 — Nightfall Jungle`.
   * **Authorization Key**: Requires entering `HereComeTheChallenger`.
   * **Loadout**: Automatically equips all perks fully maxed (infinite-stack perks get 10 stacks each).
   * **Mode**: Playable Solo or Hosted as Co-op.
@@ -68,6 +69,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
 | **Revive Ally** | `E` (hold 5s) | Within 3m of downed squadmate (4.0s for Medics) |
 | **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
+| **Escape Trap** | Mash `A` / `D` | Breaks a Bog Slime engulf (−0.25s per press) or a Blood Ghoul pin (10 presses). Quantum Dash can't break traps |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
 | **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
 | **Pause Menu** | `Escape` | Audio volume, mouse sensitivity, display options |
@@ -194,14 +196,15 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 ### Wave Scaling Formulas
 * **Enemy Count per Wave**: $10 + \text{Wave} \times 6$ (Wave 50 Final Boss = $\infty$).
 * **Spawn Interval**: $\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$ (Wave 50 = $0.2\text{s}$).
+* **Scaling Wave**: All per-wave formulas below use the *scaling wave*: Stage 1 = Wave; Stage 2 = Wave $+ 25$ (Stage 2 Wave 1 enemies match Stage 1 Wave 26). Tunable via `GameManager.STAGE_SCALING_WAVE_OFFSET`.
 * **Compounding HP**: $+10\%$ per wave ($\text{Base} \times 1.10^{\text{Wave}-1}$).
 * **Compounding Damage**: $+5\%$ per wave ($\text{Base} \times 1.05^{\text{Wave}-1}$).
 * **Speed & Attack Rate**: $+5\%$ compounding every 10 waves ($1.05^{\lfloor\text{Wave}/10\rfloor}$).
 * **Damage Reduction**: $+10\%$ every 10 waves (capped at 50% max at Wave 50).
 * **Basic Spawn Decay**: Swarmer & Spitter weights decay $5\%$ multiplicatively every 5 waves ($\text{Weight} \times 0.95^{\lfloor\text{Wave}/5\rfloor}$).
-* **Basic Unit Upgrades**: From **Wave 31** the Volt Bomber fully replaces the Cyber Swarmer; from **Wave 41** the Photon Hornet fully replaces the Plasma Spitter (same spawn weights; Wave 50 boss escorts use the upgraded units).
+* **Basic Unit Upgrades (Stage 1)**: From **Wave 31** the Volt Bomber fully replaces the Cyber Swarmer; from **Wave 41** the Photon Hornet fully replaces the Plasma Spitter (same spawn weights; Wave 50 boss escorts use the upgraded units).
 
-### Enemy Stats
+### Enemy Stats (Stage 1)
 
 | Enemy Type | Base HP | Speed | Damage | Attack Cooldown | Attack Type & Range | Base Weight | Notes |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
@@ -215,25 +218,73 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only. Ignored by companion drones** |
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
 
-### 👑 Wave 50 Final Boss: Apex Overlord Stages
+### 👑 Stage 1 Wave 50 Final Boss: Apex Overlord Phases
 Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinite horde (0.2s spawn interval, 40 concurrent cap). Victory triggers only when the boss is slain.
-* **Stage 1 (100%–66% HP)**: Ground pursuit. Close Slam AoE (14.25m radius, 1.6× damage + knockup) or long-range dual plasma (0.45× damage).
-* **Stage 2 (66%–33% HP)**: Aerial flight (Y ≈ 14m). Plasma bombs (6.75m AoE, 0.85× damage), Red Aura target lock (0.7s telegraph), and Hyper Dive (60 m/s, 15.75m AoE, 2.2× damage).
-* **Stage 3 (<33% HP)**: Winged Fallen Angel. 6-muzzle needle curtain (65 m/s, 0.09× damage per needle), Cataclysmic Mega Orb (18.0m AoE, 2.8× damage), 8.0s exhaustion vulnerability window, and Supersonic Dive (105 m/s, 17.25m AoE, 2.5× damage). Needles that hit the ground (and the dive impact) leave ice spikes that deal needle damage every 0.5s on contact; the Mega Orb impact detonates them all in a ripple (3m radius, 2× needle damage). The spike blast also punches 4.5m straight down, so spikes on the platform still hit operatives hiding under it.
+* **Phase 1 (100%–66% HP)**: Ground pursuit. Close Slam AoE (14.25m radius, 1.6× damage + knockup) or long-range dual plasma (0.45× damage).
+* **Phase 2 (66%–33% HP)**: Aerial flight (Y ≈ 14m). Plasma bombs (6.75m AoE, 0.85× damage), Red Aura target lock (0.7s telegraph), and Hyper Dive (60 m/s, 15.75m AoE, 2.2× damage).
+* **Phase 3 (<33% HP)**: Winged Fallen Angel. 6-muzzle needle curtain (65 m/s, 0.09× damage per needle), Cataclysmic Mega Orb (18.0m AoE, 2.8× damage), 8.0s exhaustion vulnerability window, and Supersonic Dive (105 m/s, 17.25m AoE, 2.5× damage). Needles that hit the ground (and the dive impact) leave ice spikes that deal needle damage every 0.5s on contact; the Mega Orb impact detonates them all in a ripple (3m radius, 2× needle damage). The spike blast also punches 4.5m straight down, so spikes on the platform still hit operatives hiding under it.
+
+---
+
+## 🌙 Stages
+
+| Stage | Time | Arena | Roster | Wave 50 Boss |
+| :---: | :---: | :--- | :--- | :--- |
+| **1** | Day | Cyber arena (center platform, ramps, pillars, cover, jump pads) | Swarmer, Spitter, Brute, Charger, Void Spawner, Bomber, Hornet | Apex Overlord |
+| **2** | Night | Moonlit jungle (flat grass, 26 trees, no platform, no jump pads) | Shadow Spider, Venom Wyvern, Bog Slime, Mantis Stalker, Spore Pit | Blood Ghoul (Red Moon) |
+
+* **Progression**: Killing Stage 1's Wave 50 boss clears the horde and starts Stage 2 at **Wave 1** after a 10s "NIGHT FALLS IN" intermission. The arena swaps and the squad regroups at the center. Perks, level, Scrap, Fever and Second Wind carry over. Killing the Stage 2 boss wins the run.
+* **HUD**: Wave label reads `DAY — WAVE n` / `NIGHT — WAVE n`; a banner announces Stage 2 and the Blood Moon.
+* **Wave rules** (count, spawn interval, Loot Cache every 2 waves, infinite Wave 50 horde) are the same in both stages; only the roster and the scaling wave differ.
+
+### 🌲 Stage 2 Arena: Nightfall Jungle
+* Same 80×80m footprint, perimeter walls (dark hedge) and invisible sky barriers as Stage 1. All flat ground covered in wind-swayed grass. Tree trunks are the only cover and block shots and movement. Silhouette treeline beyond the walls.
+* **The Moon is the only light source** (52° high, cool blue). Ambient light is near zero, so the moon shadow of every canopy is an almost pitch-black pool on the ground. Wave 50 turns it into a **Red Moon** (light, moon disc, sky and fog fade to blood red).
+* The tree layout uses a fixed seed, so every co-op peer builds the same jungle. Ground enemies path on a navmesh baked from the trunks at load. The squad spawn area (9m radius around the center) has no trees.
+
+### 🕷️ Stage 2 Enemy Stats
+
+| Enemy Type | Base HP | Speed | Damage | Attack Cooldown | Attack Type & Range | Base Weight | Notes |
+| :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
+| **Shadow Spider** | 40.0 | 6.0 m/s | 8.0 bite / 24.0 pounce | 0.8s bite, 5s pounce | Swarmer-style bite (1.6m); pounces when within 5m | 100% → ~46% | Pitch-black body, only its red eyes glow. Weight decays 5% every 5 waves |
+| **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 35% → 30% | Wave 6+. Decays 5% every 5 waves |
+| **Bog Slime** | 300.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 10% | Wave 11+. Spits the operative out, then pauses 1.2s |
+| **Mantis Stalker** | 400.0 | 1.5 m/s watched / 15.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 5% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight |
+| **Spore Pit (Mini-Boss)** | 6,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked) | 0.4% | Wave 31+, max 2 alive. Drops a Loot Cache |
+| **Blood Ghoul (Boss)** | 2,000,000.0 | 24 m/s flee / 42 m/s leap | 120–600 | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP; infinite horde until it dies |
+
+### 🧪 Stage 2 Status Effects
+| Effect | Source | Effect | Stacking |
+| :--- | :--- | :--- | :--- |
+| **Poison** | Venom Wyvern glob hit | −25% move speed and 5 dmg/s for 3s (× the wave damage factor $1.05^{\text{ScalingWave}-1}$). Hits shield first | Doesn't stack: a new hit refreshes the duration |
+| **Engulf (Trap)** | Bog Slime touch | Can't move or jump for 3s while taking 10 dmg/s (× wave damage factor). Other enemies and projectiles still hit you. Each `A`/`D` press removes 0.25s | 3s trap immunity after release |
+| **Pin (Trap)** | Blood Ghoul leap | Held until you press `A`/`D` **10 times**. The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
+| **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**, for 3s. Drains HP directly, bypassing shield and damage reduction | Doesn't stack: a new hit refreshes the duration |
+
+* Damage-over-time ticks (Poison, Engulf) don't consume Null Barrier, don't trigger Reactive Phase-Shield and don't cost Fever. Invulnerability (dash, skills, Second Wind) blocks traps and pauses all ticks. Going down clears all effects.
+* The HUD tints the screen (green engulf, pulsing red pin), shows a `MASH [A] [D] TO ESCAPE` prompt with a progress bar, and lists active effects with timers above the hotbar.
+
+### 🩸 Wave 50 Final Boss: Blood Ghoul
+A pitch-dark ghoul caked in old, dried blood. In a canopy shadow it's practically invisible: only the dark-red blood smears are barely noticeable. It spawns hidden (no spawn telegraph) under the tree farthest from the squad.
+* **Hide**: Crouches in a tree's moon shadow. Once an operative stays within **25m for 2s**, it silently locks their current position (no sound, flash or indicator) and leaps at it at 42 m/s.
+* **Pin**: Touching an operative mid-leap pins them (0.5× damage pounce), then claws every **0.3s** (0.2× damage, heals the Ghoul **1% Max HP** per landed strike) until they mash `A`/`D` 10 times. On escape it's knocked down for 1s, then flees at 24 m/s to a random tree (preferring ones ≥14m from every operative) and hides again.
+* **Miss**: If the leap touches no one, momentum drags it 5m past the locked spot (or into a trunk) and it falls, **stunned for 3s**, then flees.
+* **Relocate**: Shooting it while it hides with nobody within 25m makes it flee to another tree.
+* All its attacks inflict **Bleed**. Damage = $120 \times$ wave damage factor (capped at 600); 50% damage reduction at the Stage 2 final wave.
 
 ---
 
 ## 💎 Pickups & Arena Elements
 
-* **Arena Layout**: 80×80m floor (walls at $|X|, |Z| = 40\text{m}$) with a raised center platform (top at 3.9m) reached by N/S walkable ramps (18° slope, flush with the floor, open sides — no jump needed), 4 tall pillars at $(\pm17.5, \pm17.5)$ and 4 jump pads at $(\pm22.5, \pm22.5)$. Matte slate-grey palette (darker floor, lighter walls) keeps glare low so neon enemies and pickups stand out.
+* **Arena Layout (Stage 1)**: 80×80m floor (walls at $|X|, |Z| = 40\text{m}$) with a raised center platform (top at 3.9m) reached by N/S walkable ramps (18° slope, flush with the floor, open sides — no jump needed), 4 tall pillars at $(\pm17.5, \pm17.5)$ and 4 jump pads at $(\pm22.5, \pm22.5)$. Matte slate-grey palette (darker floor, lighter walls) keeps glare low so neon enemies and pickups stand out.
 * **Cover**: 6 solid cyan-trim pieces that block shots both ways — 2 waist-high walls flanking the platform (E/W) and 4 tall 2.6m barricades in a pinwheel at $(24, -9)$, $(9, 24)$, $(-24, 9)$, $(-9, -24)$. Ground enemies (Swarmer, Bomber, Brute, Charger stalk) follow a navmesh baked from the arena colliders at load, so they take the ramps to reach operatives on the platform (nav-only obstacles along the ramp sides make the low front edge the only way on, so they never try to climb a ramp side), and still slide along cover faces when bumped (the Boss only slides); a Charger only winds up its rush with a clear lane to the player (no ramming ramp sides or cover from below), but still crashes and stuns if the player ducks behind cover mid-rush. Wave spawns and loot caches use a physics overlap check so nothing spawns inside pillars, ramps or cover.
 * **Arena Walls & Non-Intrusive Sky Barriers**: Standard 8m visible perimeter walls preserve the open-sky horizon. An invisible upper barrier (Layer 5, up to 48m) blocks operatives and enemies from dashing or flying into the abyss while letting all weapon projectiles pass freely through into the sky without exploding or ricocheting.
 * **Abyss Safety & Void Fall Recovery**: Falling into the abyss ($Y < -15\text{m}$) teleports the operative back onto the arena floor with a 20% HP penalty and 2.0s invulnerability. Any enemy unit that somehow ends up out of the arena (beyond perimeter walls $|X|, |Z| > 39.5\text{m}$, below floor $Y < -1.0\text{m}$, or above sky boundary $Y > 45.0\text{m}$) is instantly eliminated with all loot drops safely placed onto the arena floor.
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 HP. Drops more frequently at low health.
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.
-* **Loot Caches**: Spawns every 2 waves and drops from defeated Void Spawners. Press `E` for bonus scrap/health and 1 free card pick.
-* **Jump Pads**: 4 arena launch pads propelling players skyward for aerial traversal.
+* **Loot Caches**: Spawns every 2 waves and drops from defeated Void Spawners and Spore Pits. Press `E` for bonus scrap/health and 1 free card pick.
+* **Jump Pads**: 4 Stage 1 launch pads propelling players skyward for aerial traversal (none in the Stage 2 jungle).
 
 ---
 
@@ -251,13 +302,13 @@ CyberHorde-FPS-Roguelike/
 │   └── run_relay.bat                 # Starts the relay hidden in the background (port 8095)
 ├── scripts/
 │   ├── autoload/
-│   │   ├── game_manager.gd           # ★ Perk catalog (`upgrade_database`), stats, level/reroll logic
+│   │   ├── game_manager.gd           # ★ Perk catalog (`upgrade_database`), stats, level/reroll logic, current stage
 │   │   ├── network_manager.gd        # LAN (ENet) + online lobby squad management & signals
 │   │   └── sound_manager.gd          # Pure synthesized 16-bit PCM procedural audio
 │   ├── network/
 │   │   └── relay_peer.gd             # MultiplayerPeerExtension that sends multiplayer packets through the lobby relay
 │   ├── player/
-│   │   ├── player.gd                 # First/third-person controller, defensive perks, weapons
+│   │   ├── player.gd                 # First/third-person controller, defensive perks, weapons, Stage 2 status effects
 │   │   └── drone.gd                  # Companion drone perk AI
 │   ├── enemies/
 │   │   ├── enemy_base.gd             # Base enemy class (target selection, health, damage)
@@ -265,10 +316,15 @@ CyberHorde-FPS-Roguelike/
 │   │   ├── bomber.gd / hornet.gd     # Late-wave suicide bomber and laser gunship drone AI
 │   │   ├── brute.gd / charger.gd     # Heavy ground-slammer and charging bull AI
 │   │   ├── spawner.gd / spawnling.gd # Sky carrier spawner and drill minion AI
-│   │   └── boss.gd                   # Wave 50 Apex Overlord multi-stage boss AI
+│   │   ├── boss.gd                   # Stage 1 Wave 50 Apex Overlord multi-stage boss AI
+│   │   ├── spider.gd / wyvern.gd     # Stage 2 pouncing spider and venom-spitting flyer AI
+│   │   ├── slime.gd / stalker.gd     # Stage 2 trapping slime and gaze-reactive mantis AI
+│   │   ├── spore_pit.gd              # Stage 2 rooted mortar mini-boss (drops Loot Cache)
+│   │   └── blood_ghoul.gd            # Stage 2 Wave 50 Blood Ghoul shadow-ambush boss AI
 │   ├── projectiles/
 │   │   ├── bullet.gd                 # Projectile simulation, pierce, ricochet, explosions, Tesla arcs
-│   │   ├── enemy_projectile.gd       # Spitter plasma orb / Hornet laser (enemy_laser.tscn)
+│   │   ├── enemy_projectile.gd       # Spitter plasma orb / Hornet laser (enemy_laser.tscn) / Wyvern venom (poison)
+│   │   ├── spore_mortar.gd           # Spore Pit sky-lobbed glob with landing-zone marker
 │   │   └── explosion.gd              # Static pooled AoE blast and particle system
 │   ├── loot/
 │   │   ├── loot_pickup.gd            # Pickups (XP, Stim, Scrap) and magnet logic
@@ -278,7 +334,8 @@ CyberHorde-FPS-Roguelike/
 │   │   ├── upgrade_menu.gd           # Upgrade card presentation and Scrap rerolls
 │   │   └── pause_menu.gd / game_over.gd
 │   └── world/
-│       ├── wave_spawner.gd           # Wave director, enemy weights, Wave 50 boss battle director
+│       ├── wave_spawner.gd           # Wave director, per-stage enemy weights, Wave 50 bosses, stage transitions
+│       ├── jungle_arena.gd           # Stage 2 night jungle: trees, grass, moonlight, Red Moon, hide spots
 │       ├── arena_navigation.gd       # Bakes the ground-enemy navmesh from arena colliders at load
 │       └── jump_pad.gd / spawn_indicator.gd
 └── scenes/                           # Godot .tscn files mirroring the scripts directory structure
@@ -315,9 +372,15 @@ CyberHorde-FPS-Roguelike/
 ### 4. How to Add an Enemy Type
 1. Inherit from [`scripts/enemies/enemy_base.gd`](scripts/enemies/enemy_base.gd) in `scripts/enemies/` and override `_behave(delta)`.
 2. Create scene in `scenes/enemies/` with `CharacterBody3D` (`collision_mask = 5`).
-3. In [`scripts/world/wave_spawner.gd`](scripts/world/wave_spawner.gd): Preload scene, assign type ID, and configure wave weight.
+3. In [`scripts/world/wave_spawner.gd`](scripts/world/wave_spawner.gd): Preload scene, assign type ID, and configure wave weight in `_select_enemy_type()` (Stage 1) or `_select_stage2_enemy_type()` (Stage 2). Add a spawn telegraph theme in [`scripts/world/spawn_indicator.gd`](scripts/world/spawn_indicator.gd).
 
-### 5. Web Export Roadmap
+### 5. How Stages Work
+* `GameManager.current_stage` drives everything; `GameManager.set_stage()` emits `stage_changed`, and [`scripts/main.gd`](scripts/main.gd) swaps the arena scene from `STAGE_ARENAS`.
+* The server's wave spawner advances the stage when the Wave 50 boss dies (`rpc_advance_stage`) and starts the new stage at Wave 1.
+* Enemy stats scale from `GameManager.get_scaling_wave()`; damage-over-time effects use `get_wave_damage_factor()`.
+* Player status effects live in `player.gd`: `apply_poison()`, `apply_bleed()`, `apply_trap(source, duration, dps, presses_needed)`. A trap source gets `on_trap_released(player, escaped)` when it ends.
+
+### 6. Web Export Roadmap
 * Switch `project.godot` renderer to `gl_compatibility` (WebGL2).
 * Online lobbies already run over WebSocket (`relay_peer.gd`), so a browser build can use them directly. LAN mode stays desktop-only (ENet).
 * Serve with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers for `SharedArrayBuffer`.

@@ -55,7 +55,8 @@ func _exit_tree() -> void:
 	all_enemies.erase(self)
 
 func _apply_wave_scaling() -> void:
-	var wave_num = GameManager.current_wave
+	# Stage 2 continues the curve: its waves scale as Stage 1 wave + STAGE_SCALING_WAVE_OFFSET
+	var wave_num = GameManager.get_scaling_wave()
 	# 1. Every wave: 10% more HP and 5% more DMG compounding
 	var hp_factor = pow(1.10, float(maxi(0, wave_num - 1)))
 	var dmg_factor = pow(1.05, float(maxi(0, wave_num - 1)))

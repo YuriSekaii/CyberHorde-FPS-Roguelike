@@ -11,6 +11,13 @@ const CHARGER_SCENE = preload("res://scenes/enemies/charger.tscn")
 const SPAWNER_ENEMY_SCENE = preload("res://scenes/enemies/spawner.tscn")
 const BOMBER_SCENE = preload("res://scenes/enemies/bomber.tscn")
 const HORNET_SCENE = preload("res://scenes/enemies/hornet.tscn")
+# Stage 2 (Night Jungle) roster
+const SPIDER_SCENE = preload("res://scenes/enemies/spider.tscn")
+const WYVERN_SCENE = preload("res://scenes/enemies/wyvern.tscn")
+const SLIME_SCENE = preload("res://scenes/enemies/slime.tscn")
+const STALKER_SCENE = preload("res://scenes/enemies/stalker.tscn")
+const SPORE_PIT_SCENE = preload("res://scenes/enemies/spore_pit.tscn")
+const BLOOD_GHOUL_SCENE = preload("res://scenes/enemies/blood_ghoul.tscn")
 const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 const SPAWN_INDICATOR_SCENE = preload("res://scenes/world/spawn_indicator.tscn")
 
@@ -20,6 +27,18 @@ const MAX_CONCURRENT_ENEMIES: int = 40
 # Upgraded basic units fully replace their predecessors after these waves
 const BOMBER_AFTER_WAVE: int = 30
 const HORNET_AFTER_WAVE: int = 40
+# Stage 2 unlocks (unit appears from the wave after this one)
+const WYVERN_AFTER_WAVE: int = 5
+const SLIME_AFTER_WAVE: int = 10
+const STALKER_AFTER_WAVE: int = 20
+const SPORE_PIT_AFTER_WAVE: int = 30
+const MAX_SPORE_PITS: int = 2
+const STAGE_TRANSITION_DELAY: float = 10.0
+
+# Enemy type ids: 0=Swarmer, 1=Spitter, 2=Brute, 3=Apex Overlord, 4=Charger, 5=Void Spawner, 6=Bomber, 7=Hornet,
+# 8=Shadow Spider, 9=Venom Wyvern, 10=Bog Slime, 11=Mantis Stalker, 12=Spore Pit, 13=Blood Ghoul
+const TYPE_SPORE_PIT: int = 12
+const TYPE_BLOOD_GHOUL: int = 13
 
 var is_spawner_active: bool = false
 var current_wave: int = 1
@@ -37,6 +56,7 @@ var last_sent_tick: int = -1
 var active_enemies: Array[Node] = []
 var pending_spawns: Array[Dictionary] = []
 var boss_spawned_for_wave: bool = false
+var active_boss: Node = null
 
 func _ready() -> void:
 	GameManager.enemy_killed.connect(_on_enemy_killed)
@@ -49,8 +69,7 @@ func start_spawner() -> void:
 	boss_spawned_for_wave = false
 	_clean_all_indicators()
 	if GameManager.is_boss_battle_mode:
-		current_wave = 50
-		GameManager.current_wave = 50
+		current_wave = GameManager.current_wave
 	else:
 		current_wave = 1
 	# In multiplayer, only server controls wave timers
@@ -186,16 +205,27 @@ func _spawn_one_enemy() -> void:
 	
 	if current_wave >= FINAL_WAVE and not boss_spawned_for_wave:
 		boss_spawned_for_wave = true
-		type_id = 3
-		# Spawn at center of the elevated stage platform (top surface at y = 3.9)
-		spawn_pos = Vector3(0.0, 3.9, 0.0)
 		delay = 4.0
+		if GameManager.current_stage >= 2:
+			# Blood Ghoul starts lurking in the moon shadow under a tree far from the squad
+			type_id = TYPE_BLOOD_GHOUL
+			spawn_pos = _pick_ghoul_spawn(players)
+		else:
+			type_id = 3
+			# Spawn at center of the elevated stage platform (top surface at y = 3.9)
+			spawn_pos = Vector3(0.0, 3.9, 0.0)
 	else:
 		type_id = _select_enemy_type(current_wave)
 		spawn_pos = _find_valid_spawn_pos(ref_player, players)
 		if type_id == 5:
 			# Void Spawner spawns directly in the sky at high altitude
 			spawn_pos.y = 8.5
+		elif type_id == TYPE_SPORE_PIT:
+			# The pit is huge: find a spot with room around it
+			for attempt in range(8):
+				if not _is_spot_blocked(spawn_pos, 3.0):
+					break
+				spawn_pos = _find_valid_spawn_pos(ref_player, players)
 	
 	# Enqueue pending spawn
 	pending_spawns.append({
@@ -205,13 +235,17 @@ func _spawn_one_enemy() -> void:
 		"timer": delay
 	})
 	
-	# Start visual telegraph
+	# Start visual telegraph (the Blood Ghoul arrives unseen)
+	if type_id == TYPE_BLOOD_GHOUL:
+		return
 	if NetworkManager.is_multiplayer:
 		rpc_start_spawn_telegraph.rpc(type_id, spawn_pos, enemy_name, delay)
 	else:
 		_create_spawn_indicator(type_id, spawn_pos, enemy_name, delay)
 
 func _select_enemy_type(wave_num: int) -> int:
+	if GameManager.current_stage >= 2:
+		return _select_stage2_enemy_type(wave_num)
 	# Multiplicative reduction for basic enemies (Swarmer & Spitter):
 	# Each 5 waves, reduce the weight of the first and second basic enemy by 5% multiplicatively (* 0.95^(wave/5)).
 	var wave_factor: int = int(wave_num / 5)
@@ -275,6 +309,59 @@ func _select_enemy_type(wave_num: int) -> int:
 	if roll < w_spitter:
 		return 7 if wave_num > HORNET_AFTER_WAVE else 1 # Photon Hornet / Plasma Spitter
 	return 6 if wave_num > BOMBER_AFTER_WAVE else 0 # Volt Bomber / Cyber Swarmer
+
+## Stage 2 (Night Jungle) roster. Spider & Wyvern weights decay 5% every 5 waves like Stage 1's basic units.
+func _select_stage2_enemy_type(wave_num: int) -> int:
+	var basic_multiplier: float = pow(0.95, float(int(wave_num / 5)))
+	var w_spider: float = 1.0 * basic_multiplier
+	var w_wyvern: float = 0.0
+	var w_slime: float = 0.0
+	var w_stalker: float = 0.0
+	var w_pit: float = 0.0
+	if wave_num > WYVERN_AFTER_WAVE:
+		w_spider = 0.65 * basic_multiplier
+		w_wyvern = 0.35 * basic_multiplier
+	if wave_num > SLIME_AFTER_WAVE:
+		w_spider = 0.5 * basic_multiplier
+		w_wyvern = 0.3 * basic_multiplier
+		w_slime = 0.1
+	if wave_num > STALKER_AFTER_WAVE:
+		w_spider = 0.456 * basic_multiplier
+		w_stalker = 0.05
+	if wave_num > SPORE_PIT_AFTER_WAVE and get_tree().get_nodes_in_group("spore_pits").size() < MAX_SPORE_PITS:
+		w_pit = 0.004
+
+	var roll: float = randf() * (w_spider + w_wyvern + w_slime + w_stalker + w_pit)
+	if roll < w_pit:
+		return TYPE_SPORE_PIT
+	roll -= w_pit
+	if roll < w_stalker:
+		return 11 # Mantis Stalker
+	roll -= w_stalker
+	if roll < w_slime:
+		return 10 # Bog Slime
+	roll -= w_slime
+	if roll < w_wyvern:
+		return 9 # Venom Wyvern
+	return 8 # Shadow Spider
+
+## Blood Ghoul spawn: the jungle hide spot farthest from the squad
+func _pick_ghoul_spawn(players: Array) -> Vector3:
+	var arena = get_tree().get_first_node_in_group("jungle_arena")
+	if arena == null:
+		return Vector3(0.0, 0.5, -30.0)
+	var best = Vector3(0.0, 0.5, -30.0)
+	var best_d = -1.0
+	for spot in arena.get_hide_spots():
+		var min_d = INF
+		for p in players:
+			if is_instance_valid(p):
+				min_d = minf(min_d, spot.distance_to(p.global_position))
+		if min_d > best_d:
+			best_d = min_d
+			best = spot
+	best.y = 0.5
+	return best
 
 func _find_valid_spawn_pos(ref_player: CharacterBody3D, players: Array) -> Vector3:
 	var best_pos = Vector3.ZERO
@@ -369,8 +456,22 @@ func _instantiate_enemy(type_id: int, spawn_pos: Vector3, net_name: String) -> v
 		enemy_scene = BOMBER_SCENE
 	elif type_id == 7:
 		enemy_scene = HORNET_SCENE
-	
+	elif type_id == 8:
+		enemy_scene = SPIDER_SCENE
+	elif type_id == 9:
+		enemy_scene = WYVERN_SCENE
+	elif type_id == 10:
+		enemy_scene = SLIME_SCENE
+	elif type_id == 11:
+		enemy_scene = STALKER_SCENE
+	elif type_id == TYPE_SPORE_PIT:
+		enemy_scene = SPORE_PIT_SCENE
+	elif type_id == TYPE_BLOOD_GHOUL:
+		enemy_scene = BLOOD_GHOUL_SCENE
+		
 	var enemy = enemy_scene.instantiate()
+	if type_id == 3 or type_id == TYPE_BLOOD_GHOUL:
+		active_boss = enemy
 	enemy.name = net_name
 	enemy.position = spawn_pos
 	get_parent().add_child(enemy)
@@ -433,6 +534,9 @@ func _on_enemy_killed(_type: String) -> void:
 func _on_boss_defeated() -> void:
 	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
 		return
+	# GameManager.reset_game() also emits boss_defeated (to hide the boss bar): ignore it while the boss still lives
+	if is_instance_valid(active_boss) and active_boss.get("is_dead") != true:
+		return
 	if current_wave >= FINAL_WAVE and is_wave_active:
 		# Overlord reactor meltdown clears remaining horde units & completes final wave
 		enemies_left_to_spawn = 0
@@ -473,8 +577,16 @@ func _complete_wave() -> void:
 	GameManager.add_scrap(int((30 + current_wave * 10) * fever_mult))
 	GameManager.add_xp(int((40 + current_wave * 15) * fever_mult))
 	
-	# Wave 50 Final Wave Victory
+	# Wave 50 boss slain: advance to the next stage at Wave 1, or win after the final stage
 	if current_wave >= FINAL_WAVE:
+		if GameManager.current_stage < GameManager.FINAL_STAGE:
+			var next_stage = GameManager.current_stage + 1
+			if NetworkManager.is_multiplayer:
+				rpc_advance_stage.rpc(next_stage)
+			else:
+				_apply_stage(next_stage)
+			start_intermission(STAGE_TRANSITION_DELAY)
+			return
 		if NetworkManager.is_multiplayer:
 			rpc_trigger_victory.rpc()
 		else:
@@ -488,6 +600,19 @@ func _complete_wave() -> void:
 # ==============================================================================
 # SPAWNER MULTIPLAYER RPCS
 # ==============================================================================
+
+## Switches every peer to the next stage: Wave 1 of a new arena (main.gd swaps the arena on stage_changed)
+func _apply_stage(stage: int) -> void:
+	current_wave = 1
+	GameManager.current_wave = 1
+	boss_spawned_for_wave = false
+	pending_spawns.clear()
+	_clean_all_indicators()
+	GameManager.set_stage(stage)
+
+@rpc("call_local", "reliable")
+func rpc_advance_stage(stage: int) -> void:
+	_apply_stage(stage)
 
 @rpc("call_local", "reliable")
 func rpc_trigger_victory() -> void:

@@ -17,6 +17,8 @@ var explosion_radius: float = 4.5
 var explosion_damage: float = -1.0
 var has_exploded: bool = false
 var pin_on_ground: bool = false
+## Venom (Stage 2 Venom Wyvern): >0 poisons the player on a direct hit
+var poison_dps: float = 0.0
 
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
@@ -103,7 +105,9 @@ func _on_body_entered(body: Node3D) -> void:
 	
 	if body.is_in_group("player"):
 		if body.has_method("take_damage"):
-			body.take_damage(damage)
+			var landed = body.take_damage(damage)
+			if landed and poison_dps > 0.0 and body.has_method("apply_poison"):
+				body.apply_poison(poison_dps)
 		queue_free()
 	else:
 		# Hit wall / floor

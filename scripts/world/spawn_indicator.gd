@@ -96,6 +96,26 @@ func _apply_theme() -> void:
 			type_name = "Hornet"
 			theme_color = Color(0.45, 1.0, 0.15, 1.0)
 			base_radius = 1.5
+		8: # Shadow Spider
+			type_name = "Spider"
+			theme_color = Color(0.85, 0.05, 0.05, 1.0)
+			base_radius = 1.3
+		9: # Venom Wyvern
+			type_name = "Wyvern"
+			theme_color = Color(0.4, 1.0, 0.15, 1.0)
+			base_radius = 1.5
+		10: # Bog Slime
+			type_name = "Slime"
+			theme_color = Color(0.3, 0.9, 0.2, 1.0)
+			base_radius = 1.8
+		11: # Mantis Stalker
+			type_name = "Stalker"
+			theme_color = Color(0.85, 0.5, 0.2, 1.0)
+			base_radius = 1.6
+		12: # Spore Pit
+			type_name = "Spore Pit"
+			theme_color = Color(0.75, 1.0, 0.2, 1.0)
+			base_radius = 3.4
 		_:
 			type_name = "Enemy"
 			theme_color = Color(1.0, 0.4, 0.1, 1.0)

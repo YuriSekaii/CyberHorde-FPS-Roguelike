@@ -105,6 +105,27 @@ var slayer_timer: float:
 	set(v): gunner_timer = v
 
 # Head Bobbing & Shake
+# Stage 2 status effects (processed on the local player only)
+const POISON_DURATION: float = 3.0
+const POISON_SLOW: float = 0.25
+const BLEED_DURATION: float = 3.0
+const BLEED_RATE_IDLE: float = 0.01 # Fraction of Max HP lost per second
+const BLEED_RATE_MOVING: float = 0.05
+const TRAP_IMMUNITY_DURATION: float = 3.0
+const TRAP_PRESS_REDUCTION: float = 0.25 # Seconds removed from a timed trap per A/D press
+const REMOTE_TRAP_HOLD: float = 2.0 # Remote copies can't read their owner's key presses, so they free themselves after this
+var poison_timer: float = 0.0
+var poison_dps: float = 0.0
+var bleed_timer: float = 0.0
+var is_trapped: bool = false
+var trap_timer: float = 0.0 # Remaining hold time (INF for press-only traps)
+var trap_max_time: float = 0.0
+var trap_dps: float = 0.0
+var trap_source: Node = null
+var trap_presses_needed: int = 0 # >0: escape after this many presses instead of on a timer
+var trap_presses_done: int = 0
+var trap_immunity_timer: float = 0.0
+
 var bob_time: float = 0.0
 var shake_intensity: float = 0.0
 
@@ -469,6 +490,8 @@ func _physics_process(delta: float) -> void:
 		if total_medic_regen > 0.0:
 			heal(max_health * total_medic_regen * delta)
 	
+	_process_status_effects(delta)
+
 	# Remote player interpolation
 	if not is_local_player:
 		global_position = global_position.lerp(target_net_pos, 18.0 * delta)
@@ -534,7 +557,9 @@ func _handle_movement(delta: float) -> void:
 	# Check Class Active Skill activation (Skill: Q)
 	if not is_downed:
 		if Input.is_action_just_pressed("skill_dash") or Input.is_action_just_pressed("skill_active"):
-			if skill_ready and skill_cooldown_timer <= 0.0 and not is_dashing and not is_slayer_active:
+			if is_trapped and player_class == "rogue":
+				SoundManager.play("empty_ammo", 0.1, -6.0) # Quantum Dash can't break a trap
+			elif skill_ready and skill_cooldown_timer <= 0.0 and not is_dashing and not is_slayer_active:
 				_activate_class_skill()
 				return
 			elif not is_dashing and not is_slayer_active:
@@ -551,6 +576,13 @@ func _handle_movement(delta: float) -> void:
 	if jump_buffer_timer > 0.0:
 		jump_buffer_timer -= delta
 	
+	if is_trapped:
+		jump_buffer_timer = 0.0
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		return
+
 	if jump_buffer_timer > 0.0 and coyote_timer > 0.0:
 		var jump_spd = JUMP_VELOCITY * (1.0 + (GameManager.speed_mult - 1.0) * 0.5)
 		if player_class == "rogue":
@@ -571,7 +603,9 @@ func _handle_movement(delta: float) -> void:
 		target_speed *= 1.25 # Rogue Passive: +25% MORE movement speed
 	if is_sprinting:
 		target_speed *= SPRINT_MULTIPLIER
-	
+	if poison_timer > 0.0:
+		target_speed *= (1.0 - POISON_SLOW)
+
 	if wish_dir.length_squared() > 0.01:
 		velocity.x = lerpf(velocity.x, wish_dir.x * target_speed, 14.0 * delta)
 		velocity.z = lerpf(velocity.z, wish_dir.z * target_speed, 14.0 * delta)
@@ -934,16 +968,18 @@ func trigger_invulnerability(duration: float) -> void:
 	is_invulnerable = true
 	invulnerable_timer = maxf(invulnerable_timer, duration)
 
-func take_damage(amount: float) -> void:
+## Returns true when the damage landed (not blocked by invulnerability / dash / Null Barrier).
+## is_dot: damage-over-time ticks (poison, slime trap) skip Null Barrier, the fever hit penalty, hit feedback and Phase-Shield.
+func take_damage(amount: float, is_dot: bool = false) -> bool:
 	if is_invulnerable or is_dashing:
-		return
-	
+		return false
+
 	# Gunner Passive: take 10% more damage from all sources
 	if player_class == "gunner" or player_class == "slayer":
 		amount *= 1.10
-	
+
 	# Epic perk: Null Barrier (Every 10s, nullifies next instance of damage)
-	if GameManager.null_barrier_unlocked and null_barrier_ready:
+	if not is_dot and GameManager.null_barrier_unlocked and null_barrier_ready:
 		null_barrier_ready = false
 		null_barrier_timer = 10.0
 		SoundManager.play("shield_hit", 0.15, 1.8)
@@ -960,10 +996,10 @@ func take_damage(amount: float) -> void:
 		# (This still triggers invulnerability duration perk)
 		if GameManager.hit_invulnerability_duration > 0.0:
 			trigger_invulnerability(GameManager.hit_invulnerability_duration)
-		return
-	
+		return false
+
 	# Fever penalty: every hit that lands drains squad fever duration
-	if is_local_player and not is_downed:
+	if not is_dot and is_local_player and not is_downed:
 		GameManager.report_fever_hit()
 	
 	# Rare perk: Hardened Alloy (10% Dmg Reduction per stack, max 50%)
@@ -971,35 +1007,175 @@ func take_damage(amount: float) -> void:
 		amount *= (1.0 - GameManager.player_damage_reduction)
 	
 	shield_regen_timer = 0.0
-	shake_intensity = 0.25
-	
+	if not is_dot:
+		shake_intensity = 0.25
+
 	if current_shield > 0.0:
 		var absorbed = minf(current_shield, amount)
 		current_shield -= absorbed
 		amount -= absorbed
-		SoundManager.play("shield_hit", 0.1)
+		if not is_dot:
+			SoundManager.play("shield_hit", 0.1)
 		shield_changed.emit(current_shield, GameManager.shield_max)
-	
+
 	if amount > 0.0:
 		current_health -= amount
-		SoundManager.play("player_hurt", 0.1)
+		if not is_dot:
+			SoundManager.play("player_hurt", 0.1)
 		health_changed.emit(current_health, max_health)
-	
-	# Update overhead tag
-	if status_label:
-		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
-	
-	if current_health <= 0:
-		if GameManager.second_wind_available:
-			_trigger_second_wind()
-		elif NetworkManager.is_multiplayer and not is_downed:
-			rpc_set_downed.rpc(true)
-		else:
-			die()
-	else:
+
+	if not _check_fatal_damage() and not is_dot:
 		# Survived hit: check Epic perk Reactive Phase-Shield (0.25s invulnerability, 1 stack max)
 		if GameManager.hit_invulnerability_duration > 0.0:
 			trigger_invulnerability(GameManager.hit_invulnerability_duration)
+	return true
+
+## Bleed: drains HP directly, bypassing shield and damage reduction
+func _lose_health_direct(amount: float) -> void:
+	if is_invulnerable or is_dashing or is_downed or amount <= 0.0:
+		return
+	current_health -= amount
+	health_changed.emit(current_health, max_health)
+	_check_fatal_damage()
+
+## Updates the overhead tag and resolves lethal damage (Second Wind / downed / death). Returns true if the hit was lethal.
+func _check_fatal_damage() -> bool:
+	if status_label:
+		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
+	if current_health > 0:
+		return false
+	clear_status_effects()
+	if GameManager.second_wind_available:
+		_trigger_second_wind()
+	elif NetworkManager.is_multiplayer and not is_downed:
+		rpc_set_downed.rpc(true)
+	else:
+		die()
+	return true
+
+# ==============================================================================
+# STAGE 2 STATUS EFFECTS: POISON, BLEED, TRAPS
+# ==============================================================================
+
+## Venom: 25% slow + damage-over-time for 3s. Does not stack; a new dose refreshes the duration (keeping the stronger tick).
+func apply_poison(dps: float) -> void:
+	if is_downed:
+		return
+	poison_dps = dps if poison_timer <= 0.0 else maxf(poison_dps, dps)
+	poison_timer = POISON_DURATION
+
+## Bleed: lose 1% Max HP/s (5% while moving) for 3s, straight to HP. Refreshes on reapply.
+func apply_bleed() -> void:
+	if is_downed:
+		return
+	bleed_timer = BLEED_DURATION
+
+## Traps the player in place. duration: hold time (INF = until escaped), dps: damage-over-time while held,
+## presses_needed: >0 escapes after that many A/D presses, otherwise each press shaves TRAP_PRESS_REDUCTION off the timer.
+## Returns false if the player can't be trapped right now (already trapped, post-escape immunity, invulnerable, downed).
+func apply_trap(source: Node, duration: float, dps: float, presses_needed: int = 0) -> bool:
+	if is_trapped or trap_immunity_timer > 0.0 or is_invulnerable or is_dashing or is_downed:
+		return false
+	is_trapped = true
+	trap_source = source
+	trap_timer = duration
+	trap_max_time = duration
+	trap_dps = dps
+	trap_presses_needed = presses_needed
+	trap_presses_done = 0
+	velocity = Vector3.ZERO
+	if is_charging:
+		_cancel_charge()
+	shake_intensity = 0.3
+	SoundManager.play("player_hurt", 0.1, 1.0)
+	return true
+
+## Ends the current trap. escaped = freed by mashing / timer (grants trap immunity); false when cancelled (source died, downed).
+func release_trap(escaped: bool = true) -> void:
+	if not is_trapped:
+		return
+	is_trapped = false
+	var src = trap_source
+	trap_source = null
+	trap_timer = 0.0
+	trap_dps = 0.0
+	trap_presses_needed = 0
+	trap_presses_done = 0
+	trap_immunity_timer = TRAP_IMMUNITY_DURATION
+	if escaped and is_local_player:
+		SoundManager.play("dash", 0.1, -4.0)
+	if is_instance_valid(src) and src.has_method("on_trap_released"):
+		src.on_trap_released(self, escaped)
+
+## 0..1 escape progress shown on the HUD
+func get_trap_progress() -> float:
+	if not is_trapped:
+		return 0.0
+	if trap_presses_needed > 0:
+		return float(trap_presses_done) / float(trap_presses_needed)
+	if trap_max_time <= 0.0 or is_inf(trap_max_time):
+		return 0.0
+	return clampf(1.0 - trap_timer / trap_max_time, 0.0, 1.0)
+
+func clear_status_effects() -> void:
+	poison_timer = 0.0
+	poison_dps = 0.0
+	bleed_timer = 0.0
+	if is_trapped:
+		release_trap(false)
+
+func _process_status_effects(delta: float) -> void:
+	if trap_immunity_timer > 0.0:
+		trap_immunity_timer = maxf(0.0, trap_immunity_timer - delta)
+	if is_downed:
+		if is_trapped or poison_timer > 0.0 or bleed_timer > 0.0:
+			clear_status_effects()
+		return
+
+	if is_trapped:
+		var src_alive = is_instance_valid(trap_source) and not trap_source.is_queued_for_deletion() and trap_source.get("is_dead") != true
+		if not src_alive:
+			release_trap(false)
+		elif not is_local_player:
+			# Remote copy: its owner mashes on their own machine, so just hold briefly then let go
+			trap_timer = minf(trap_timer, REMOTE_TRAP_HOLD) - delta
+			if trap_timer <= 0.0:
+				release_trap(true)
+		else:
+			if Input.is_action_just_pressed("move_left") or Input.is_action_just_pressed("move_right"):
+				if trap_presses_needed > 0:
+					trap_presses_done += 1
+				else:
+					trap_timer -= TRAP_PRESS_REDUCTION
+				SoundManager.play("empty_ammo", 0.2, -8.0)
+			if trap_dps > 0.0:
+				take_damage(trap_dps * delta, true)
+			if is_trapped:
+				if not is_inf(trap_timer):
+					trap_timer -= delta
+				if (trap_presses_needed > 0 and trap_presses_done >= trap_presses_needed) or trap_timer <= 0.0:
+					release_trap(true)
+
+	if not is_local_player:
+		return
+
+	if poison_timer > 0.0:
+		poison_timer = maxf(0.0, poison_timer - delta)
+		take_damage(poison_dps * delta, true)
+
+	if bleed_timer > 0.0:
+		bleed_timer = maxf(0.0, bleed_timer - delta)
+		var moving = not is_trapped and Vector2(velocity.x, velocity.z).length() > 1.0
+		_lose_health_direct(max_health * (BLEED_RATE_MOVING if moving else BLEED_RATE_IDLE) * delta)
+
+## Look direction from yaw + head pitch (remote copies use the synced pitch)
+func get_look_direction() -> Vector3:
+	var pitch = head.rotation.x if is_local_player else target_net_head_pitch
+	var yaw = rotation.y
+	return Vector3(-sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch)).normalized()
+
+func get_eye_position() -> Vector3:
+	return head.global_position if head else global_position + Vector3(0, 1.6, 0)
 
 func _trigger_second_wind() -> void:
 	GameManager.trigger_second_wind()
@@ -1087,6 +1263,8 @@ func rpc_set_downed(downed: bool) -> void:
 		medic_timer = 0.0
 	is_downed = downed
 	bleedout_timer = 30.0
+	if downed:
+		clear_status_effects()
 	downed_state_changed.emit(downed)
 	
 	if downed_beacon:

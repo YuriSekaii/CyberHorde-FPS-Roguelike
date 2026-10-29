@@ -1,0 +1,225 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/spider.gd" id="1_script"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_shape_1"]
+radius = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_chitin_2"]
+albedo_color = Color(0.02, 0.018, 0.022, 1)
+metallic = 0.3
+roughness = 0.45
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye_3"]
+albedo_color = Color(1, 0.05, 0.03, 1)
+metallic = 0
+roughness = 0.3
+emission_enabled = true
+emission = Color(1, 0.04, 0.02, 1)
+emission_energy_multiplier = 5
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_4"]
+material = SubResource("StandardMaterial3D_chitin_2")
+radius = 0.42
+height = 0.84
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_5"]
+material = SubResource("StandardMaterial3D_chitin_2")
+radius = 0.28
+height = 0.56
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_6"]
+material = SubResource("StandardMaterial3D_chitin_2")
+radius = 0.17
+height = 0.34
+radial_segments = 16
+rings = 8
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_7"]
+material = SubResource("StandardMaterial3D_chitin_2")
+left_to_right = 0.5
+size = Vector3(0.05, 0.16, 0.05)
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_8"]
+material = SubResource("StandardMaterial3D_eye_3")
+radius = 0.055
+height = 0.11
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_9"]
+material = SubResource("StandardMaterial3D_eye_3")
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_10"]
+material = SubResource("StandardMaterial3D_chitin_2")
+size = Vector3(0.55, 0.05, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_11"]
+material = SubResource("StandardMaterial3D_chitin_2")
+size = Vector3(0.78, 0.04, 0.04)
+
+[node name="ShadowSpider" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 5
+enemy_name = "Shadow Spider"
+max_health = 40
+speed = 6
+attack_damage = 8
+xp_reward = 15
+scrap_reward = 10
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("SphereShape3D_shape_1")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+
+[node name="Abdomen" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.8, 0, 0, 0, 1.25, 0, 0.12, 0.4)
+mesh = SubResource("SphereMesh_sphere_4")
+
+[node name="Thorax" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.1)
+mesh = SubResource("SphereMesh_sphere_5")
+
+[node name="Head" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.38)
+mesh = SubResource("SphereMesh_sphere_6")
+
+[node name="FangL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, -0.06, -0.1, -0.5)
+mesh = SubResource("PrismMesh_prism_7")
+
+[node name="FangR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0.06, -0.1, -0.5)
+mesh = SubResource("PrismMesh_prism_7")
+
+[node name="Eye0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.1, -0.52)
+mesh = SubResource("SphereMesh_sphere_8")
+cast_shadow = 0
+
+[node name="Eye1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0.1, -0.52)
+mesh = SubResource("SphereMesh_sphere_8")
+cast_shadow = 0
+
+[node name="Eye2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.07, -0.47)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Eye3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 0.07, -0.47)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Eye4" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.17, -0.49)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Eye5" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 0.17, -0.49)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Legs" type="Node3D" parent="MeshRoot"]
+
+[node name="LegL0" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.766044, 0, -0.642788, 0, 1, 0, 0.642788, 0, 0.766044, -0.18, 0, -0.26)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegL0"]
+transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, -0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegL0"]
+transform = Transform3D(0.353475, -0.935444, 0, 0.935444, 0.353475, 0, 0, 0, 1, -0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegL1" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.973179, 0, -0.23005, 0, 1, 0, 0.23005, 0, 0.973179, -0.18, 0, -0.13)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegL1"]
+transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, -0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegL1"]
+transform = Transform3D(0.353475, -0.935444, 0, 0.935444, 0.353475, 0, 0, 0, 1, -0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegL2" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.972776, 0, 0.231748, 0, 1, 0, -0.231748, 0, 0.972776, -0.18, 0, 0)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegL2"]
+transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, -0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegL2"]
+transform = Transform3D(0.353475, -0.935444, 0, 0.935444, 0.353475, 0, 0, 0, 1, -0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegL3" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.764921, 0, 0.644124, 0, 1, 0, -0.644124, 0, 0.764921, -0.18, 0, 0.13)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegL3"]
+transform = Transform3D(0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 0, 0, 1, -0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegL3"]
+transform = Transform3D(0.353475, -0.935444, 0, 0.935444, 0.353475, 0, 0, 0, 1, -0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegR0" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.766044, 0, 0.642788, 0, 1, 0, -0.642788, 0, 0.766044, 0.18, 0, -0.26)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegR0"]
+transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, 0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegR0"]
+transform = Transform3D(0.353475, 0.935444, 0, -0.935444, 0.353475, 0, 0, 0, 1, 0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegR1" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.973179, 0, 0.23005, 0, 1, 0, -0.23005, 0, 0.973179, 0.18, 0, -0.13)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegR1"]
+transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, 0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegR1"]
+transform = Transform3D(0.353475, 0.935444, 0, -0.935444, 0.353475, 0, 0, 0, 1, 0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegR2" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.972776, 0, -0.231748, 0, 1, 0, 0.231748, 0, 0.972776, 0.18, 0, 0)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegR2"]
+transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, 0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegR2"]
+transform = Transform3D(0.353475, 0.935444, 0, -0.935444, 0.353475, 0, 0, 0, 1, 0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="LegR3" type="Node3D" parent="MeshRoot/Legs"]
+transform = Transform3D(0.764921, 0, -0.644124, 0, 1, 0, 0.644124, 0, 0.764921, 0.18, 0, 0.13)
+
+[node name="Femur" type="MeshInstance3D" parent="MeshRoot/Legs/LegR3"]
+transform = Transform3D(0.819152, -0.573576, 0, 0.573576, 0.819152, 0, 0, 0, 1, 0.225, 0.158, 0)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Tibia" type="MeshInstance3D" parent="MeshRoot/Legs/LegR3"]
+transform = Transform3D(0.353475, 0.935444, 0, -0.935444, 0.353475, 0, 0, 0, 1, 0.585, -0.043, 0)
+mesh = SubResource("BoxMesh_box_11")

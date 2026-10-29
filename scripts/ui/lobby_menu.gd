@@ -38,6 +38,13 @@ var pending_class_target: ClassSelectTarget = ClassSelectTarget.SOLO
 @onready var boss_status_label: Label = $Panel/VBoxContainer/BossContainer/KeyStatusLabel
 
 const BOSS_BATTLE_KEY: String = "HereComeTheChallenger"
+# Boss Battle test targets (GameManager.boss_battle_target)
+const BOSS_TARGET_LABELS: Array[String] = [
+	"Stage 1 · Wave 50 — Apex Overlord",
+	"Stage 2 · Wave 50 — Blood Ghoul (Blood Moon)",
+	"Stage 2 · Wave 1 — Nightfall Jungle",
+]
+var boss_target_select: OptionButton = null
 
 # true while the host/join panels are driving an online (lobby code) session instead of LAN
 var online_mode: bool = false
@@ -327,7 +334,24 @@ func _on_back_pressed() -> void:
 	GameManager.reset_game()
 	_show_main_view()
 
+## Target selector added above the deploy buttons
+func _ensure_boss_target_select() -> void:
+	if boss_target_select:
+		return
+	boss_target_select = OptionButton.new()
+	boss_target_select.name = "BossTargetSelect"
+	boss_target_select.custom_minimum_size = Vector2(0, 36)
+	for i in range(BOSS_TARGET_LABELS.size()):
+		boss_target_select.add_item(BOSS_TARGET_LABELS[i], i + 1)
+	boss_target_select.select(clampi(GameManager.boss_battle_target - 1, 0, BOSS_TARGET_LABELS.size() - 1))
+	boss_target_select.item_selected.connect(func(idx: int): GameManager.boss_battle_target = boss_target_select.get_item_id(idx))
+	boss_container.add_child(boss_target_select)
+	var deploy_btn = boss_container.get_node_or_null("DeployBossSoloBtn")
+	if deploy_btn:
+		boss_container.move_child(boss_target_select, deploy_btn.get_index())
+
 func _on_boss_menu_pressed() -> void:
+	_ensure_boss_target_select()
 	main_buttons.visible = false
 	host_container.visible = false
 	join_container.visible = false
@@ -348,7 +372,7 @@ func _on_boss_key_submitted(_new_text: String) -> void:
 func _on_deploy_boss_solo_pressed() -> void:
 	if _validate_boss_key():
 		boss_status_label.set("theme_override_colors/font_color", Color(0.2, 1.0, 0.5))
-		boss_status_label.text = "✓ ACCESS GRANTED! PREPARING APEX OVERLORD BATTLE..."
+		boss_status_label.text = "✓ ACCESS GRANTED! DEPLOYING: %s" % BOSS_TARGET_LABELS[clampi(GameManager.boss_battle_target - 1, 0, BOSS_TARGET_LABELS.size() - 1)].to_upper()
 		SoundManager.play("level_up", 0.2, 0.0)
 		_show_class_select(ClassSelectTarget.BOSS_SOLO)
 	else:

@@ -7,8 +7,15 @@ extends Node3D
 @onready var players_container: Node3D = $Players
 
 const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
+# Stage 1 = Day cyber arena, Stage 2 = Night jungle
+const STAGE_ARENAS: Dictionary = {
+	1: preload("res://scenes/world/arena.tscn"),
+	2: preload("res://scenes/world/jungle_arena.tscn"),
+}
+const SQUAD_SPAWN_OFFSETS: Array[Vector3] = [Vector3(-2.5, 0, 0), Vector3(2.5, 0, 0), Vector3(0, 0, -2.5), Vector3(0, 0, 2.5)]
 
 var is_mission_active: bool = false
+var arena_stage: int = 1
 
 func _ready() -> void:
 	if lobby_menu:
@@ -16,19 +23,20 @@ func _ready() -> void:
 	
 	NetworkManager.peer_connected_signal.connect(_on_peer_connected)
 	NetworkManager.peer_disconnected_signal.connect(_on_peer_disconnected)
+	GameManager.stage_changed.connect(_on_stage_changed)
 
 func _on_lobby_mission_started() -> void:
 	if NetworkManager.is_multiplayer:
 		if NetworkManager.is_server:
 			# Server tells all peers to start the mission together
-			rpc_start_mission.rpc(NetworkManager.connected_peers, GameManager.is_boss_battle_mode, NetworkManager.get_all_classes())
+			rpc_start_mission.rpc(NetworkManager.connected_peers, GameManager.is_boss_battle_mode, NetworkManager.get_all_classes(), GameManager.boss_battle_target)
 	else:
 		_start_mission_local([1], {1: GameManager.player_class})
 
 @rpc("call_local", "reliable")
-func rpc_start_mission(peer_ids: Array, is_boss_mode: bool = false, classes_dict: Dictionary = {}) -> void:
+func rpc_start_mission(peer_ids: Array, is_boss_mode: bool = false, classes_dict: Dictionary = {}, boss_target: int = 1) -> void:
 	if is_boss_mode:
-		GameManager.setup_boss_battle_mode()
+		GameManager.setup_boss_battle_mode(boss_target)
 	_start_mission_local(peer_ids, classes_dict)
 
 func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}) -> void:
@@ -38,6 +46,8 @@ func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}) -> voi
 		lobby_menu.visible = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
+	_load_stage_arena(GameManager.current_stage)
+
 	# Cleanly remove any old nodes immediately from the tree
 	for child in players_container.get_children():
 		players_container.remove_child(child)
@@ -54,6 +64,34 @@ func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}) -> voi
 		hud.connect_spawner(spawner)
 	if spawner:
 		spawner.start_spawner()
+
+## Swaps in the arena for the given stage (the old arena leaves the tree first so its navmesh/geometry never mix in)
+func _load_stage_arena(stage: int) -> void:
+	if stage == arena_stage and is_instance_valid(arena):
+		return
+	var scene: PackedScene = STAGE_ARENAS.get(stage, STAGE_ARENAS[1])
+	var idx = arena.get_index() if is_instance_valid(arena) else 0
+	if is_instance_valid(arena):
+		remove_child(arena)
+		arena.queue_free()
+	var new_arena = scene.instantiate()
+	new_arena.name = "Arena"
+	add_child(new_arena)
+	move_child(new_arena, idx)
+	arena = new_arena
+	arena_stage = stage
+
+func _on_stage_changed(stage: int) -> void:
+	if not is_mission_active:
+		return
+	_load_stage_arena(stage)
+	# Regroup the squad in the open center of the new arena
+	var i = 0
+	for p in players_container.get_children():
+		if p is CharacterBody3D and p.get("is_local_player") == true:
+			p.velocity = Vector3.ZERO
+			p.global_position = SQUAD_SPAWN_OFFSETS[i % SQUAD_SPAWN_OFFSETS.size()] + Vector3(0, 1.0, 0)
+		i += 1
 
 func _instantiate_player(id: int, spawn_pos: Vector3, p_class: String = "") -> CharacterBody3D:
 	var node_name = "Player_%d" % id

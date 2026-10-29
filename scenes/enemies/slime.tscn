@@ -1,0 +1,126 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="1_script"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_shape_1"]
+radius = 0.85
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_goo_2"]
+transparency = 1
+albedo_color = Color(0.22, 0.7, 0.18, 0.55)
+metallic = 0
+roughness = 0.12
+emission_enabled = true
+emission = Color(0.08, 0.3, 0.04, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_core_3"]
+albedo_color = Color(0.04, 0.16, 0.03, 1)
+metallic = 0
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.05, 0.2, 0.02, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye_4"]
+albedo_color = Color(0.01, 0.02, 0.01, 1)
+metallic = 0
+roughness = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bubble_5"]
+transparency = 1
+albedo_color = Color(0.5, 0.95, 0.4, 0.6)
+metallic = 0
+roughness = 0.05
+emission_enabled = true
+emission = Color(0.2, 0.5, 0.1, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_6"]
+material = SubResource("StandardMaterial3D_core_3")
+radius = 0.42
+height = 0.84
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_7"]
+material = SubResource("StandardMaterial3D_eye_4")
+radius = 0.1
+height = 0.2
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_8"]
+material = SubResource("StandardMaterial3D_eye_4")
+radius = 0.1
+height = 0.2
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_9"]
+material = SubResource("StandardMaterial3D_bubble_5")
+radius = 0.09
+height = 0.18
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_10"]
+material = SubResource("StandardMaterial3D_goo_2")
+radius = 1
+height = 1.6
+radial_segments = 24
+rings = 12
+
+[node name="BogSlime" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 5
+enemy_name = "Bog Slime"
+max_health = 300
+speed = 3
+attack_damage = 10
+xp_reward = 60
+scrap_reward = 40
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("SphereShape3D_shape_1")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Core" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0.05)
+mesh = SubResource("SphereMesh_sphere_6")
+
+[node name="EyeL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 1, -0.7)
+mesh = SubResource("SphereMesh_sphere_7")
+
+[node name="EyeR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1, -0.7)
+mesh = SubResource("SphereMesh_sphere_8")
+
+[node name="Bubble0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.2, 0.2)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Bubble1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.6, 0.3)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Bubble2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.4, -0.5)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Bubble3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.3, -0.2)
+mesh = SubResource("SphereMesh_sphere_9")
+cast_shadow = 0
+
+[node name="Body" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("SphereMesh_sphere_10")
+cast_shadow = 0

@@ -1,0 +1,252 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/stalker.gd" id="1_script"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_shape_1"]
+radius = 0.5
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell_2"]
+albedo_color = Color(0.32, 0.2, 0.1, 1)
+metallic = 0.25
+roughness = 0.45
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_under_3"]
+albedo_color = Color(0.14, 0.085, 0.05, 1)
+metallic = 0
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bone_4"]
+albedo_color = Color(0.55, 0.42, 0.28, 1)
+metallic = 0.1
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye_5"]
+albedo_color = Color(1, 0.45, 0.1, 1)
+metallic = 0
+roughness = 0.3
+emission_enabled = true
+emission = Color(1, 0.4, 0.05, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_6"]
+material = SubResource("StandardMaterial3D_under_3")
+radius = 0.35
+height = 0.7
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_7"]
+material = SubResource("StandardMaterial3D_shell_2")
+radius = 0.32
+height = 0.64
+radial_segments = 16
+rings = 8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule_8"]
+material = SubResource("StandardMaterial3D_shell_2")
+radius = 0.28
+height = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_9"]
+material = SubResource("StandardMaterial3D_shell_2")
+size = Vector3(0.34, 0.3, 0.44)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_10"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.08, 0.45, 0.06)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_11"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.05, 0.2, 0.05)
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_12"]
+material = SubResource("StandardMaterial3D_eye_5")
+radius = 0.06
+height = 0.12
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_13"]
+material = SubResource("StandardMaterial3D_bone_4")
+size = Vector3(0.1, 1.4, 0.035)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_14"]
+material = SubResource("StandardMaterial3D_shell_2")
+size = Vector3(0.16, 0.62, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_15"]
+material = SubResource("StandardMaterial3D_under_3")
+size = Vector3(0.11, 0.72, 0.11)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_16"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.12, 0.3, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_17"]
+material = SubResource("StandardMaterial3D_shell_2")
+size = Vector3(0.11, 0.6, 0.11)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_18"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.15
+size = Vector3(0.05, 1.25, 0.26)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_19"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.08, 0.45, 0.06)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_20"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.05, 0.2, 0.05)
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_21"]
+material = SubResource("StandardMaterial3D_eye_5")
+radius = 0.06
+height = 0.12
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_22"]
+material = SubResource("StandardMaterial3D_bone_4")
+size = Vector3(0.1, 1.4, 0.035)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_23"]
+material = SubResource("StandardMaterial3D_shell_2")
+size = Vector3(0.16, 0.62, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_24"]
+material = SubResource("StandardMaterial3D_under_3")
+size = Vector3(0.11, 0.72, 0.11)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_25"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.5
+size = Vector3(0.12, 0.3, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_26"]
+material = SubResource("StandardMaterial3D_shell_2")
+size = Vector3(0.11, 0.6, 0.11)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_27"]
+material = SubResource("StandardMaterial3D_bone_4")
+left_to_right = 0.15
+size = Vector3(0.05, 1.25, 0.26)
+
+[node name="MantisStalker" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 5
+enemy_name = "Mantis Stalker"
+max_health = 400
+speed = 15
+attack_damage = 40
+xp_reward = 90
+scrap_reward = 60
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_shape_1")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Abdomen" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.751754, -0.547232, 0, 0.273616, 1.503508, 0, 1.05, 0.45)
+mesh = SubResource("SphereMesh_sphere_6")
+
+[node name="AbdomenPlate" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.05, 0, 0, 0, 0.563816, -0.530131, 0, 0.205212, 1.456524, 0, 1.15, 0.45)
+mesh = SubResource("SphereMesh_sphere_7")
+
+[node name="Thorax" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 1.45, -0.05)
+mesh = SubResource("CapsuleMesh_capsule_8")
+
+[node name="Head" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 1.95, -0.36)
+mesh = SubResource("BoxMesh_box_9")
+
+[node name="CrestL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.965926, -0.258819, 0, 0.183013, 0.683013, 0.707107, -0.183013, -0.683013, 0.707107, -0.1, 2.2, -0.18)
+mesh = SubResource("PrismMesh_prism_10")
+
+[node name="MandibleL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, -0.939693, -0.34202, 0, 0.34202, -0.939693, -0.08, 1.8, -0.6)
+mesh = SubResource("PrismMesh_prism_11")
+
+[node name="EyeL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 2, -0.57)
+mesh = SubResource("SphereMesh_sphere_12")
+cast_shadow = 0
+
+[node name="BladeL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.906308, 0.422618, 0, -0.271654, 0.582563, 0.766044, 0.323744, -0.694272, 0.642788, -0.28, 1.75, 0.3)
+mesh = SubResource("BoxMesh_box_13")
+
+[node name="ThighL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.819152, -0.573576, 0, 0.573576, 0.819152, -0.24, 0.78, 0.2)
+mesh = SubResource("BoxMesh_box_14")
+
+[node name="ShinL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, -0.26, 0.33, 0.12)
+mesh = SubResource("BoxMesh_box_15")
+
+[node name="FootL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -0.26, 0.04, -0.06)
+mesh = SubResource("PrismMesh_prism_16")
+
+[node name="LeftScythe" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.825113, 0.564967, 0, -0.564967, 0.825113, -0.36, 1.68, -0.28)
+
+[node name="UpperArm" type="MeshInstance3D" parent="MeshRoot/LeftScythe"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, -0.422618, 0, 0.422618, 0.906308, 0, -0.25, -0.08)
+mesh = SubResource("BoxMesh_box_17")
+
+[node name="Blade" type="MeshInstance3D" parent="MeshRoot/LeftScythe"]
+transform = Transform3D(1, 0, 0, 0, 0.173648, -0.984808, 0, 0.984808, 0.173648, 0, -0.5, -0.65)
+mesh = SubResource("PrismMesh_prism_18")
+
+[node name="CrestR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.965926, 0.258819, 0, -0.183013, 0.683013, 0.707107, 0.183013, -0.683013, 0.707107, 0.1, 2.2, -0.18)
+mesh = SubResource("PrismMesh_prism_19")
+
+[node name="MandibleR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, -0.939693, -0.34202, 0, 0.34202, -0.939693, 0.08, 1.8, -0.6)
+mesh = SubResource("PrismMesh_prism_20")
+
+[node name="EyeR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, 2, -0.57)
+mesh = SubResource("SphereMesh_sphere_21")
+cast_shadow = 0
+
+[node name="BladeR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.906308, -0.422618, 0, 0.271654, 0.582563, 0.766044, -0.323744, -0.694272, 0.642788, 0.28, 1.75, 0.3)
+mesh = SubResource("BoxMesh_box_22")
+
+[node name="ThighR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.819152, -0.573576, 0, 0.573576, 0.819152, 0.24, 0.78, 0.2)
+mesh = SubResource("BoxMesh_box_23")
+
+[node name="ShinR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0.26, 0.33, 0.12)
+mesh = SubResource("BoxMesh_box_24")
+
+[node name="FootR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.26, 0.04, -0.06)
+mesh = SubResource("PrismMesh_prism_25")
+
+[node name="RightScythe" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.825113, 0.564967, 0, -0.564967, 0.825113, 0.36, 1.68, -0.28)
+
+[node name="UpperArm" type="MeshInstance3D" parent="MeshRoot/RightScythe"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, -0.422618, 0, 0.422618, 0.906308, 0, -0.25, -0.08)
+mesh = SubResource("BoxMesh_box_26")
+
+[node name="Blade" type="MeshInstance3D" parent="MeshRoot/RightScythe"]
+transform = Transform3D(1, 0, 0, 0, 0.173648, -0.984808, 0, 0.984808, 0.173648, 0, -0.5, -0.65)
+mesh = SubResource("PrismMesh_prism_27")

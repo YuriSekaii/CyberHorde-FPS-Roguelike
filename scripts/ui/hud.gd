@@ -72,6 +72,16 @@ var fps_label: Label = null
 var fps_update_timer: float = 0.0
 var hitmarker_timer: float = 0.0
 
+# Stage 2 status overlay (built in code)
+var status_tint: ColorRect = null
+var trap_panel: VBoxContainer = null
+var trap_label: Label = null
+var trap_bar: ProgressBar = null
+var status_effects_label: Label = null
+var stage_banner: Label = null
+var stage_banner_tween: Tween = null
+var status_pulse: float = 0.0
+
 func _ready() -> void:
 	hitmarker.visible = false
 	reload_label.visible = false
@@ -89,6 +99,8 @@ func _ready() -> void:
 	GameManager.fever_updated.connect(_on_fever_updated)
 	GameManager.fever_tier_promoted.connect(_on_fever_tier_promoted)
 	GameManager.fever_tier_demoted.connect(_on_fever_tier_demoted)
+	GameManager.stage_changed.connect(_on_stage_changed)
+	_build_stage_ui()
 	
 	_update_fever_display(GameManager.get_fever_tier_name(), GameManager.fever_tier_index, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
 	
@@ -206,6 +218,7 @@ func _process(delta: float) -> void:
 
 	skill_pulse_timer += delta
 	_update_skill_hud()
+	_update_status_effects(delta)
 
 func _on_fever_updated(tier_name: String, tier_idx: int, duration: float, max_duration: float) -> void:
 	_update_fever_display(tier_name, tier_idx, duration, max_duration)
@@ -475,12 +488,16 @@ func _on_hitmarker(is_crit: bool) -> void:
 	hitmarker.scale = Vector2(1.4, 1.4) if is_crit else Vector2.ONE
 
 func _on_wave_started(wave_num: int) -> void:
+	var is_night = GameManager.current_stage >= 2
+	var phase = "NIGHT" if is_night else "DAY"
 	if wave_num >= 50:
-		wave_label.text = "WAVE 50 [FINAL BOSS]"
+		wave_label.text = "%s — WAVE 50 [%s]" % [phase, "BLOOD MOON" if is_night else "FINAL BOSS"]
 		wave_label.modulate = Color(1.0, 0.25, 0.25)
+		if is_night:
+			_show_stage_banner("THE BLOOD MOON RISES", Color(0.85, 0.08, 0.06))
 	else:
-		wave_label.text = "WAVE %d" % wave_num
-		wave_label.modulate = Color.WHITE
+		wave_label.text = "%s — WAVE %d" % [phase, wave_num]
+		wave_label.modulate = Color(0.7, 0.8, 1.0) if is_night else Color.WHITE
 	intermission_label.visible = false
 
 func _on_boss_spawned(boss_node: Node) -> void:
@@ -501,14 +518,17 @@ func _on_boss_defeated() -> void:
 	boss_container.visible = false
 
 func _on_wave_progress(alive_count: int, _total: int) -> void:
-	if GameManager.current_wave >= 50 or GameManager.is_boss_battle_mode:
+	if GameManager.current_wave >= 50:
 		enemies_label.text = "ENEMIES: %d (∞)" % alive_count
 	else:
 		enemies_label.text = "ENEMIES: %d" % alive_count
 
 func _on_intermission_tick(sec_left: int) -> void:
 	intermission_label.visible = true
-	if GameManager.is_boss_battle_mode:
+	if GameManager.current_stage >= 2 and GameManager.current_wave == 1:
+		intermission_label.text = "NIGHT FALLS IN: %ds" % sec_left
+		intermission_label.modulate = Color(0.6, 0.7, 1.0)
+	elif GameManager.is_boss_battle_mode:
 		intermission_label.text = "BOSS ENGAGEMENT IN: %ds" % sec_left
 		intermission_label.modulate = Color(1.0, 0.3, 0.3)
 	else:
@@ -533,3 +553,131 @@ func _update_level_display(lvl: int) -> void:
 
 func _update_scrap_display(amount: int) -> void:
 	scrap_label.text = "SCRAP: %d" % amount
+
+# ==============================================================================
+# STAGES & STAGE 2 STATUS EFFECTS (POISON / BLEED / TRAPS)
+# ==============================================================================
+
+func _build_stage_ui() -> void:
+	status_tint = ColorRect.new()
+	status_tint.name = "StatusTint"
+	status_tint.set_anchors_preset(Control.PRESET_FULL_RECT)
+	status_tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_tint.color = Color(0, 0, 0, 0)
+	add_child(status_tint)
+	move_child(status_tint, 0)
+
+	trap_panel = VBoxContainer.new()
+	trap_panel.name = "TrapPanel"
+	trap_panel.set_anchors_preset(Control.PRESET_CENTER)
+	trap_panel.offset_left = -220
+	trap_panel.offset_right = 220
+	trap_panel.offset_top = 70
+	trap_panel.offset_bottom = 140
+	trap_panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	trap_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	trap_panel.visible = false
+	add_child(trap_panel)
+	trap_label = Label.new()
+	trap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	trap_label.add_theme_font_size_override("font_size", 22)
+	trap_label.add_theme_constant_override("outline_size", 6)
+	trap_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	trap_panel.add_child(trap_label)
+	trap_bar = ProgressBar.new()
+	trap_bar.custom_minimum_size = Vector2(360, 14)
+	trap_bar.show_percentage = false
+	trap_bar.max_value = 1.0
+	trap_bar.step = 0.001
+	trap_panel.add_child(trap_bar)
+
+	status_effects_label = Label.new()
+	status_effects_label.name = "StatusEffectsLabel"
+	status_effects_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	status_effects_label.offset_left = -260
+	status_effects_label.offset_right = 260
+	status_effects_label.offset_top = -150
+	status_effects_label.offset_bottom = -100
+	status_effects_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status_effects_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	status_effects_label.add_theme_font_size_override("font_size", 16)
+	status_effects_label.add_theme_constant_override("outline_size", 5)
+	status_effects_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	status_effects_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(status_effects_label)
+
+	stage_banner = Label.new()
+	stage_banner.name = "StageBanner"
+	stage_banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	stage_banner.offset_left = -500
+	stage_banner.offset_right = 500
+	stage_banner.offset_top = 150
+	stage_banner.offset_bottom = 230
+	stage_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stage_banner.add_theme_font_size_override("font_size", 40)
+	stage_banner.add_theme_constant_override("outline_size", 10)
+	stage_banner.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	stage_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage_banner.modulate.a = 0.0
+	add_child(stage_banner)
+
+func _on_stage_changed(stage: int) -> void:
+	if stage >= 2:
+		_show_stage_banner("STAGE 2 — NIGHTFALL JUNGLE\nOnly the Moon lights the way...", Color(0.6, 0.72, 1.0))
+
+func _show_stage_banner(text: String, color: Color) -> void:
+	if not stage_banner:
+		return
+	if stage_banner_tween and stage_banner_tween.is_valid():
+		stage_banner_tween.kill()
+	stage_banner.text = text
+	stage_banner.add_theme_color_override("font_color", color)
+	stage_banner.modulate.a = 0.0
+	stage_banner_tween = create_tween()
+	stage_banner_tween.tween_property(stage_banner, "modulate:a", 1.0, 0.6)
+	stage_banner_tween.tween_property(stage_banner, "modulate:a", 0.0, 1.2).set_delay(3.5)
+
+func _update_status_effects(delta: float) -> void:
+	if not status_tint:
+		return
+	status_pulse += delta
+	var p = local_player if is_instance_valid(local_player) else null
+	var trapped = p != null and p.get("is_trapped") == true
+	var poison_t: float = float(p.get("poison_timer")) if p else 0.0
+	var bleed_t: float = float(p.get("bleed_timer")) if p else 0.0
+	var immune_t: float = float(p.get("trap_immunity_timer")) if p else 0.0
+
+	trap_panel.visible = trapped
+	var tint = Color(0, 0, 0, 0)
+	if trapped:
+		var pulse = 0.5 + 0.5 * sin(status_pulse * 8.0)
+		var presses_needed: int = int(p.get("trap_presses_needed"))
+		if presses_needed > 0:
+			trap_label.text = "PINNED! MASH [A] [D] TO ESCAPE  (%d/%d)" % [int(p.get("trap_presses_done")), presses_needed]
+			trap_label.add_theme_color_override("font_color", Color(1.0, 0.25, 0.2))
+			tint = Color(0.45, 0.0, 0.0, 0.28 + pulse * 0.1)
+		else:
+			trap_label.text = "ENGULFED! MASH [A] [D] TO ESCAPE  (%.1fs)" % maxf(0.0, float(p.get("trap_timer")))
+			trap_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.3))
+			tint = Color(0.15, 0.6, 0.08, 0.3 + pulse * 0.06)
+		trap_bar.value = p.get_trap_progress()
+	elif bleed_t > 0.0:
+		tint = Color(0.4, 0.0, 0.0, 0.08 + 0.05 * sin(status_pulse * 6.0))
+	elif poison_t > 0.0:
+		tint = Color(0.2, 0.55, 0.05, 0.08)
+	status_tint.color = tint
+
+	var lines: PackedStringArray = []
+	if bleed_t > 0.0:
+		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING)" % bleed_t)
+	if poison_t > 0.0:
+		lines.append("POISONED %.1fs — SLOWED 25%%" % poison_t)
+	if immune_t > 0.0 and not trapped:
+		lines.append("TRAP IMMUNE %.1fs" % immune_t)
+	status_effects_label.text = "\n".join(lines)
+	if bleed_t > 0.0:
+		status_effects_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.25))
+	elif poison_t > 0.0:
+		status_effects_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.3))
+	else:
+		status_effects_label.add_theme_color_override("font_color", Color(0.75, 0.8, 0.85))

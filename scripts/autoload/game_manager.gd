@@ -24,6 +24,7 @@ signal fps_limit_changed(limit: int)
 signal fever_updated(tier_name: String, tier_index: int, duration: float, max_duration: float)
 signal fever_tier_promoted(new_tier_name: String, new_tier_index: int)
 signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
+signal stage_changed(stage: int)
 
 # Fever System Constants & State
 const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
@@ -52,6 +53,14 @@ var enemies_killed: int = 0
 var total_damage_dealt: float = 0.0
 var run_time: float = 0.0
 var is_boss_battle_mode: bool = false
+
+# Stages: Stage 1 = Day (cyber arena), Stage 2 = Night (moonlit jungle). Beating a stage's Wave 50 boss starts the next stage at Wave 1.
+const FINAL_STAGE: int = 2
+# Stage 2 enemies scale as if this many waves had already passed (Stage 2 Wave 1 = Stage 1 Wave 26 stats)
+const STAGE_SCALING_WAVE_OFFSET: int = 25
+var current_stage: int = 1
+# Boss Battle test protocol target: 1 = Apex Overlord, 2 = Blood Ghoul (Stage 2 Wave 50), 3 = Stage 2 from Wave 1
+var boss_battle_target: int = 1
 
 # Roguelike Stats
 var damage_mult: float = 1.0
@@ -457,6 +466,7 @@ func _bind_mouse(action: String, button: MouseButton) -> void:
 
 func reset_game() -> void:
 	is_boss_battle_mode = false
+	current_stage = 1
 	state = GameState.PLAYING
 	player_level = 1
 	player_xp = 0
@@ -750,10 +760,14 @@ func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Arr
 	
 	return result
 
-func setup_boss_battle_mode() -> void:
+func setup_boss_battle_mode(target: int = -1) -> void:
+	if target < 0:
+		target = boss_battle_target
 	reset_game()
 	is_boss_battle_mode = true
-	current_wave = 50
+	boss_battle_target = target
+	current_stage = 2 if target >= 2 else 1
+	current_wave = 1 if target == 3 else 50
 	player_level = 50
 	grant_boss_battle_loadout()
 
@@ -834,6 +848,18 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 			crit_chance += 0.10
 		"hollow_point":
 			crit_damage += 0.5
+
+## Wave number used by enemy stat scaling: Stage 2 continues on top of Stage 1's curve
+func get_scaling_wave() -> int:
+	return current_wave + (STAGE_SCALING_WAVE_OFFSET if current_stage >= 2 else 0)
+
+## Per-wave damage factor (+5% compounding per scaling wave); also scales enemy damage-over-time effects
+func get_wave_damage_factor() -> float:
+	return pow(1.05, float(maxi(0, get_scaling_wave() - 1)))
+
+func set_stage(stage: int) -> void:
+	current_stage = stage
+	stage_changed.emit(stage)
 
 func get_skill_cooldown_mult() -> float:
 	return 0.5 if cooldown_reduction else 1.0

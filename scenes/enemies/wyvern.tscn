@@ -1,0 +1,221 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/wyvern.gd" id="1_script"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_shape_1"]
+radius = 0.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_scales_2"]
+albedo_color = Color(0.05, 0.12, 0.09, 1)
+metallic = 0.2
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_belly_3"]
+albedo_color = Color(0.12, 0.16, 0.08, 1)
+metallic = 0
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_membrane_4"]
+albedo_color = Color(0.09, 0.05, 0.08, 1)
+cull_mode = 2
+metallic = 0
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_venom_5"]
+albedo_color = Color(0.45, 1, 0.15, 1)
+metallic = 0
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.45, 1, 0.15, 1)
+emission_energy_multiplier = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_horn_6"]
+albedo_color = Color(0.3, 0.28, 0.2, 1)
+metallic = 0
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule_7"]
+material = SubResource("StandardMaterial3D_scales_2")
+radius = 0.28
+height = 1.3
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule_8"]
+material = SubResource("StandardMaterial3D_belly_3")
+radius = 0.2
+height = 0.9
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule_9"]
+material = SubResource("StandardMaterial3D_scales_2")
+radius = 0.13
+height = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_10"]
+material = SubResource("StandardMaterial3D_scales_2")
+size = Vector3(0.28, 0.22, 0.48)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_11"]
+material = SubResource("StandardMaterial3D_belly_3")
+size = Vector3(0.22, 0.07, 0.4)
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_12"]
+material = SubResource("StandardMaterial3D_venom_5")
+radius = 0.08
+height = 0.16
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_sphere_13"]
+material = SubResource("StandardMaterial3D_venom_5")
+radius = 0.045
+height = 0.09
+radial_segments = 8
+rings = 4
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_14"]
+material = SubResource("StandardMaterial3D_horn_6")
+left_to_right = 0.5
+size = Vector3(0.06, 0.3, 0.06)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_15"]
+material = SubResource("StandardMaterial3D_horn_6")
+left_to_right = 0.5
+size = Vector3(0.06, 0.3, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_16"]
+material = SubResource("StandardMaterial3D_membrane_4")
+size = Vector3(1.5, 0.025, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_17"]
+material = SubResource("StandardMaterial3D_horn_6")
+size = Vector3(1.6, 0.06, 0.06)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_18"]
+material = SubResource("StandardMaterial3D_horn_6")
+left_to_right = 0.5
+size = Vector3(0.05, 0.18, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_19"]
+material = SubResource("StandardMaterial3D_membrane_4")
+size = Vector3(1.5, 0.025, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_box_20"]
+material = SubResource("StandardMaterial3D_horn_6")
+size = Vector3(1.6, 0.06, 0.06)
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_21"]
+material = SubResource("StandardMaterial3D_horn_6")
+left_to_right = 0.5
+size = Vector3(0.05, 0.18, 0.05)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cyl_22"]
+material = SubResource("StandardMaterial3D_scales_2")
+top_radius = 0.02
+bottom_radius = 0.16
+height = 1.2
+radial_segments = 8
+
+[sub_resource type="PrismMesh" id="PrismMesh_prism_23"]
+material = SubResource("StandardMaterial3D_venom_5")
+left_to_right = 0.5
+size = Vector3(0.12, 0.25, 0.04)
+
+[node name="VenomWyvern" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 5
+enemy_name = "Venom Wyvern"
+max_health = 70
+speed = 5
+attack_damage = 8
+xp_reward = 35
+scrap_reward = 25
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_shape_1")
+
+[node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.05)
+mesh = SubResource("CapsuleMesh_capsule_7")
+
+[node name="Belly" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, -0.1, 0.05)
+mesh = SubResource("CapsuleMesh_capsule_8")
+
+[node name="Neck" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.5, -0.866025, 0, 0.866025, 0.5, 0, 0.12, -0.6)
+mesh = SubResource("CapsuleMesh_capsule_9")
+
+[node name="Head" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -0.88)
+mesh = SubResource("BoxMesh_box_10")
+
+[node name="Jaw" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 0.11, -0.9)
+mesh = SubResource("BoxMesh_box_11")
+
+[node name="ThroatGlow" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, -1.05)
+mesh = SubResource("SphereMesh_sphere_12")
+cast_shadow = 0
+
+[node name="EyeL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.3, -1.02)
+mesh = SubResource("SphereMesh_sphere_13")
+cast_shadow = 0
+
+[node name="HornL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, -0.1, 0.42, -0.72)
+mesh = SubResource("PrismMesh_prism_14")
+
+[node name="EyeR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.3, -1.02)
+mesh = SubResource("SphereMesh_sphere_13")
+cast_shadow = 0
+
+[node name="HornR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0.1, 0.42, -0.72)
+mesh = SubResource("PrismMesh_prism_15")
+
+[node name="LeftWing" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.15, -0.15)
+
+[node name="Membrane" type="MeshInstance3D" parent="MeshRoot/LeftWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, 0, 0.2)
+mesh = SubResource("BoxMesh_box_16")
+
+[node name="Bone" type="MeshInstance3D" parent="MeshRoot/LeftWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.02, -0.22)
+mesh = SubResource("BoxMesh_box_17")
+
+[node name="Claw" type="MeshInstance3D" parent="MeshRoot/LeftWing"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, -1.6, 0.02, -0.25)
+mesh = SubResource("PrismMesh_prism_18")
+
+[node name="RightWing" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.15, -0.15)
+
+[node name="Membrane" type="MeshInstance3D" parent="MeshRoot/RightWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0, 0.2)
+mesh = SubResource("BoxMesh_box_19")
+
+[node name="Bone" type="MeshInstance3D" parent="MeshRoot/RightWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.02, -0.22)
+mesh = SubResource("BoxMesh_box_20")
+
+[node name="Claw" type="MeshInstance3D" parent="MeshRoot/RightWing"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 1.6, 0.02, -0.25)
+mesh = SubResource("PrismMesh_prism_21")
+
+[node name="Tail" type="Node3D" parent="MeshRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.6)
+
+[node name="TailCone" type="MeshInstance3D" parent="MeshRoot/Tail"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0.6)
+mesh = SubResource("CylinderMesh_cyl_22")
+
+[node name="Stinger" type="MeshInstance3D" parent="MeshRoot/Tail"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 1.25)
+mesh = SubResource("PrismMesh_prism_23")
+cast_shadow = 0
