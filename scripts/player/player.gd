@@ -108,11 +108,12 @@ var slayer_timer: float:
 # Stage 2 status effects (processed on the local player only)
 const POISON_DURATION: float = 3.0
 const POISON_SLOW: float = 0.25
-const BLEED_DURATION: float = 3.0
+const BLEED_DURATION: float = 1.0 # Added per application; stacks with no cap
 const BLEED_RATE_IDLE: float = 0.01 # Fraction of Max HP lost per second
 const BLEED_RATE_MOVING: float = 0.05
+const BLEED_HEAL_REDUCTION: float = 0.75 # All healing received is cut by 75% while bleeding
 const TRAP_IMMUNITY_DURATION: float = 3.0
-const TRAP_PRESS_REDUCTION: float = 0.25 # Seconds removed from a timed trap per A/D press
+const TRAP_PRESS_REDUCTION: float = 0.5 # Seconds removed from a timed trap per A/D press
 const REMOTE_TRAP_HOLD: float = 2.0 # Remote copies can't read their owner's key presses, so they free themselves after this
 var poison_timer: float = 0.0
 var poison_dps: float = 0.0
@@ -218,6 +219,7 @@ func _ready() -> void:
 		plasma_core_mesh.material_override = plasma_core_mat
 	
 	GameManager.stats_updated.connect(_update_stats)
+	GameManager.progression_reset.connect(_on_progression_reset)
 	muzzle_flash_light.visible = false
 	if drone_companion:
 		drone_companion.visible = false
@@ -1064,11 +1066,12 @@ func apply_poison(dps: float) -> void:
 	poison_dps = dps if poison_timer <= 0.0 else maxf(poison_dps, dps)
 	poison_timer = POISON_DURATION
 
-## Bleed: lose 1% Max HP/s (5% while moving) for 3s, straight to HP. Refreshes on reapply.
+## Bleed: lose 1% Max HP/s (5% while moving), straight to HP, and healing is cut by 75%.
+## Each application adds 1s to the remaining duration (no cap).
 func apply_bleed() -> void:
 	if is_downed:
 		return
-	bleed_timer = BLEED_DURATION
+	bleed_timer += BLEED_DURATION
 
 ## Traps the player in place. duration: hold time (INF = until escaped), dps: damage-over-time while held,
 ## presses_needed: >0 escapes after that many A/D presses, otherwise each press shaves TRAP_PRESS_REDUCTION off the timer.
@@ -1177,6 +1180,16 @@ func get_look_direction() -> Vector3:
 func get_eye_position() -> Vector3:
 	return head.global_position if head else global_position + Vector3(0, 1.6, 0)
 
+## New stage: the build was wiped (stats already re-applied via stats_updated), start it at full health
+func _on_progression_reset() -> void:
+	clear_status_effects()
+	current_health = max_health
+	current_shield = 0.0
+	health_changed.emit(current_health, max_health)
+	shield_changed.emit(current_shield, GameManager.shield_max)
+	if status_label:
+		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
+
 func _trigger_second_wind() -> void:
 	GameManager.trigger_second_wind()
 	# Fully restore HP and Shield
@@ -1189,7 +1202,10 @@ func _trigger_second_wind() -> void:
 	if status_label:
 		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
 
+## Every heal source (stims, Vampiric, Medic skills & regen) goes through here
 func heal(amount: float) -> void:
+	if bleed_timer > 0.0:
+		amount *= 1.0 - BLEED_HEAL_REDUCTION
 	current_health = minf(max_health, current_health + amount)
 	health_changed.emit(current_health, max_health)
 	if status_label:

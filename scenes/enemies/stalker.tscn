@@ -139,15 +139,15 @@ left_to_right = 0.15
 size = Vector3(0.05, 1.25, 0.26)
 
 [node name="MantisStalker" type="CharacterBody3D"]
+script = ExtResource("1_script")
 collision_layer = 2
 collision_mask = 5
 enemy_name = "Mantis Stalker"
 max_health = 400
-speed = 15
+speed = 20
 attack_damage = 40
 xp_reward = 90
 scrap_reward = 60
-script = ExtResource("1_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

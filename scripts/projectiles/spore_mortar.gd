@@ -2,10 +2,11 @@ extends Node3D
 
 ## Spore Pit artillery glob: shot straight up into the sky, then falls onto a locked ground position.
 ## The landing zone is marked by a pulsing ring for the whole flight so operatives can dodge out of it.
-## On impact every operative within the radius takes the full hit.
+## On impact every operative within the radius takes the full hit, and a poison puddle stays there for 3s.
 
 const LOCK_INDICATOR_SCENE = preload("res://scenes/enemies/boss_lock_indicator.tscn")
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
+const POISON_ZONE_SCRIPT = preload("res://scripts/projectiles/spore_poison_zone.gd")
 const PEAK_HEIGHT: float = 34.0
 const SPORE_COLOR := Color(0.75, 1.0, 0.2)
 
@@ -69,6 +70,11 @@ func _impact() -> void:
 	get_parent().add_child(exp_inst)
 	exp_inst.global_position = target_pos + Vector3(0, 0.3, 0)
 	exp_inst.setup(0.0, radius)
+	var zone = Node3D.new()
+	zone.set_script(POISON_ZONE_SCRIPT)
+	get_parent().add_child(zone)
+	zone.global_position = target_pos
+	zone.setup(radius)
 	SoundManager.play("explosion", 0.15, -2.0)
 	if is_instance_valid(indicator):
 		indicator.queue_free()

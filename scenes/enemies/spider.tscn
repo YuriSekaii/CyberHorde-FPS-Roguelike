@@ -67,6 +67,7 @@ material = SubResource("StandardMaterial3D_chitin_2")
 size = Vector3(0.78, 0.04, 0.04)
 
 [node name="ShadowSpider" type="CharacterBody3D"]
+script = ExtResource("1_script")
 collision_layer = 2
 collision_mask = 5
 enemy_name = "Shadow Spider"
@@ -75,7 +76,6 @@ speed = 6
 attack_damage = 8
 xp_reward = 15
 scrap_reward = 10
-script = ExtResource("1_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)

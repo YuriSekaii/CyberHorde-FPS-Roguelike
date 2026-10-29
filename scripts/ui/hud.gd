@@ -100,6 +100,7 @@ func _ready() -> void:
 	GameManager.fever_tier_promoted.connect(_on_fever_tier_promoted)
 	GameManager.fever_tier_demoted.connect(_on_fever_tier_demoted)
 	GameManager.stage_changed.connect(_on_stage_changed)
+	GameManager.progression_reset.connect(_on_progression_reset)
 	_build_stage_ui()
 	
 	_update_fever_display(GameManager.get_fever_tier_name(), GameManager.fever_tier_index, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
@@ -621,6 +622,15 @@ func _build_stage_ui() -> void:
 	stage_banner.modulate.a = 0.0
 	add_child(stage_banner)
 
+func _on_progression_reset() -> void:
+	refresh_progression()
+
+## Level / XP / Scrap readout from GameManager (mission start, new stage)
+func refresh_progression() -> void:
+	_update_level_display(GameManager.player_level)
+	_update_xp_display(GameManager.player_xp, GameManager.xp_to_next_level)
+	_update_scrap_display(GameManager.scrap)
+
 func _on_stage_changed(stage: int) -> void:
 	if stage >= 2:
 		_show_stage_banner("STAGE 2 — NIGHTFALL JUNGLE\nOnly the Moon lights the way...", Color(0.6, 0.72, 1.0))
@@ -669,7 +679,7 @@ func _update_status_effects(delta: float) -> void:
 
 	var lines: PackedStringArray = []
 	if bleed_t > 0.0:
-		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING)" % bleed_t)
+		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING), -75%% HEALING" % bleed_t)
 	if poison_t > 0.0:
 		lines.append("POISONED %.1fs — SLOWED 25%%" % poison_t)
 	if immune_t > 0.0 and not trapped:

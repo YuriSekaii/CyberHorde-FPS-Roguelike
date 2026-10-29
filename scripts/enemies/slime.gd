@@ -2,7 +2,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 
 ## Bog Slime - Stage 2 tank (Wave 11+). Very high HP, slow.
 ## Touching an operative engulfs them for 3s: they can't move and take 10 dmg/s (scaled by the wave damage factor)
-## while other enemies and projectiles keep hitting them. Mashing A / D shaves 0.25s off the trap per press.
+## while other enemies and projectiles keep hitting them. Mashing A / D shaves 0.5s off the trap per press.
 ## After escaping, the operative can't be trapped again for 3s.
 
 const TOUCH_RANGE: float = 1.6

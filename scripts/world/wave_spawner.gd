@@ -601,13 +601,14 @@ func _complete_wave() -> void:
 # SPAWNER MULTIPLAYER RPCS
 # ==============================================================================
 
-## Switches every peer to the next stage: Wave 1 of a new arena (main.gd swaps the arena on stage_changed)
+## Switches every peer to the next stage: Wave 1 of a new arena with a fresh build (main.gd swaps the arena on stage_changed)
 func _apply_stage(stage: int) -> void:
 	current_wave = 1
 	GameManager.current_wave = 1
 	boss_spawned_for_wave = false
 	pending_spawns.clear()
 	_clean_all_indicators()
+	GameManager.reset_stage_progression()
 	GameManager.set_stage(stage)
 
 @rpc("call_local", "reliable")

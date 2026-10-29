@@ -10,8 +10,9 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY fast to a
 ##             random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
-## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, 3s, bypasses shield).
-## Shooting it while it hides out of everyone's reach makes it relocate to another tree.
+## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1s per hit and stacking, bypasses shield).
+## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
+## while hidden it relocates to another random tree.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING }
 
@@ -34,6 +35,7 @@ const FLEE_SPEED: float = 24.0
 const FLEE_TIMEOUT: float = 7.0
 const HIDE_ARRIVE_DIST: float = 1.0
 const HIDE_MIN_PLAYER_DIST: float = 14.0
+const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding that makes it switch trees
 const GRAVITY: float = 20.0
 
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
@@ -51,6 +53,7 @@ var overshoot_speed: float = 0.0
 var pinned_player: Node = null
 var pin_hit_timer: float = 0.0
 var anim_time: float = 0.0
+var hide_damage_taken: float = 0.0
 
 @onready var body_root: Node3D = $MeshRoot/Body
 
@@ -60,6 +63,7 @@ func _ready() -> void:
 	hide_spot = global_position
 	hide_spot.y = 0.0
 	hide_index = _nearest_hide_index(global_position)
+	_set_state(GhoulState.HIDING)
 	rotation.y = atan2(global_position.x, global_position.z) # face the arena center
 	GameManager.boss_spawned.emit(self)
 	GameManager.boss_health_updated.emit(current_health, max_health)
@@ -74,13 +78,20 @@ func _apply_wave_scaling() -> void:
 	damage_reduction = clampf(floorf(GameManager.get_scaling_wave() / 10.0) * 0.10, 0.0, 0.50)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
+	var hp_before = current_health
 	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 	if is_dead:
 		return
 	GameManager.boss_health_updated.emit(current_health, max_health)
-	# Spotted and shot from beyond its reach: slip away to another tree
-	if state == GhoulState.HIDING and _nearest_player_in_range(ATTACK_RANGE) == null:
-		_start_flee()
+	# Hurt enough while hidden: slip away to another tree
+	if state == GhoulState.HIDING:
+		hide_damage_taken += maxf(0.0, hp_before - current_health)
+		if hide_damage_taken >= max_health * HIDE_RELOCATE_DAMAGE:
+			_start_flee()
+
+## Hidden in the shadows it can only be hurt by direct bullet hits (no AoE, ricochet or chain lightning)
+func is_immune_to(damage_type: int) -> bool:
+	return state == GhoulState.HIDING and damage_type != DAMAGE_TYPE_DIRECT and damage_type != DAMAGE_TYPE_WEAKPOINT
 
 func _behave(delta: float) -> void:
 	state_timer += delta
@@ -109,6 +120,12 @@ func _behave(delta: float) -> void:
 func _set_state(new_state: GhoulState) -> void:
 	state = new_state
 	state_timer = 0.0
+	# Companion drones can't spot it while it hides
+	if state == GhoulState.HIDING:
+		hide_damage_taken = 0.0
+		add_to_group("drone_ignore")
+	else:
+		remove_from_group("drone_ignore")
 
 func _hold_still(delta: float) -> void:
 	if not is_on_floor():

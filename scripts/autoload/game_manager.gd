@@ -25,6 +25,7 @@ signal fever_updated(tier_name: String, tier_index: int, duration: float, max_du
 signal fever_tier_promoted(new_tier_name: String, new_tier_index: int)
 signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
 signal stage_changed(stage: int)
+signal progression_reset()
 
 # Fever System Constants & State
 const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
@@ -54,10 +55,9 @@ var total_damage_dealt: float = 0.0
 var run_time: float = 0.0
 var is_boss_battle_mode: bool = false
 
-# Stages: Stage 1 = Day (cyber arena), Stage 2 = Night (moonlit jungle). Beating a stage's Wave 50 boss starts the next stage at Wave 1.
+# Stages: Stage 1 = Day (cyber arena), Stage 2 = Night (moonlit jungle). Beating a stage's Wave 50 boss starts the next stage
+# at Wave 1 with a fresh build (level, perks, Scrap, Fever reset) and enemy scaling back at Wave 1.
 const FINAL_STAGE: int = 2
-# Stage 2 enemies scale as if this many waves had already passed (Stage 2 Wave 1 = Stage 1 Wave 26 stats)
-const STAGE_SCALING_WAVE_OFFSET: int = 25
 var current_stage: int = 1
 # Boss Battle test protocol target: 1 = Apex Overlord, 2 = Blood Ghoul (Stage 2 Wave 50), 3 = Stage 2 from Wave 1
 var boss_battle_target: int = 1
@@ -468,16 +468,29 @@ func reset_game() -> void:
 	is_boss_battle_mode = false
 	current_stage = 1
 	state = GameState.PLAYING
+	current_wave = 1
+	enemies_killed = 0
+	total_damage_dealt = 0.0
+	run_time = 0.0
+	_reset_progression()
+	boss_defeated.emit()
+	get_tree().paused = false
+
+## Fresh build for a new stage: level, XP, perks, Scrap, reroll cost and Fever reset; class and run stats are kept.
+func reset_stage_progression() -> void:
+	_reset_progression()
+	xp_changed.emit(player_xp, xp_to_next_level)
+	scrap_changed.emit(scrap)
+	stats_updated.emit()
+	progression_reset.emit()
+
+func _reset_progression() -> void:
 	player_level = 1
 	player_xp = 0
 	xp_to_next_level = 100
 	scrap = 0
 	reroll_cost = 500
 	rerolls_used = 0
-	current_wave = 1
-	enemies_killed = 0
-	total_damage_dealt = 0.0
-	run_time = 0.0
 	
 	damage_mult = 1.0
 	fire_rate_mult = 1.0
@@ -518,8 +531,6 @@ func reset_game() -> void:
 	fever_updated.emit("D", 0, 0.0, FEVER_MAX_DURATION)
 	
 	active_upgrades.clear()
-	boss_defeated.emit()
-	get_tree().paused = false
 
 func add_xp(amount: int) -> void:
 	var final_xp = int(amount * greed_mult)
@@ -527,11 +538,21 @@ func add_xp(amount: int) -> void:
 	while player_xp >= xp_to_next_level:
 		player_xp -= xp_to_next_level
 		player_level += 1
-		xp_to_next_level = int(xp_to_next_level * 1.35 + 40)
+		xp_to_next_level = _next_xp_requirement(xp_to_next_level)
 		SoundManager.play("level_up")
 		level_up.emit(player_level)
 		prompt_upgrade_menu()
 	xp_changed.emit(player_xp, xp_to_next_level)
+
+func _next_xp_requirement(current_requirement: int) -> int:
+	return int(current_requirement * 1.35 + 40)
+
+## XP needed to go from `level` to `level + 1`
+func get_xp_requirement_for_level(level: int) -> int:
+	var req: int = 100
+	for i in range(level - 1):
+		req = _next_xp_requirement(req)
+	return req
 
 @rpc("any_peer", "call_local", "reliable")
 func rpc_add_xp(amount: int) -> void:
@@ -768,7 +789,11 @@ func setup_boss_battle_mode(target: int = -1) -> void:
 	boss_battle_target = target
 	current_stage = 2 if target >= 2 else 1
 	current_wave = 1 if target == 3 else 50
+	if target == 3:
+		# Stage 2 from Wave 1 starts like a real Stage 2 run: Level 1, no perks
+		return
 	player_level = 50
+	xp_to_next_level = get_xp_requirement_for_level(player_level)
 	grant_boss_battle_loadout()
 
 func grant_boss_battle_loadout() -> void:
@@ -849,9 +874,9 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 		"hollow_point":
 			crit_damage += 0.5
 
-## Wave number used by enemy stat scaling: Stage 2 continues on top of Stage 1's curve
+## Wave number used by enemy stat scaling (every stage restarts at Wave 1)
 func get_scaling_wave() -> int:
-	return current_wave + (STAGE_SCALING_WAVE_OFFSET if current_stage >= 2 else 0)
+	return current_wave
 
 ## Per-wave damage factor (+5% compounding per scaling wave); also scales enemy damage-over-time effects
 func get_wave_damage_factor() -> float:

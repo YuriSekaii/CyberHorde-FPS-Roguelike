@@ -164,8 +164,8 @@ func _find_target() -> void:
 	var best_dist: float = 35.0
 	var best: Node3D = null
 	for e in enemies:
-		# Spawnlings are never targeted by drones (player must shoot them manually)
-		if e is Node3D and is_instance_valid(e) and not e.is_queued_for_deletion() and not e.is_in_group("spawnlings"):
+		# Spawnlings and "drone_ignore" enemies (e.g. a hiding Blood Ghoul) are never targeted by drones
+		if e is Node3D and is_instance_valid(e) and not e.is_queued_for_deletion() and not e.is_in_group("spawnlings") and not e.is_in_group("drone_ignore"):
 			var d = global_position.distance_to(e.global_position)
 			if d < best_dist:
 				best_dist = d

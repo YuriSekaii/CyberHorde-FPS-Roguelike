@@ -13,6 +13,7 @@ func _ready() -> void:
 	GameManager.level_up.connect(_on_level_up)
 	GameManager.upgrade_requested.connect(open_menu)
 	GameManager.scrap_changed.connect(_on_scrap_changed)
+	GameManager.progression_reset.connect(_on_progression_reset)
 	if reroll_btn:
 		reroll_btn.pressed.connect(_on_reroll_pressed)
 
@@ -47,6 +48,13 @@ func open_menu() -> void:
 		title_label.text = "LEVEL UP! CHOOSE AN UPGRADE"
 	_populate_cards()
 	_update_reroll_ui()
+
+## A new stage wiped the build: drop any pending level-up pick from the previous stage
+func _on_progression_reset() -> void:
+	if visible:
+		visible = false
+		current_options.clear()
+		GameManager.resume_game()
 
 func _on_scrap_changed(_new_scrap: int) -> void:
 	if visible:

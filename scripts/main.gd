@@ -60,6 +60,8 @@ func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}) -> voi
 		var spawn_pos = Vector3(-2.5 if i == 0 else 2.5, 4.5, 0.0)
 		_instantiate_player(p_id, spawn_pos, p_cls)
 	
+	if hud:
+		hud.refresh_progression()
 	if hud and spawner:
 		hud.connect_spawner(spawner)
 	if spawner:

@@ -72,6 +72,7 @@ radial_segments = 24
 rings = 12
 
 [node name="BogSlime" type="CharacterBody3D"]
+script = ExtResource("1_script")
 collision_layer = 2
 collision_mask = 5
 enemy_name = "Bog Slime"
@@ -80,7 +81,6 @@ speed = 3
 attack_damage = 10
 xp_reward = 60
 scrap_reward = 40
-script = ExtResource("1_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
