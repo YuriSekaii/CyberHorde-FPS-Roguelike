@@ -1,163 +1,764 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/blood_ghoul.gd" id="1_script"]
+[ext_resource type="Shader" path="res://assets/shaders/ghoul_skin.gdshader" id="2_skin"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_shape_1"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_shape"]
 radius = 0.55
 height = 2.2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flesh_2"]
-albedo_color = Color(0.035, 0.03, 0.03, 1)
-metallic = 0
-roughness = 0.85
+[sub_resource type="ShaderMaterial" id="Mat_flesh"]
+shader = ExtResource("2_skin")
+shader_parameter/glow = 0.0
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dryblood_3"]
-albedo_color = Color(0.16, 0.014, 0.012, 1)
-metallic = 0
-roughness = 0.7
+[sub_resource type="StandardMaterial3D" id="Mat_rune"]
+albedo_color = Color(0.12, 0.0, 0.0, 1)
+metallic_specular = 0.5
+roughness = 0.4
 emission_enabled = true
-emission = Color(0.3, 0.01, 0, 1)
-emission_energy_multiplier = 0.35
+emission = Color(1.0, 0.08, 0.02, 1)
+emission_energy_multiplier = 0.0
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_4"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.15, 0.58, 0.15)
+[sub_resource type="StandardMaterial3D" id="Mat_dryblood"]
+albedo_color = Color(0.12, 0.012, 0.008, 1)
+metallic_specular = 0.25
+roughness = 0.9
+emission_enabled = true
+emission = Color(0.28, 0.01, 0.0, 1)
+emission_energy_multiplier = 0.3
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_5"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.11, 0.62, 0.11)
+[sub_resource type="StandardMaterial3D" id="Mat_wetblood"]
+albedo_color = Color(0.24, 0.01, 0.008, 1)
+metallic_specular = 0.6
+roughness = 0.2
+emission_enabled = true
+emission = Color(0.35, 0.01, 0.0, 1)
+emission_energy_multiplier = 0.45
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_6"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.14, 0.07, 0.34)
+[sub_resource type="StandardMaterial3D" id="Mat_horn"]
+albedo_color = Color(0.035, 0.028, 0.025, 1)
+metallic_specular = 0.5
+roughness = 0.35
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_7"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-size = Vector3(0.12, 0.25, 0.04)
+[sub_resource type="StandardMaterial3D" id="Mat_claw"]
+albedo_color = Color(0.07, 0.02, 0.016, 1)
+metallic_specular = 0.6
+roughness = 0.28
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_8"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.15, 0.58, 0.15)
+[sub_resource type="StandardMaterial3D" id="Mat_teeth"]
+albedo_color = Color(0.27, 0.23, 0.17, 1)
+metallic_specular = 0.5
+roughness = 0.5
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_9"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.11, 0.62, 0.11)
+[sub_resource type="StandardMaterial3D" id="Mat_mouth"]
+albedo_color = Color(0.07, 0.0, 0.0, 1)
+metallic_specular = 0.5
+roughness = 0.35
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_10"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.14, 0.07, 0.34)
+[sub_resource type="StandardMaterial3D" id="Mat_sclera"]
+albedo_color = Color(0.22, 0.19, 0.1, 1)
+metallic_specular = 0.5
+roughness = 0.4
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_11"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-size = Vector3(0.12, 0.25, 0.04)
+[sub_resource type="StandardMaterial3D" id="Mat_pupil"]
+albedo_color = Color(0.4, 0.0, 0.0, 1)
+metallic_specular = 0.5
+roughness = 0.3
+emission_enabled = true
+emission = Color(1.0, 0.04, 0.0, 1)
+emission_energy_multiplier = 0.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_12"]
-material = SubResource("StandardMaterial3D_flesh_2")
+[sub_resource type="CylinderMesh" id="CylinderMesh_11"]
+material = SubResource("Mat_flesh")
+top_radius = 0.065
+bottom_radius = 0.1
+height = 0.5258
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_12"]
+material = SubResource("Mat_flesh")
+radius = 0.085
+height = 0.17
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_13"]
+material = SubResource("Mat_flesh")
+radius = 0.066
+height = 0.132
+radial_segments = 10
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_14"]
+material = SubResource("Mat_flesh")
+top_radius = 0.04
+bottom_radius = 0.06
+height = 0.4244
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_15"]
+material = SubResource("Mat_flesh")
+radius = 0.06
+height = 0.12
+radial_segments = 16
+rings = 8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_16"]
+material = SubResource("Mat_flesh")
+top_radius = 0.035
+bottom_radius = 0.04
+height = 0.2943
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_17"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.03
+height = 0.172
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_18"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.03
+height = 0.1855
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_19"]
+material = SubResource("Mat_dryblood")
+radius = 0.5
+height = 1.0
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_20"]
+material = SubResource("Mat_claw")
+top_radius = 0.016
+bottom_radius = 0.022
+height = 0.0751
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_21"]
+material = SubResource("Mat_claw")
+top_radius = 0.0
+bottom_radius = 0.016
+height = 0.0802
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_22"]
+material = SubResource("Mat_claw")
+top_radius = 0.016
+bottom_radius = 0.022
+height = 0.0757
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_23"]
+material = SubResource("Mat_claw")
+top_radius = 0.0
+bottom_radius = 0.016
+height = 0.0808
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_24"]
+material = SubResource("Mat_flesh")
+radius = 0.19
+height = 0.38
+radial_segments = 16
+rings = 8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_25"]
+material = SubResource("Mat_flesh")
+radius = 0.115
+height = 0.42
+radial_segments = 12
+rings = 4
+
+[sub_resource type="SphereMesh" id="SphereMesh_26"]
+material = SubResource("Mat_flesh")
+radius = 0.27
+height = 0.54
+radial_segments = 18
+rings = 10
+
+[sub_resource type="SphereMesh" id="SphereMesh_27"]
+material = SubResource("Mat_flesh")
 radius = 0.25
 height = 0.5
 radial_segments = 16
 rings = 8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_capsule_13"]
-material = SubResource("StandardMaterial3D_flesh_2")
-radius = 0.27
-height = 1
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_14"]
-material = SubResource("StandardMaterial3D_flesh_2")
-radius = 0.3
-height = 0.6
-radial_segments = 16
-rings = 8
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_15"]
-material = SubResource("StandardMaterial3D_flesh_2")
-radius = 0.07
-height = 0.14
-radial_segments = 8
-rings = 4
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_16"]
-material = SubResource("StandardMaterial3D_flesh_2")
-radius = 0.2
-height = 0.4
-radial_segments = 16
-rings = 8
-
-[sub_resource type="BoxMesh" id="BoxMesh_box_17"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.2, 0.08, 0.28)
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_18"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-radius = 0.17
-height = 0.34
-radial_segments = 16
-rings = 8
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_19"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-radius = 0.11
-height = 0.22
-radial_segments = 16
-rings = 8
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_20"]
-material = SubResource("StandardMaterial3D_dryblood_3")
+[sub_resource type="SphereMesh" id="SphereMesh_28"]
+material = SubResource("Mat_flesh")
 radius = 0.15
 height = 0.3
 radial_segments = 16
 rings = 8
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_21"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-radius = 0.12
-height = 0.24
-radial_segments = 16
-rings = 8
-
-[sub_resource type="PrismMesh" id="PrismMesh_prism_22"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-left_to_right = 0.5
-size = Vector3(0.04, 0.22, 0.04)
-
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_23"]
-material = SubResource("StandardMaterial3D_flesh_2")
+[sub_resource type="SphereMesh" id="SphereMesh_29"]
+material = SubResource("Mat_flesh")
 radius = 0.13
 height = 0.26
 radial_segments = 16
 rings = 8
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_24"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.11, 0.75, 0.11)
+[sub_resource type="CylinderMesh" id="CylinderMesh_30"]
+material = SubResource("Mat_flesh")
+top_radius = 0.012
+bottom_radius = 0.016
+height = 0.2879
+radial_segments = 10
+rings = 1
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_25"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.09, 0.8, 0.09)
+[sub_resource type="CylinderMesh" id="CylinderMesh_31"]
+material = SubResource("Mat_horn")
+top_radius = 0.028
+bottom_radius = 0.045
+height = 0.187
+radial_segments = 10
+rings = 1
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_26"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-size = Vector3(0.1, 0.4, 0.1)
+[sub_resource type="CylinderMesh" id="CylinderMesh_32"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.028
+height = 0.211
+radial_segments = 10
+rings = 1
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_27"]
-material = SubResource("StandardMaterial3D_flesh_2")
-radius = 0.13
-height = 0.26
+[sub_resource type="CylinderMesh" id="CylinderMesh_33"]
+material = SubResource("Mat_horn")
+top_radius = 0.028
+bottom_radius = 0.039
+height = 0.143
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_34"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.028
+height = 0.1739
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_35"]
+material = SubResource("Mat_horn")
+top_radius = 0.028
+bottom_radius = 0.033
+height = 0.121
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_36"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.028
+height = 0.1628
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_37"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.1483
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_38"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.1811
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_39"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.1593
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_40"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.209
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_41"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.2093
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_42"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.2691
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_43"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.248
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_44"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.2602
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_45"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.04
+height = 0.1979
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_46"]
+material = SubResource("Mat_flesh")
+radius = 0.075
+height = 0.3
+radial_segments = 12
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_47"]
+material = SubResource("Mat_flesh")
+top_radius = 0.018
+bottom_radius = 0.022
+height = 0.2115
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_48"]
+material = SubResource("Mat_wetblood")
+radius = 0.5
+height = 1.0
+radial_segments = 12
+rings = 6
+
+[sub_resource type="TorusMesh" id="TorusMesh_49"]
+material = SubResource("Mat_rune")
+inner_radius = 0.088
+outer_radius = 0.098
+rings = 24
+ring_segments = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_50"]
+material = SubResource("Mat_rune")
+top_radius = 0.005
+bottom_radius = 0.005
+height = 0.1479
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_51"]
+material = SubResource("Mat_rune")
+top_radius = 0.005
+bottom_radius = 0.005
+height = 0.148
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_52"]
+material = SubResource("Mat_rune")
+top_radius = 0.004
+bottom_radius = 0.005
+height = 0.2901
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_53"]
+material = SubResource("Mat_rune")
+top_radius = 0.005
+bottom_radius = 0.005
+height = 0.102
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_54"]
+material = SubResource("Mat_flesh")
+radius = 0.11
+height = 0.22
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_55"]
+material = SubResource("Mat_flesh")
+top_radius = 0.048
+bottom_radius = 0.075
+height = 0.64
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_56"]
+material = SubResource("Mat_flesh")
+radius = 0.068
+height = 0.136
 radial_segments = 16
 rings = 8
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_28"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.11, 0.75, 0.11)
+[sub_resource type="TorusMesh" id="TorusMesh_57"]
+material = SubResource("Mat_rune")
+inner_radius = 0.056
+outer_radius = 0.064
+rings = 24
+ring_segments = 6
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_29"]
-material = SubResource("StandardMaterial3D_flesh_2")
-size = Vector3(0.09, 0.8, 0.09)
+[sub_resource type="SphereMesh" id="SphereMesh_58"]
+material = SubResource("Mat_flesh")
+radius = 0.056
+height = 0.112
+radial_segments = 10
+rings = 6
 
-[sub_resource type="BoxMesh" id="BoxMesh_box_30"]
-material = SubResource("StandardMaterial3D_dryblood_3")
-size = Vector3(0.1, 0.4, 0.1)
+[sub_resource type="CylinderMesh" id="CylinderMesh_59"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.035
+height = 0.1992
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_60"]
+material = SubResource("Mat_flesh")
+top_radius = 0.036
+bottom_radius = 0.055
+height = 0.6
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_61"]
+material = SubResource("Mat_flesh")
+radius = 0.058
+height = 0.116
+radial_segments = 16
+rings = 8
+
+[sub_resource type="TorusMesh" id="TorusMesh_62"]
+material = SubResource("Mat_rune")
+inner_radius = 0.05
+outer_radius = 0.057
+rings = 24
+ring_segments = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_63"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.02
+height = 0.1082
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_64"]
+material = SubResource("Mat_dryblood")
+top_radius = 0.045
+bottom_radius = 0.04
+height = 0.3
+radial_segments = 10
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_65"]
+material = SubResource("Mat_dryblood")
+size = Vector3(0.12, 0.13, 0.045)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_66"]
+material = SubResource("Mat_dryblood")
+top_radius = 0.013
+bottom_radius = 0.016
+height = 0.1485
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_67"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.011
+bottom_radius = 0.017
+height = 0.1128
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_68"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.0
+bottom_radius = 0.011
+height = 0.1141
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_69"]
+material = SubResource("Mat_dryblood")
+top_radius = 0.013
+bottom_radius = 0.016
+height = 0.1695
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_70"]
+material = SubResource("Mat_dryblood")
+top_radius = 0.013
+bottom_radius = 0.016
+height = 0.09
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_71"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.01
+bottom_radius = 0.016
+height = 0.0825
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_72"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.0
+bottom_radius = 0.01
+height = 0.0806
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_73"]
+material = SubResource("Mat_flesh")
+radius = 0.165
+height = 0.33
+radial_segments = 20
+rings = 10
+
+[sub_resource type="SphereMesh" id="SphereMesh_74"]
+material = SubResource("Mat_flesh")
+radius = 0.11
+height = 0.22
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_75"]
+material = SubResource("Mat_flesh")
+radius = 0.045
+height = 0.09
+radial_segments = 16
+rings = 8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_76"]
+material = SubResource("Mat_horn")
+top_radius = 0.036
+bottom_radius = 0.042
+height = 0.1297
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_77"]
+material = SubResource("Mat_horn")
+top_radius = 0.028
+bottom_radius = 0.036
+height = 0.1308
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_78"]
+material = SubResource("Mat_horn")
+top_radius = 0.019
+bottom_radius = 0.028
+height = 0.1296
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_79"]
+material = SubResource("Mat_horn")
+top_radius = 0.01
+bottom_radius = 0.019
+height = 0.1285
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_80"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.01
+height = 0.1105
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_81"]
+material = SubResource("Mat_flesh")
+radius = 0.06
+height = 0.12
+radial_segments = 12
+rings = 6
+
+[sub_resource type="BoxMesh" id="BoxMesh_82"]
+material = SubResource("Mat_mouth")
+size = Vector3(0.075, 0.036, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_83"]
+material = SubResource("Mat_sclera")
+size = Vector3(0.062, 0.02, 0.012)
+
+[sub_resource type="SphereMesh" id="SphereMesh_84"]
+material = SubResource("Mat_pupil")
+radius = 0.012
+height = 0.024
+radial_segments = 10
+rings = 6
+
+[sub_resource type="BoxMesh" id="BoxMesh_85"]
+material = SubResource("Mat_mouth")
+size = Vector3(0.009, 0.03, 0.012)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_86"]
+material = SubResource("Mat_rune")
+top_radius = 0.003
+bottom_radius = 0.0045
+height = 0.0725
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_87"]
+material = SubResource("Mat_horn")
+top_radius = 0.0
+bottom_radius = 0.022
+height = 0.1393
+radial_segments = 10
+rings = 1
+
+[sub_resource type="TorusMesh" id="TorusMesh_88"]
+material = SubResource("Mat_rune")
+inner_radius = 0.016
+outer_radius = 0.022
+rings = 24
+ring_segments = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_89"]
+material = SubResource("Mat_rune")
+top_radius = 0.003
+bottom_radius = 0.004
+height = 0.0767
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_90"]
+material = SubResource("Mat_mouth")
+radius = 0.085
+height = 0.17
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_91"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.007
+height = 0.034
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_92"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.007
+height = 0.026
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_93"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.007
+height = 0.048
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_94"]
+material = SubResource("Mat_flesh")
+radius = 0.1
+height = 0.2
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="SphereMesh_95"]
+material = SubResource("Mat_flesh")
+radius = 0.03
+height = 0.06
+radial_segments = 10
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_96"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.0065
+height = 0.03
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_97"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.0065
+height = 0.022
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_98"]
+material = SubResource("Mat_teeth")
+top_radius = 0.0
+bottom_radius = 0.0065
+height = 0.04
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_99"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.002
+bottom_radius = 0.007
+height = 0.0801
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_100"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.002
+bottom_radius = 0.007
+height = 0.1201
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_101"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.002
+bottom_radius = 0.007
+height = 0.0701
+radial_segments = 6
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_102"]
+material = SubResource("Mat_wetblood")
+top_radius = 0.002
+bottom_radius = 0.007
+height = 0.1001
+radial_segments = 6
+rings = 1
 
 [node name="BloodGhoul" type="CharacterBody3D"]
 script = ExtResource("1_script")
@@ -172,149 +773,981 @@ scrap_reward = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
-shape = SubResource("CapsuleShape3D_shape_1")
+shape = SubResource("CapsuleShape3D_shape")
 
 [node name="MeshRoot" type="Node3D" parent="."]
 
 [node name="ThighL" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, -0.2, 0.72, 0.06)
-mesh = SubResource("BoxMesh_box_4")
+transform = Transform3D(-0.9982, -0.05705, -0.01822, 0.05989, -0.95087, -0.30373, 0, -0.30428, 0.95258, -0.185, 0.75, -0.04)
+mesh = SubResource("CylinderMesh_11")
+
+[node name="QuadL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 2.19727, -0.29552, 0, 0.6797, 0.95534, -0.18, 0.76, -0.05)
+mesh = SubResource("SphereMesh_12")
+
+[node name="KneeL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, -0.2, 0.5, -0.12)
+mesh = SubResource("SphereMesh_13")
 
 [node name="ShinL" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.951057, -0.309017, 0, 0.309017, 0.951057, -0.21, 0.28, 0.12)
-mesh = SubResource("BoxMesh_box_5")
+transform = Transform3D(-0.99944, -0.02356, 0.02355, 0.03331, -0.70691, 0.70652, 0, 0.70691, 0.7073, -0.205, 0.35, 0.03)
+mesh = SubResource("CylinderMesh_14")
 
-[node name="FootL" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.21, 0.035, -0.02)
-mesh = SubResource("BoxMesh_box_6")
+[node name="CalfL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 1.93068, 0.47943, 0, -1.05474, 0.87758, -0.205, 0.4, -0.04)
+mesh = SubResource("SphereMesh_15")
+
+[node name="HockL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.99827, -0.03398, -0.04789, 0.05872, -0.57768, -0.81415, 0, -0.81555, 0.57868, -0.215, 0.115, 0.06)
+mesh = SubResource("CylinderMesh_16")
+
+[node name="HeelSpurL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 0.58124, -0.81373, 0, 0.81373, 0.58124, -0.21, 0.25, 0.25)
+mesh = SubResource("CylinderMesh_17")
+
+[node name="KneeSpurL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.98639, -0.10783, -0.12409, 0.1644, 0.647, 0.74456, 0, -0.75483, 0.65592, -0.21, 0.56, -0.19)
+mesh = SubResource("CylinderMesh_18")
 
 [node name="ShinBloodL" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.951057, -0.309017, 0, 0.309017, 0.951057, -0.21, 0.35, 0.05)
-mesh = SubResource("BoxMesh_box_7")
+transform = Transform3D(0.06, 0, 0, 0, 0.18157, 0.01242, 0, -0.12422, 0.01816, -0.205, 0.38, -0.08)
+mesh = SubResource("SphereMesh_19")
+
+[node name="ToeL00" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, -0.31962, 0.94755, -0.99008, 0.13316, 0.04492, -0.14053, -0.93814, -0.31645, -0.232, 0.035, -0.09523)
+mesh = SubResource("CylinderMesh_20")
+
+[node name="ToeL01" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.78083, -0.29911, -0.54848, 0.62474, -0.37384, -0.68552, 0, -0.87794, 0.47877, -0.256, 0.025, -0.16568)
+mesh = SubResource("CylinderMesh_21")
+
+[node name="ToeL10" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0, 1.0, -0.99123, 0.13216, 0, -0.13216, -0.99123, 0, -0.22, 0.035, -0.0975)
+mesh = SubResource("CylinderMesh_22")
+
+[node name="ToeL11" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0, 1.0, -0.92848, -0.37139, 0, 0.37139, -0.92848, 0, -0.22, 0.025, -0.1725)
+mesh = SubResource("CylinderMesh_23")
+
+[node name="ToeL20" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0.31962, 0.94755, -0.99008, 0.13316, -0.04492, -0.14053, -0.93814, 0.31645, -0.208, 0.035, -0.09523)
+mesh = SubResource("CylinderMesh_20")
+
+[node name="ToeL21" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.78083, 0.29911, 0.54848, -0.62474, -0.37384, -0.68552, 0, -0.87794, 0.47877, -0.184, 0.025, -0.16568)
+mesh = SubResource("CylinderMesh_21")
 
 [node name="ThighR" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0.2, 0.72, 0.06)
-mesh = SubResource("BoxMesh_box_8")
+transform = Transform3D(-0.9982, 0.05705, 0.01822, -0.05989, -0.95087, -0.30373, 0, -0.30428, 0.95258, 0.185, 0.75, -0.04)
+mesh = SubResource("CylinderMesh_11")
+
+[node name="QuadR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 2.19727, -0.29552, 0, 0.6797, 0.95534, 0.18, 0.76, -0.05)
+mesh = SubResource("SphereMesh_12")
+
+[node name="KneeR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0.2, 0.5, -0.12)
+mesh = SubResource("SphereMesh_13")
 
 [node name="ShinR" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.951057, -0.309017, 0, 0.309017, 0.951057, 0.21, 0.28, 0.12)
-mesh = SubResource("BoxMesh_box_9")
+transform = Transform3D(-0.99944, 0.02356, -0.02355, -0.03331, -0.70691, 0.70652, 0, 0.70691, 0.7073, 0.205, 0.35, 0.03)
+mesh = SubResource("CylinderMesh_14")
 
-[node name="FootR" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21, 0.035, -0.02)
-mesh = SubResource("BoxMesh_box_10")
+[node name="CalfR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 1.93068, 0.47943, 0, -1.05474, 0.87758, 0.205, 0.4, -0.04)
+mesh = SubResource("SphereMesh_15")
+
+[node name="HockR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.99827, 0.03398, 0.04789, -0.05872, -0.57768, -0.81415, 0, -0.81555, 0.57868, 0.215, 0.115, 0.06)
+mesh = SubResource("CylinderMesh_16")
+
+[node name="HeelSpurR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.0, 0, 0, 0, 0.58124, -0.81373, 0, 0.81373, 0.58124, 0.21, 0.25, 0.25)
+mesh = SubResource("CylinderMesh_17")
+
+[node name="KneeSpurR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.98639, 0.10783, 0.12409, -0.1644, 0.647, 0.74456, 0, -0.75483, 0.65592, 0.21, 0.56, -0.19)
+mesh = SubResource("CylinderMesh_18")
 
 [node name="ShinBloodR" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.951057, -0.309017, 0, 0.309017, 0.951057, 0.21, 0.35, 0.05)
-mesh = SubResource("BoxMesh_box_11")
+transform = Transform3D(0.06, 0, 0, 0, 0.18157, 0.01242, 0, -0.12422, 0.01816, 0.205, 0.38, -0.08)
+mesh = SubResource("SphereMesh_19")
+
+[node name="ToeR00" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, -0.31962, 0.94755, -0.99008, 0.13316, 0.04492, -0.14053, -0.93814, -0.31645, 0.208, 0.035, -0.09523)
+mesh = SubResource("CylinderMesh_20")
+
+[node name="ToeR01" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.78083, -0.29911, -0.54848, 0.62474, -0.37384, -0.68552, 0, -0.87794, 0.47877, 0.184, 0.025, -0.16568)
+mesh = SubResource("CylinderMesh_21")
+
+[node name="ToeR10" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0, 1.0, -0.99123, 0.13216, 0, -0.13216, -0.99123, 0, 0.22, 0.035, -0.0975)
+mesh = SubResource("CylinderMesh_22")
+
+[node name="ToeR11" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0, 1.0, -0.92848, -0.37139, 0, 0.37139, -0.92848, 0, 0.22, 0.025, -0.1725)
+mesh = SubResource("CylinderMesh_23")
+
+[node name="ToeR20" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0, 0.31962, 0.94755, -0.99008, 0.13316, -0.04492, -0.14053, -0.93814, 0.31645, 0.232, 0.035, -0.09523)
+mesh = SubResource("CylinderMesh_20")
+
+[node name="ToeR21" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.78083, 0.29911, 0.54848, -0.62474, -0.37384, -0.68552, 0, -0.87794, 0.47877, 0.256, 0.025, -0.16568)
+mesh = SubResource("CylinderMesh_21")
 
 [node name="Body" type="Node3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 0.900319, -0.435231, 0, 0.435231, 0.900319, 0, 1, 0)
+transform = Transform3D(1.0, 0, 0, 0, 0.90045, 0.43497, 0, -0.43497, 0.90045, 0, 1.0, 0)
 
 [node name="Pelvis" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.2, 0, 0, 0, 0.8, 0, 0, 0, 1, 0, 0, 0)
-mesh = SubResource("SphereMesh_sphere_12")
+transform = Transform3D(1.15, 0, 0, 0, 0.65, 0, 0, 0, 0.85, 0, 0, 0.02)
+mesh = SubResource("SphereMesh_24")
 
-[node name="Torso" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("CapsuleMesh_capsule_13")
+[node name="Waist" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.1, 0, 0, 0, 1.0, 0, 0, 0, 0.75, 0, 0.24, 0.03)
+mesh = SubResource("CapsuleMesh_25")
 
-[node name="Chest" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.25, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0, 0.72, -0.02)
-mesh = SubResource("SphereMesh_sphere_14")
+[node name="Ribcage" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.15, 0, 0, 0, 1.1, 0, 0, 0, 0.8, 0, 0.58, 0.02)
+mesh = SubResource("SphereMesh_26")
+
+[node name="Hump" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.35, 0, 0, 0, 0.9, 0, 0, 0, 0.8, 0, 0.8, 0.12)
+mesh = SubResource("SphereMesh_27")
+
+[node name="PecL" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.19417, 0.23642, 0, -0.3694, 0.76427, 0, 0, 0, 0.55, -0.12, 0.73, -0.13)
+mesh = SubResource("SphereMesh_28")
+
+[node name="TrapL" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.38159, -0.31153, 0, 0.58413, 0.73685, 0, 0, 0, 1.0, -0.2, 0.93, 0.07)
+mesh = SubResource("SphereMesh_28")
+
+[node name="LatL" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.67824, 0.39585, 0, -0.17318, 1.55026, 0, 0, 0, 1.0, -0.24, 0.6, 0.05)
+mesh = SubResource("SphereMesh_29")
+
+[node name="RibL0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, 0.86826, 0.32891, -0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, -0.165, 0.38, -0.04816)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibL1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, 0.86826, 0.32891, -0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, -0.165, 0.445, -0.09757)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibL2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, 0.86826, 0.32891, -0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, -0.165, 0.51, -0.12258)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibL3" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, 0.86826, 0.32891, -0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, -0.165, 0.575, -0.13317)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibL4" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, 0.86826, 0.32891, -0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, -0.165, 0.64, -0.13182)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="ShoulderSpurL00" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.97014, -0.22228, 0.09704, 0.24254, 0.88911, -0.38815, 0, 0.4001, 0.91647, -0.26078, 1.06313, 0.13741)
+mesh = SubResource("CylinderMesh_31")
+
+[node name="ShoulderSpurL01" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.98184, -0.16119, 0.09999, 0.18969, 0.83436, -0.51756, 0, 0.52713, 0.84978, -0.29857, 1.23428, 0.23043)
+mesh = SubResource("CylinderMesh_32")
+
+[node name="ShoulderSpurL10" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.8064, -0.50902, 0.30102, 0.59136, 0.69412, -0.41048, 0, 0.50902, 0.86076, -0.27639, 1.02963, 0.18639)
+mesh = SubResource("CylinderMesh_33")
+
+[node name="ShoulderSpurL11" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.89752, -0.34247, 0.27781, 0.44098, 0.69702, -0.56542, 0, 0.62999, 0.77661, -0.34257, 1.13986, 0.27757)
+mesh = SubResource("CylinderMesh_34")
+
+[node name="ShoulderSpurL20" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99228, -0.08536, 0.08999, 0.12403, 0.68286, -0.71994, 0, 0.72554, 0.68818, -0.24516, 1.02131, 0.2439)
+mesh = SubResource("CylinderMesh_35")
+
+[node name="ShoulderSpurL21" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99693, -0.05192, 0.0586, 0.07829, 0.6611, -0.7462, 0, 0.7485, 0.66314, -0.25455, 1.11643, 0.3487)
+mesh = SubResource("CylinderMesh_36")
+
+[node name="PecR" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.19417, -0.23642, 0, 0.3694, 0.76427, 0, 0, 0, 0.55, 0.12, 0.73, -0.13)
+mesh = SubResource("SphereMesh_28")
+
+[node name="TrapR" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.38159, 0.31153, 0, -0.58413, 0.73685, 0, 0, 0, 1.0, 0.2, 0.93, 0.07)
+mesh = SubResource("SphereMesh_28")
+
+[node name="LatR" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.67824, -0.39585, 0, 0.17318, 1.55026, 0, 0, 0, 1.0, 0.24, 0.6, 0.05)
+mesh = SubResource("SphereMesh_29")
+
+[node name="RibR0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, -0.86826, -0.32891, 0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, 0.165, 0.38, -0.04816)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibR1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, -0.86826, -0.32891, 0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, 0.165, 0.445, -0.09757)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibR2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, -0.86826, -0.32891, 0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, 0.165, 0.51, -0.12258)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibR3" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, -0.86826, -0.32891, 0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, 0.165, 0.575, -0.13317)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="RibR4" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.37139, -0.86826, -0.32891, 0.92848, -0.34731, -0.13157, 0, -0.35425, 0.93515, 0.165, 0.64, -0.13182)
+mesh = SubResource("CylinderMesh_30")
+
+[node name="ShoulderSpurR00" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.97014, 0.22228, -0.09704, -0.24254, 0.88911, -0.38815, 0, 0.4001, 0.91647, 0.26078, 1.06313, 0.13741)
+mesh = SubResource("CylinderMesh_31")
+
+[node name="ShoulderSpurR01" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.98184, 0.16119, -0.09999, -0.18969, 0.83436, -0.51756, 0, 0.52713, 0.84978, 0.29857, 1.23428, 0.23043)
+mesh = SubResource("CylinderMesh_32")
+
+[node name="ShoulderSpurR10" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.8064, 0.50902, -0.30102, -0.59136, 0.69412, -0.41048, 0, 0.50902, 0.86076, 0.27639, 1.02963, 0.18639)
+mesh = SubResource("CylinderMesh_33")
+
+[node name="ShoulderSpurR11" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.89752, 0.34247, -0.27781, -0.44098, 0.69702, -0.56542, 0, 0.62999, 0.77661, 0.34257, 1.13986, 0.27757)
+mesh = SubResource("CylinderMesh_34")
+
+[node name="ShoulderSpurR20" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99228, 0.08536, -0.08999, -0.12403, 0.68286, -0.71994, 0, 0.72554, 0.68818, 0.24516, 1.02131, 0.2439)
+mesh = SubResource("CylinderMesh_35")
+
+[node name="ShoulderSpurR21" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99693, 0.05192, -0.0586, -0.07829, 0.6611, -0.7462, 0, 0.7485, 0.66314, 0.25455, 1.11643, 0.3487)
+mesh = SubResource("CylinderMesh_36")
 
 [node name="Spine0" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.25)
-mesh = SubResource("SphereMesh_sphere_15")
+transform = Transform3D(1.0, 0, 0, 0, 0.44767, -0.8942, 0, 0.8942, 0.44767, 0, 0.11319, 0.22629)
+mesh = SubResource("CylinderMesh_37")
 
 [node name="Spine1" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0.25)
-mesh = SubResource("SphereMesh_sphere_15")
+transform = Transform3D(1.0, 0, 0, 0, 0.46549, -0.88505, 0, 0.88505, 0.46549, 0, 0.23715, 0.2402)
+mesh = SubResource("CylinderMesh_38")
 
 [node name="Spine2" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0.25)
-mesh = SubResource("SphereMesh_sphere_15")
+transform = Transform3D(1.0, 0, 0, 0, 0.4545, -0.89075, 0, 0.89075, 0.4545, 0, 0.3462, 0.23186)
+mesh = SubResource("CylinderMesh_39")
 
 [node name="Spine3" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0.25)
-mesh = SubResource("SphereMesh_sphere_15")
+transform = Transform3D(1.0, 0, 0, 0, 0.47613, -0.87938, 0, 0.87938, 0.47613, 0, 0.47475, 0.25901)
+mesh = SubResource("CylinderMesh_40")
 
-[node name="Head" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(0.9, 0, 0, 0, 1.1, 0, 0, 0, 1.25, 0, 1.12, -0.1)
-mesh = SubResource("SphereMesh_sphere_16")
+[node name="Spine4" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.47624, -0.87932, 0, 0.87932, 0.47624, 0, 0.58985, 0.2842)
+mesh = SubResource("CylinderMesh_41")
 
-[node name="Jaw" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0.98, -0.22)
-mesh = SubResource("BoxMesh_box_17")
+[node name="Spine5" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.49141, -0.87093, 0, 0.87093, 0.49141, 0, 0.72113, 0.36139)
+mesh = SubResource("CylinderMesh_42")
 
-[node name="BloodChest" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.4, 0, 0, 0, 1.7, 0, 0, 0, 0.35, 0.04, 0.62, -0.25)
-mesh = SubResource("SphereMesh_sphere_18")
+[node name="Spine6" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.48691, -0.87345, 0, 0.87345, 0.48691, 0, 0.83038, 0.39592)
+mesh = SubResource("CylinderMesh_43")
 
-[node name="BloodMouth" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.1, 0, 0, 0, 0.8, 0, 0, 0, 0.5, 0, 0.95, -0.33)
-mesh = SubResource("SphereMesh_sphere_19")
+[node name="Spine7" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.48961, -0.87194, 0, 0.87194, 0.48961, 0, 0.94871, 0.38543)
+mesh = SubResource("CylinderMesh_44")
 
-[node name="BloodBack" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.3, 0, 0, 0, 1.6, 0, 0, 0, 0.35, -0.08, 0.5, 0.25)
-mesh = SubResource("SphereMesh_sphere_20")
+[node name="Spine8" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.47227, -0.88146, 0, 0.88146, 0.47227, 0, 1.04673, 0.30411)
+mesh = SubResource("CylinderMesh_45")
 
-[node name="BloodPelvis" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1.4, 0, 0, 0, 1, 0, 0, 0, 0.4, 0.1, 0.05, -0.2)
-mesh = SubResource("SphereMesh_sphere_21")
+[node name="Neck" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.85252, 0.52269, 0, -0.52269, 0.85252, 0, 1.02, -0.07)
+mesh = SubResource("CapsuleMesh_46")
 
-[node name="ShoulderL" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.88, 0)
-mesh = SubResource("SphereMesh_sphere_23")
+[node name="NeckCordL" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99746, 0.07093, 0.00674, -0.07125, 0.99299, 0.09433, 0, -0.09457, 0.99552, -0.0425, 1.005, -0.14)
+mesh = SubResource("CylinderMesh_47")
 
-[node name="UpperArmL" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(0.990268, 0.139173, 0, -0.139173, 0.990268, 0, 0, 0, 1, -0.42, 0.52, -0.05)
-mesh = SubResource("BoxMesh_box_24")
+[node name="NeckCordR" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.99746, -0.07093, -0.00674, 0.07125, 0.99299, 0.09433, 0, -0.09457, 0.99552, 0.0425, 1.005, -0.14)
+mesh = SubResource("CylinderMesh_47")
 
-[node name="ForearmL" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, -0.47, -0.2, -0.16)
-mesh = SubResource("BoxMesh_box_25")
+[node name="ChestBlood0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.09, 0, 0, 0, 0.2, 0, 0, 0, 0.022, 0, 0.78, -0.139)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ForearmBloodL" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, -0.475, -0.35, -0.2)
-mesh = SubResource("BoxMesh_box_26")
+[node name="ChestBlood1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04865, -0.0305, 0.00437, 0.00599, 0.25813, 0, -0.00986, 0.00618, 0.02156, -0.1, 0.66, -0.17417)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ClawL0" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, -0.515, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="ChestBlood2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04428, 0.02367, -0.00351, -0.0036, 0.29904, 0, 0.00715, 0.00382, 0.02172, 0.08, 0.62, -0.18469)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ClawL1" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, -0.47, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="ChestBlood3" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04534, 0.04488, -0.00692, -0.01478, 0.15285, 0, 0.01503, 0.01487, 0.02088, 0.16, 0.74, -0.12276)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ClawL2" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, -0.425, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="ChestBlood4" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.03234, -0.03746, 0.00734, 0.00695, 0.19601, 0, -0.01144, 0.01325, 0.02074, -0.17, 0.52, -0.15338)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ShoulderR" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.88, 0)
-mesh = SubResource("SphereMesh_sphere_27")
+[node name="ChestBlood5" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.02991, -0.01098, -0.00132, 0.0015, 0.21973, 0, 0.0018, -0.00066, 0.02196, 0.03, 0.5, -0.18513)
+mesh = SubResource("SphereMesh_19")
 
-[node name="UpperArmR" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(0.990268, -0.139173, 0, 0.139173, 0.990268, 0, 0, 0, 1, 0.42, 0.52, -0.05)
-mesh = SubResource("BoxMesh_box_28")
+[node name="ChestBlood6" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.0248, 0.01393, 0.00176, -0.0025, 0.1393, 0, -0.00199, -0.00112, 0.02193, -0.04, 0.42, -0.15858)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ForearmR" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0.47, -0.2, -0.16)
-mesh = SubResource("BoxMesh_box_29")
+[node name="BellyBlood0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.02975, -0.00794, 0.00263, 0.0015, 0.1598, 0, -0.00359, 0.00096, 0.02184, -0.06, 0.24, -0.083)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ForearmBloodR" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0.475, -0.35, -0.2)
-mesh = SubResource("BoxMesh_box_30")
+[node name="BellyBlood1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.02981, -0.00995, -0.0022, 0.0015, 0.19975, 0, 0.00299, -0.001, 0.02189, 0.05, 0.18, -0.083)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ClawR0" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, 0.425, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="BellyBlood2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.02996, -0.005, 0, 0.0015, 0.09988, 0, 0, 0, 0.022, 0, 0.3, -0.083)
+mesh = SubResource("SphereMesh_19")
 
-[node name="ClawR1" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, 0.47, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="ChinDrip" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.07, 0, 0, 0, 0.12895, -0.00857, 0, 0.05452, 0.02026, 0, 0.92, -0.2)
+mesh = SubResource("SphereMesh_48")
 
-[node name="ClawR2" type="MeshInstance3D" parent="MeshRoot/Body"]
-transform = Transform3D(1, 0, 0, 0, -0.965926, 0.258819, 0, -0.258819, -0.965926, 0.515, -0.68, -0.27)
-mesh = SubResource("PrismMesh_prism_22")
+[node name="BackBlood0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04771, 0.02761, -0.00608, -0.00599, 0.23827, 0, 0.01372, 0.00794, 0.02114, -0.14, 0.62, 0.24755)
+mesh = SubResource("SphereMesh_19")
+
+[node name="BackBlood1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04865, 0.02347, 0.00437, -0.00599, 0.19856, 0, -0.00986, -0.00476, 0.02156, 0.1, 0.48, 0.21136)
+mesh = SubResource("SphereMesh_19")
+
+[node name="BackBlood2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04572, 0.01544, 0.00857, -0.00599, 0.13899, 0, -0.01933, -0.00653, 0.02026, 0.2, 0.75, 0.27502)
+mesh = SubResource("SphereMesh_19")
+
+[node name="BackBlood3" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.04939, 0.01429, -0.0022, -0.00599, 0.11914, 0, 0.00496, 0.00143, 0.02189, -0.05, 0.9, 0.30434)
+mesh = SubResource("SphereMesh_19")
+
+[node name="SealRing" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0, -1.0, 0, 1.0, 0, 0, 0.55, -0.206)
+mesh = SubResource("TorusMesh_49")
+
+[node name="SealTri0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.86573, 0.5005, 0, -0.5005, 0.86573, 0, 0, 0, 1.0, 0.037, 0.529, -0.21)
+mesh = SubResource("CylinderMesh_50")
+
+[node name="SealTri1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0, -1.0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0.593, -0.21)
+mesh = SubResource("CylinderMesh_51")
+
+[node name="SealTri2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-0.86573, 0.5005, 0, -0.5005, -0.86573, 0, 0, 0, 1.0, -0.037, 0.529, -0.21)
+mesh = SubResource("CylinderMesh_50")
+
+[node name="SealSpine" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.99979, 0.02069, 0, 0.02069, 0.99979, 0, 0.535, -0.199)
+mesh = SubResource("CylinderMesh_52")
+
+[node name="BackRune0" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.19612, 0.98058, 0, -0.98058, 0.19612, 0, 0, 0, 1.0, 0, 0.31, 0.19574)
+mesh = SubResource("CylinderMesh_53")
+
+[node name="BackRune1" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.19612, 0.98058, 0, -0.98058, 0.19612, 0, 0, 0, 1.0, 0, 0.43, 0.20158)
+mesh = SubResource("CylinderMesh_53")
+
+[node name="BackRune2" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.19612, 0.98058, 0, -0.98058, 0.19612, 0, 0, 0, 1.0, 0, 0.73, 0.3089)
+mesh = SubResource("CylinderMesh_53")
+
+[node name="BackRune3" type="MeshInstance3D" parent="MeshRoot/Body"]
+transform = Transform3D(0.19612, 0.98058, 0, -0.98058, 0.19612, 0, 0, 0, 1.0, 0, 0.87, 0.31568)
+mesh = SubResource("CylinderMesh_53")
+
+[node name="ArmPivotL" type="Node3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, -0.36, 0.86, 0.02)
+
+[node name="ShoulderL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(1.1, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, 0, 0)
+mesh = SubResource("SphereMesh_54")
+
+[node name="UpperArmL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.32, 0)
+mesh = SubResource("CylinderMesh_55")
+
+[node name="BicepL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(1.0, 0, 0, 0, 2.4, 0, 0, 0, 1.0, 0, -0.26, -0.025)
+mesh = SubResource("SphereMesh_56")
+
+[node name="UpperArmBloodL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(0.03695, 0.01648, -0.01242, -0.00449, 0.199, 0, 0.02528, 0.01127, 0.01816, -0.04, -0.14, -0.06)
+mesh = SubResource("SphereMesh_19")
+
+[node name="UpperArmBlood2L" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(0.03, 0, 0, 0, 0.14, 0, 0, 0, 0.022, 0, -0.4, -0.065)
+mesh = SubResource("SphereMesh_19")
+
+[node name="ArmRuneL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.5, 0)
+mesh = SubResource("TorusMesh_57")
+
+[node name="ElbowL" type="Node3D" parent="MeshRoot/Body/ArmPivotL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.64, 0)
+
+[node name="ElbowKnobL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+mesh = SubResource("SphereMesh_58")
+
+[node name="ElbowSpikeL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(0, 0, 1.0, 0.95358, 0.30113, 0, -0.30113, 0.95358, 0, 0, 0.03, 0.125)
+mesh = SubResource("CylinderMesh_59")
+
+[node name="ForearmL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.3, 0)
+mesh = SubResource("CylinderMesh_60")
+
+[node name="ForearmBulgeL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 2.6, 0, 0, 0, 1.0, 0, -0.15, 0.01)
+mesh = SubResource("SphereMesh_61")
+
+[node name="ForearmRuneL0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.27, 0)
+mesh = SubResource("TorusMesh_62")
+
+[node name="ForearmRuneL1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.33, 0)
+mesh = SubResource("TorusMesh_62")
+
+[node name="ForearmSpurL0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 0.5547, -0.83205, 0, 0.83205, 0.5547, 0, -0.19, 0.085)
+mesh = SubResource("CylinderMesh_63")
+
+[node name="ForearmSpurL1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 0.5547, -0.83205, 0, 0.83205, 0.5547, 0, -0.33, 0.085)
+mesh = SubResource("CylinderMesh_63")
+
+[node name="ForearmBloodL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.46, 0)
+mesh = SubResource("CylinderMesh_64")
+
+[node name="HandL" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.6, 0)
+
+[node name="PalmL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.065, 0)
+mesh = SubResource("BoxMesh_65")
+
+[node name="FingerL0" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(0.9909, -0.13459, 0, 0.13459, 0.9909, 0, 0, 0, 1.0, 0.045, -0.13, 0)
+
+[node name="KnuckleL0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL0"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.07425, 0)
+mesh = SubResource("CylinderMesh_66")
+
+[node name="ClawL00" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL0"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2035, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawL01" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL0"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3085, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerL1" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(0.99899, -0.04498, 0, 0.04498, 0.99899, 0, 0, 0, 1.0, 0.015, -0.13, 0)
+
+[node name="KnuckleL1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL1"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.08475, 0)
+mesh = SubResource("CylinderMesh_69")
+
+[node name="ClawL10" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL1"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2245, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawL11" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL1"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3295, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerL2" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(0.99899, 0.04498, 0, -0.04498, 0.99899, 0, 0, 0, 1.0, -0.015, -0.13, 0)
+
+[node name="KnuckleL2" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL2"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.08475, 0)
+mesh = SubResource("CylinderMesh_69")
+
+[node name="ClawL20" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL2"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2245, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawL21" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL2"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3295, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerL3" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(0.9909, 0.13459, 0, -0.13459, 0.9909, 0, 0, 0, 1.0, -0.045, -0.13, 0)
+
+[node name="KnuckleL3" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL3"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.07425, 0)
+mesh = SubResource("CylinderMesh_66")
+
+[node name="ClawL30" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL3"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2035, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawL31" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/FingerL3"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3085, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="ThumbL" type="Node3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL"]
+transform = Transform3D(0.76484, -0.64422, 0, 0.59336, 0.70447, -0.38942, 0.25087, 0.29784, 0.92106, 0.055, -0.04, -0.02)
+
+[node name="ThumbKnuckleL" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/ThumbL"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.045, 0)
+mesh = SubResource("CylinderMesh_70")
+
+[node name="ThumbClawL0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/ThumbL"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97014, -0.24254, 0, -0.24254, 0.97014, 0, -0.13, -0.01)
+mesh = SubResource("CylinderMesh_71")
+
+[node name="ThumbClawL1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotL/ElbowL/HandL/ThumbL"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.86824, -0.49614, 0, -0.49614, 0.86824, 0, -0.205, -0.04)
+mesh = SubResource("CylinderMesh_72")
+
+[node name="ArmPivotR" type="Node3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0.36, 0.86, 0.02)
+
+[node name="ShoulderR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(1.1, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, 0, 0)
+mesh = SubResource("SphereMesh_54")
+
+[node name="UpperArmR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.32, 0)
+mesh = SubResource("CylinderMesh_55")
+
+[node name="BicepR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(1.0, 0, 0, 0, 2.4, 0, 0, 0, 1.0, 0, -0.26, -0.025)
+mesh = SubResource("SphereMesh_56")
+
+[node name="UpperArmBloodR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(0.03695, -0.01648, 0.01242, 0.00449, 0.199, 0, -0.02528, 0.01127, 0.01816, 0.04, -0.14, -0.06)
+mesh = SubResource("SphereMesh_19")
+
+[node name="UpperArmBlood2R" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(0.03, 0, 0, 0, 0.14, 0, 0, 0, 0.022, 0, -0.4, -0.065)
+mesh = SubResource("SphereMesh_19")
+
+[node name="ArmRuneR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.5, 0)
+mesh = SubResource("TorusMesh_57")
+
+[node name="ElbowR" type="Node3D" parent="MeshRoot/Body/ArmPivotR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.64, 0)
+
+[node name="ElbowKnobR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+mesh = SubResource("SphereMesh_58")
+
+[node name="ElbowSpikeR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(0, 0, 1.0, 0.95358, 0.30113, 0, -0.30113, 0.95358, 0, 0, 0.03, 0.125)
+mesh = SubResource("CylinderMesh_59")
+
+[node name="ForearmR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.3, 0)
+mesh = SubResource("CylinderMesh_60")
+
+[node name="ForearmBulgeR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 2.6, 0, 0, 0, 1.0, 0, -0.15, 0.01)
+mesh = SubResource("SphereMesh_61")
+
+[node name="ForearmRuneR0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.27, 0)
+mesh = SubResource("TorusMesh_62")
+
+[node name="ForearmRuneR1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.33, 0)
+mesh = SubResource("TorusMesh_62")
+
+[node name="ForearmSpurR0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 0.5547, -0.83205, 0, 0.83205, 0.5547, 0, -0.19, 0.085)
+mesh = SubResource("CylinderMesh_63")
+
+[node name="ForearmSpurR1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 0.5547, -0.83205, 0, 0.83205, 0.5547, 0, -0.33, 0.085)
+mesh = SubResource("CylinderMesh_63")
+
+[node name="ForearmBloodR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.46, 0)
+mesh = SubResource("CylinderMesh_64")
+
+[node name="HandR" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.6, 0)
+
+[node name="PalmR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.065, 0)
+mesh = SubResource("BoxMesh_65")
+
+[node name="FingerR0" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(0.9909, 0.13459, 0, -0.13459, 0.9909, 0, 0, 0, 1.0, -0.045, -0.13, 0)
+
+[node name="KnuckleR0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR0"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.07425, 0)
+mesh = SubResource("CylinderMesh_66")
+
+[node name="ClawR00" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR0"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2035, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawR01" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR0"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3085, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerR1" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(0.99899, 0.04498, 0, -0.04498, 0.99899, 0, 0, 0, 1.0, -0.015, -0.13, 0)
+
+[node name="KnuckleR1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR1"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.08475, 0)
+mesh = SubResource("CylinderMesh_69")
+
+[node name="ClawR10" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR1"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2245, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawR11" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR1"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3295, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerR2" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(0.99899, -0.04498, 0, 0.04498, 0.99899, 0, 0, 0, 1.0, 0.015, -0.13, 0)
+
+[node name="KnuckleR2" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR2"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.08475, 0)
+mesh = SubResource("CylinderMesh_69")
+
+[node name="ClawR20" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR2"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2245, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawR21" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR2"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3295, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="FingerR3" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(0.9909, -0.13459, 0, 0.13459, 0.9909, 0, 0, 0, 1.0, 0.045, -0.13, 0)
+
+[node name="KnuckleR3" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR3"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.07425, 0)
+mesh = SubResource("CylinderMesh_66")
+
+[node name="ClawR30" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR3"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97513, -0.22162, 0, -0.22162, 0.97513, 0, -0.2035, -0.0125)
+mesh = SubResource("CylinderMesh_67")
+
+[node name="ClawR31" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/FingerR3"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.87622, -0.48192, 0, -0.48192, 0.87622, 0, -0.3085, -0.0525)
+mesh = SubResource("CylinderMesh_68")
+
+[node name="ThumbR" type="Node3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR"]
+transform = Transform3D(0.76484, 0.64422, 0, -0.59336, 0.70447, -0.38942, -0.25087, 0.29784, 0.92106, -0.055, -0.04, -0.02)
+
+[node name="ThumbKnuckleR" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/ThumbR"]
+transform = Transform3D(-1.0, 0, 0, 0, -1.0, 0, 0, 0, 1.0, 0, -0.045, 0)
+mesh = SubResource("CylinderMesh_70")
+
+[node name="ThumbClawR0" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/ThumbR"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97014, -0.24254, 0, -0.24254, 0.97014, 0, -0.13, -0.01)
+mesh = SubResource("CylinderMesh_71")
+
+[node name="ThumbClawR1" type="MeshInstance3D" parent="MeshRoot/Body/ArmPivotR/ElbowR/HandR/ThumbR"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.86824, -0.49614, 0, -0.49614, 0.86824, 0, -0.205, -0.04)
+mesh = SubResource("CylinderMesh_72")
+
+[node name="Head" type="Node3D" parent="MeshRoot/Body"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, 1.17, -0.11)
+
+[node name="Cranium" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9, 0, 0, 0, 1.12, 0, 0, 0, 1.05, 0, 0.05, 0.02)
+mesh = SubResource("SphereMesh_73")
+
+[node name="Face" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.95, 0, 0, 0, 1.05, 0, 0, 0, 1.0, 0, -0.055, -0.05)
+mesh = SubResource("SphereMesh_74")
+
+[node name="CheekboneL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.33747, 0.17731, 0, -0.41373, 0.5732, 0, 0, 0, 0.9, -0.075, -0.03, -0.11)
+mesh = SubResource("SphereMesh_75")
+
+[node name="HornL0" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.93633, -0.34692, 0.05414, 0.35112, 0.92513, -0.14437, 0, 0.15419, 0.98804, -0.0975, 0.2, -0.01)
+mesh = SubResource("CylinderMesh_76")
+
+[node name="HornL1" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.91037, -0.38236, 0.15822, 0.4138, 0.84119, -0.34809, 0, 0.38236, 0.92401, -0.145, 0.315, 0.025)
+mesh = SubResource("CylinderMesh_77")
+
+[node name="HornL2" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.98058, -0.1543, 0.12105, 0.19612, 0.77152, -0.60523, 0, 0.61721, 0.7868, -0.18, 0.42, 0.09)
+mesh = SubResource("CylinderMesh_78")
+
+[node name="HornL3" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.99228, 0.07785, -0.09656, -0.12403, 0.6228, -0.77249, 0, 0.7785, 0.62765, -0.185, 0.51, 0.18)
+mesh = SubResource("CylinderMesh_79")
+
+[node name="HornL4" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.78087, 0.36214, -0.50902, -0.6247, 0.45268, -0.63627, 0, 0.81482, 0.57971, -0.16, 0.575, 0.275)
+mesh = SubResource("CylinderMesh_80")
+
+[node name="BrowL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.82843, 0.15404, 0.1718, -0.42144, 0.27919, -0.14844, -0.36891, 0.02697, 0.55538, -0.055, 0.035, -0.142)
+mesh = SubResource("SphereMesh_81")
+
+[node name="SocketL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.86023, 0.41554, 0.29552, -0.43497, 0.90045, 0, -0.2661, -0.12854, 0.95534, -0.054, 0.003, -0.148)
+mesh = SubResource("BoxMesh_82")
+
+[node name="EyeL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.86023, 0.41554, 0.29552, -0.43497, 0.90045, 0, -0.2661, -0.12854, 0.95534, -0.054, 0.003, -0.155)
+mesh = SubResource("BoxMesh_83")
+
+[node name="PupilL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.8, 0, 0, 0, 1.3, 0, 0, 0, 0.5, -0.056, 0.001, -0.163)
+mesh = SubResource("SphereMesh_84")
+
+[node name="NostrilL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.93937, 0.3429, 0, -0.3429, 0.93937, 0, 0, 0, 1.0, -0.012, -0.045, -0.158)
+mesh = SubResource("BoxMesh_85")
+
+[node name="GrinScarL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.83446, -0.48263, 0.26596, 0.55106, 0.73084, -0.40274, 0, 0.48263, 0.87582, -0.0875, -0.0715, -0.1225)
+mesh = SubResource("CylinderMesh_86")
+
+[node name="LipBloodL" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.01632, -0.00925, 0.01129, 0.00299, 0.07416, 0, -0.01117, 0.00633, 0.01651, -0.068, -0.125, -0.145)
+mesh = SubResource("SphereMesh_48")
+
+[node name="CheekboneR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.33747, -0.17731, 0, 0.41373, 0.5732, 0, 0, 0, 0.9, 0.075, -0.03, -0.11)
+mesh = SubResource("SphereMesh_75")
+
+[node name="HornR0" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.93633, 0.34692, -0.05414, -0.35112, 0.92513, -0.14437, 0, 0.15419, 0.98804, 0.0975, 0.2, -0.01)
+mesh = SubResource("CylinderMesh_76")
+
+[node name="HornR1" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.91037, 0.38236, -0.15822, -0.4138, 0.84119, -0.34809, 0, 0.38236, 0.92401, 0.145, 0.315, 0.025)
+mesh = SubResource("CylinderMesh_77")
+
+[node name="HornR2" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.98058, 0.1543, -0.12105, -0.19612, 0.77152, -0.60523, 0, 0.61721, 0.7868, 0.18, 0.42, 0.09)
+mesh = SubResource("CylinderMesh_78")
+
+[node name="HornR3" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.99228, -0.07785, 0.09656, 0.12403, 0.6228, -0.77249, 0, 0.7785, 0.62765, 0.185, 0.51, 0.18)
+mesh = SubResource("CylinderMesh_79")
+
+[node name="HornR4" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.78087, -0.36214, 0.50902, 0.6247, 0.45268, -0.63627, 0, 0.81482, 0.57971, 0.16, 0.575, 0.275)
+mesh = SubResource("CylinderMesh_80")
+
+[node name="BrowR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.82843, -0.15404, -0.1718, 0.42144, 0.27919, -0.14844, 0.36891, 0.02697, 0.55538, 0.055, 0.035, -0.142)
+mesh = SubResource("SphereMesh_81")
+
+[node name="SocketR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.86023, -0.41554, -0.29552, 0.43497, 0.90045, 0, 0.2661, -0.12854, 0.95534, 0.054, 0.003, -0.148)
+mesh = SubResource("BoxMesh_82")
+
+[node name="EyeR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.86023, -0.41554, -0.29552, 0.43497, 0.90045, 0, 0.2661, -0.12854, 0.95534, 0.054, 0.003, -0.155)
+mesh = SubResource("BoxMesh_83")
+
+[node name="PupilR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.8, 0, 0, 0, 1.3, 0, 0, 0, 0.5, 0.056, 0.001, -0.163)
+mesh = SubResource("SphereMesh_84")
+
+[node name="NostrilR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.93937, -0.3429, 0, 0.3429, 0.93937, 0, 0, 0, 1.0, 0.012, -0.045, -0.158)
+mesh = SubResource("BoxMesh_85")
+
+[node name="GrinScarR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.83446, 0.48263, -0.26596, -0.55106, 0.73084, -0.40274, 0, 0.48263, 0.87582, 0.0875, -0.0715, -0.1225)
+mesh = SubResource("CylinderMesh_86")
+
+[node name="LipBloodR" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.01632, 0.00925, -0.01129, -0.00299, 0.07416, 0, 0.01117, 0.00633, 0.01651, 0.068, -0.125, -0.145)
+mesh = SubResource("SphereMesh_48")
+
+[node name="Thorn0" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.94046, 0.33733, 0.04173, -0.3399, 0.93335, 0.11547, 0, -0.12278, 0.99243, 0.13626, 0.215, -0.01959)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn1" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9374, 0.34675, -0.03236, -0.34825, 0.93335, -0.08709, 0, 0.09291, 0.99567, 0.14006, 0.215, 0.06753)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn2" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.97077, 0.23075, -0.066, -0.24, 0.93335, -0.26696, 0, 0.27499, 0.96145, 0.0932, 0.215, 0.14108)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn3" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.0, 0, 0, 0, 0.93335, -0.35898, 0, 0.35898, 0.93335, 0, 0.215, 0.175)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn4" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.97077, -0.23075, 0.066, 0.24, 0.93335, -0.26696, 0, 0.27499, 0.96145, -0.0932, 0.215, 0.14108)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn5" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9374, -0.34675, 0.03236, 0.34825, 0.93335, -0.08709, 0, 0.09291, 0.99567, -0.14006, 0.215, 0.06753)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="Thorn6" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.94046, -0.33733, -0.04173, 0.3399, 0.93335, 0.11547, 0, -0.12278, 0.99243, -0.13626, 0.215, -0.01959)
+mesh = SubResource("CylinderMesh_87")
+
+[node name="BrowSigil" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.0, 0, 0, 0, 0.19867, -0.98007, 0, 0.98007, 0.19867, 0, 0.095, -0.15)
+mesh = SubResource("TorusMesh_88")
+
+[node name="BrowSigilLine" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.97799, -0.20864, 0, -0.20864, 0.97799, 0, 0.0975, -0.15)
+mesh = SubResource("CylinderMesh_89")
+
+[node name="Mouth" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.1, 0, 0, 0, 0.4, 0, 0, 0, 0.55, 0, -0.1, -0.11)
+mesh = SubResource("SphereMesh_90")
+
+[node name="ToothU0" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, -0.072, -0.105, -0.1209)
+mesh = SubResource("CylinderMesh_91")
+
+[node name="ToothU1" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, -0.06, -0.101, -0.1304)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU2" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, -0.048, -0.112, -0.13818)
+mesh = SubResource("CylinderMesh_93")
+
+[node name="ToothU3" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, -0.036, -0.101, -0.14422)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU4" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, -0.024, -0.105, -0.14854)
+mesh = SubResource("CylinderMesh_91")
+
+[node name="ToothU5" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, -0.012, -0.101, -0.15114)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU6" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, 0, -0.105, -0.152)
+mesh = SubResource("CylinderMesh_91")
+
+[node name="ToothU7" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, 0.012, -0.101, -0.15114)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU8" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, 0.024, -0.105, -0.14854)
+mesh = SubResource("CylinderMesh_91")
+
+[node name="ToothU9" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, 0.036, -0.101, -0.14422)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU10" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, 0.048, -0.112, -0.13818)
+mesh = SubResource("CylinderMesh_93")
+
+[node name="ToothU11" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, -0.05996, 0, -0.05996, -0.9982, 0, 0, 0, -1.0, 0.06, -0.101, -0.1304)
+mesh = SubResource("CylinderMesh_92")
+
+[node name="ToothU12" type="MeshInstance3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(0.9982, 0.05996, 0, 0.05996, -0.9982, 0, 0, 0, -1.0, 0.072, -0.105, -0.1209)
+mesh = SubResource("CylinderMesh_91")
+
+[node name="Jaw" type="Node3D" parent="MeshRoot/Body/Head"]
+transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 0, -0.08, 0)
+
+[node name="JawBone" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.85, 0, 0, 0, 0.42, 0, 0, 0, 1.0, 0, -0.035, -0.06)
+mesh = SubResource("SphereMesh_94")
+
+[node name="Chin" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.8, 0, 0, 0, 1.0, 0, 0, 0, 0.8, 0, -0.065, -0.135)
+mesh = SubResource("SphereMesh_95")
+
+[node name="ToothL0" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, -0.066, -0.003, -0.11886)
+mesh = SubResource("CylinderMesh_96")
+
+[node name="ToothL1" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, -0.054, -0.007, -0.1275)
+mesh = SubResource("CylinderMesh_97")
+
+[node name="ToothL2" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, -0.042, 0.002, -0.13442)
+mesh = SubResource("CylinderMesh_98")
+
+[node name="ToothL3" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, -0.03, -0.007, -0.1396)
+mesh = SubResource("CylinderMesh_97")
+
+[node name="ToothL4" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, -0.018, -0.003, -0.14306)
+mesh = SubResource("CylinderMesh_96")
+
+[node name="ToothL5" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, -0.006, -0.007, -0.14478)
+mesh = SubResource("CylinderMesh_97")
+
+[node name="ToothL6" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, 0.006, -0.003, -0.14478)
+mesh = SubResource("CylinderMesh_96")
+
+[node name="ToothL7" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, 0.018, -0.007, -0.14306)
+mesh = SubResource("CylinderMesh_97")
+
+[node name="ToothL8" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, 0.03, -0.003, -0.1396)
+mesh = SubResource("CylinderMesh_96")
+
+[node name="ToothL9" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, 0.042, 0.002, -0.13442)
+mesh = SubResource("CylinderMesh_98")
+
+[node name="ToothL10" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, 0.05996, 0, -0.05996, 0.9982, 0, 0, 0, 1.0, 0.054, -0.003, -0.1275)
+mesh = SubResource("CylinderMesh_96")
+
+[node name="ToothL11" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.9982, -0.05996, 0, 0.05996, 0.9982, 0, 0, 0, 1.0, 0.066, -0.007, -0.11886)
+mesh = SubResource("CylinderMesh_97")
+
+[node name="JawBlood" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(0.1, 0, 0, 0, 0.045, 0, 0, 0, 0.03, 0, -0.055, -0.15)
+mesh = SubResource("SphereMesh_48")
+
+[node name="Drip0" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.99875, 0.04994, 0, 0.04994, 0.99875, -0.045, -0.105, -0.15)
+mesh = SubResource("CylinderMesh_99")
+
+[node name="Drip1" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.99944, 0.03331, 0, 0.03331, 0.99944, -0.012, -0.125, -0.15)
+mesh = SubResource("CylinderMesh_100")
+
+[node name="Drip2" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.99837, 0.05705, 0, 0.05705, 0.99837, 0.02, -0.1, -0.15)
+mesh = SubResource("CylinderMesh_101")
+
+[node name="Drip3" type="MeshInstance3D" parent="MeshRoot/Body/Head/Jaw"]
+transform = Transform3D(-1.0, 0, 0, 0, -0.9992, 0.03997, 0, 0.03997, 0.9992, 0.05, -0.115, -0.15)
+mesh = SubResource("CylinderMesh_102")

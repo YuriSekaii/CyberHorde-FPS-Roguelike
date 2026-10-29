@@ -36,6 +36,11 @@ const PIN_STRADDLE_DIST: float = 1.0 # Crouches over the pinned operative, this 
 const PIN_LEAN: float = 0.5 # Forward lean over the pinned operative; each strike lunges deeper
 const PIN_LUNGE_LEAN: float = 0.85
 const PIN_RAKE_HEIGHT: float = 0.85 # Claws rake through this height above the pinned operative (just over their face)
+# One arm's claw cycle (2 strike intervals, the strike lands at 0): drag through -> raise overhead -> swing down
+const CLAW_DRAG_END: float = 0.12
+const CLAW_RAISE_END: float = 0.46
+const EYE_GLOW: float = 4.0 # Red pupils ignite once it leaves the shadows
+const RUNE_GLOW: float = 3.0 # Emission of the burned-in sigils at full glow
 const FLEE_SPEED: float = 24.0
 const FLEE_TIMEOUT: float = 7.0
 const HIDE_ARRIVE_DIST: float = 1.0
@@ -59,20 +64,28 @@ var pinned_player: Node = null
 var pin_hit_timer: float = 0.0
 var pin_dir: Vector3 = Vector3.FORWARD # Flat direction from the pinned operative to the Ghoul
 var pin_time: float = 0.0 # Drives the claw swipes, in step with the strikes
-var arm_pivots: Array[Node3D] = [] # [left, right] shoulder pivots
+var arm_pivots: Array[Node3D] = [] # [left, right] shoulder joints
+var arm_elbows: Array[Node3D] = []
+var arm_hands: Array[Node3D] = []
+var arm_fingers: Array = [] # Per arm: finger + thumb joints (curl on X)
 var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
 
 @onready var body_root: Node3D = $MeshRoot/Body
 @onready var head_mesh: Node3D = $MeshRoot/Body/Head
+@onready var jaw: Node3D = $MeshRoot/Body/Head/Jaw
+@onready var pupil_mat: StandardMaterial3D = ($MeshRoot/Body/Head/PupilL as MeshInstance3D).mesh.material
+@onready var skin_mat: ShaderMaterial = ($MeshRoot/Body/Ribcage as MeshInstance3D).mesh.material
+@onready var rune_mat: StandardMaterial3D = ($MeshRoot/Body/SealRing as MeshInstance3D).mesh.material
+var body_glow: float = 0.0 # 0 dormant in the shadows .. 1 fully awake
 
 func _ready() -> void:
 	enemy_name = "Blood Ghoul"
 	super._ready()
 	if body_root:
 		body_base_y = body_root.position.y
-	_build_arm_pivots()
+	_collect_arm_joints()
 	hide_spot = global_position
 	hide_spot.y = 0.0
 	hide_index = _nearest_hide_index(global_position)
@@ -282,7 +295,7 @@ func _strike(dmg_mult: float, lifesteal: bool) -> void:
 		return
 	if victim.get("is_downed") != true and victim.has_method("apply_bleed"):
 		victim.apply_bleed()
-	SoundManager.play_pitch("enemy_hit", 0.6, -3.0)
+	SoundManager.play("flesh_tear", 0.12, 0.0)
 	# Strikes alternate left / right claw (matching _animate_arms); jolt the victim's view with the swing
 	if victim.has_method("pin_strike_jolt"):
 		victim.pin_strike_jolt(-1.0 if roundi(pin_time / PIN_HIT_INTERVAL) % 2 == 0 else 1.0)
@@ -396,49 +409,146 @@ func _pick_hide_index() -> int:
 
 # ----------------- VISUALS -----------------
 
-## Groups each arm's meshes under a shoulder pivot so the claws can swing
-func _build_arm_pivots() -> void:
-	if not body_root:
-		return
+func _collect_arm_joints() -> void:
 	for side in ["L", "R"]:
-		var shoulder = body_root.get_node_or_null("Shoulder" + side) as Node3D
-		if shoulder == null:
-			continue
-		var pivot = Node3D.new()
-		pivot.name = "ArmPivot" + side
-		body_root.add_child(pivot)
-		pivot.position = shoulder.position
-		for part in ["Shoulder%s", "UpperArm%s", "Forearm%s", "ForearmBlood%s", "Claw%s0", "Claw%s1", "Claw%s2"]:
-			var node = body_root.get_node_or_null(part % side)
-			if node:
-				node.reparent(pivot)
+		var pivot = body_root.get_node("ArmPivot" + side) as Node3D
+		var elbow = pivot.get_node("Elbow" + side) as Node3D
+		var hand = elbow.get_node("Hand" + side) as Node3D
 		arm_pivots.append(pivot)
+		arm_elbows.append(elbow)
+		arm_hands.append(hand)
+		var fingers: Array[Node3D] = []
+		for child in hand.get_children():
+			if child.name.begins_with("Finger") or child.name.begins_with("Thumb"):
+				fingers.append(child)
+		arm_fingers.append(fingers)
 
-## Pinning: alternating claw rakes aimed at the pinned operative's face (windup overhead -> slash -> recover)
+## Shoulder rotation that points the arm (rest axis -Y) along a world direction
+func _arm_aim(pivot: Node3D, world_dir: Vector3) -> Quaternion:
+	var local_dir = (pivot.get_parent().global_transform.basis.inverse() * world_dir).normalized()
+	return Quaternion(Vector3.DOWN, local_dir)
+
 func _animate_arms(delta: float) -> void:
 	var pinning = state == GhoulState.PINNING and is_instance_valid(pinned_player)
-	var rake_point = pinned_player.global_position + Vector3(0.0, PIN_RAKE_HEIGHT, 0.0) if pinning else Vector3.ZERO
 	for i in range(arm_pivots.size()):
-		var pivot = arm_pivots[i]
-		if not pinning:
-			pivot.quaternion = pivot.quaternion.slerp(Quaternion.IDENTITY, 10.0 * delta)
-			continue
 		var side = -1.0 if i == 0 else 1.0
-		var to_local = pivot.get_parent().global_transform.basis.inverse()
-		var outward = global_transform.basis.x * side
-		# Slash: the arm (rest axis -Y) rakes down just over the face; windup: cocked high behind the shoulder
-		var slash_dir = (to_local * (rake_point - pivot.global_position)).normalized()
-		var windup_dir = (to_local * (Vector3.UP + outward * 0.5 + pin_dir * 0.5)).normalized()
-		var slash = Quaternion(Vector3.DOWN, slash_dir)
-		var windup = Quaternion(Vector3.DOWN, windup_dir)
-		var reach = Quaternion.IDENTITY.slerp(slash, 0.5)
-		var t = fmod(pin_time + i * PIN_HIT_INTERVAL, PIN_HIT_INTERVAL * 2.0)
-		if t < 0.07:
-			pivot.quaternion = windup.slerp(slash, t / 0.07)
-		elif t < PIN_HIT_INTERVAL:
-			pivot.quaternion = slash.slerp(reach, smoothstep(0.07, PIN_HIT_INTERVAL, t))
-		else:
-			pivot.quaternion = reach.slerp(windup, smoothstep(PIN_HIT_INTERVAL, PIN_HIT_INTERVAL * 2.0, t))
+		if pinning:
+			_animate_claw_attack(i, side)
+			continue
+		# Free-roaming arm poses: x > 0 swings the arm forward
+		var reach = 0.1
+		var elbow_bend = 0.25
+		var wrist = 0.1
+		var curl = 0.2
+		match state:
+			GhoulState.HIDING:
+				reach = 0.85 # Crouched, claws curled ready just above the ground
+				elbow_bend = 1.3
+				wrist = 0.6
+				curl = 0.7
+			GhoulState.LEAPING, GhoulState.OVERSHOOT:
+				reach = 1.6 # Both claws thrust out ahead of the pounce
+				elbow_bend = 0.1
+				wrist = -0.4
+				curl = -0.3
+			GhoulState.FLEEING:
+				reach = -0.3 + sin(anim_time * 18.0 + i * PI) * 0.7
+				elbow_bend = 0.6
+			GhoulState.FALLEN:
+				reach = 0.3
+				elbow_bend = 0.9
+				curl = 0.8
+			GhoulState.KNOCKDOWN:
+				reach = -0.6
+				elbow_bend = 1.0
+				curl = 0.9
+		var target = Quaternion.from_euler(Vector3(reach, 0.0, side * 0.12))
+		arm_pivots[i].quaternion = arm_pivots[i].quaternion.slerp(target, 12.0 * delta)
+		arm_elbows[i].rotation.x = lerpf(arm_elbows[i].rotation.x, elbow_bend, 12.0 * delta)
+		arm_hands[i].rotation.x = lerpf(arm_hands[i].rotation.x, wrist, 12.0 * delta)
+		for f in arm_fingers[i]:
+			f.rotation.x = lerpf(f.rotation.x, curl, 12.0 * delta)
+
+## Pinned victim: each hand cocks high and out to its own side (45 deg), then slashes diagonally in across the
+## victim's face and rakes on through. Arms alternate, so one is scratching while the other winds up.
+func _animate_claw_attack(i: int, side: float) -> void:
+	var pivot = arm_pivots[i]
+	var u = fmod(pin_time + i * PIN_HIT_INTERVAL, PIN_HIT_INTERVAL * 2.0)
+	var rake_point = pinned_player.global_position + Vector3(0.0, PIN_RAKE_HEIGHT, 0.0)
+	var outward = global_transform.basis.x * side
+	var rake = _arm_aim(pivot, rake_point - pivot.global_position)
+	# After connecting the claws keep raking across the face toward the other side
+	var drag = _arm_aim(pivot, rake_point - outward * 0.45 + Vector3.DOWN * 0.25 - pivot.global_position)
+	var raised = _arm_aim(pivot, Vector3.UP + outward + pin_dir * 0.15)
+	var shoulder: Quaternion
+	var elbow_bend: float
+	var wrist: float
+	var curl: float
+	if u < CLAW_DRAG_END:
+		var k = smoothstep(0.0, CLAW_DRAG_END, u)
+		shoulder = rake.slerp(drag, k)
+		elbow_bend = lerpf(0.15, 0.7, k)
+		wrist = lerpf(0.4, 0.8, k)
+		curl = lerpf(0.6, 1.1, k)
+	elif u < CLAW_RAISE_END:
+		var k = smoothstep(CLAW_DRAG_END, CLAW_RAISE_END, u)
+		shoulder = drag.slerp(raised, k)
+		elbow_bend = lerpf(0.7, 0.4, k)
+		wrist = lerpf(0.8, -0.5, k)
+		curl = lerpf(1.1, -0.35, k) # Fingers splay wide at the top
+	else:
+		var k = (u - CLAW_RAISE_END) / (PIN_HIT_INTERVAL * 2.0 - CLAW_RAISE_END)
+		k *= k # Accelerates into the strike
+		shoulder = raised.slerp(rake, k)
+		elbow_bend = lerpf(0.4, 0.15, k)
+		wrist = lerpf(-0.5, 0.4, k)
+		curl = lerpf(-0.35, 0.6, k)
+	pivot.quaternion = shoulder
+	arm_elbows[i].rotation.x = elbow_bend
+	arm_hands[i].rotation.x = wrist
+	for f in arm_fingers[i]:
+		f.rotation.x = curl
+
+## Head aim, snarling jaw, and the eyes / veins / sigils that wake once it leaves the shadows
+func _animate_head(delta: float) -> void:
+	var look_up = 0.35 # Counters the hunch so it glares ahead
+	var jaw_open = 0.3
+	match state:
+		GhoulState.HIDING:
+			look_up = 0.55
+			jaw_open = 0.05
+		GhoulState.LEAPING, GhoulState.OVERSHOOT:
+			look_up = 0.9
+			jaw_open = 0.65
+		GhoulState.FLEEING:
+			look_up = 0.6
+			jaw_open = 0.3
+		GhoulState.FALLEN:
+			look_up = 0.0
+			jaw_open = 0.4
+		GhoulState.KNOCKDOWN:
+			look_up = 0.3
+			jaw_open = 0.5
+		GhoulState.PINNING:
+			look_up = -0.35 # Glares straight down into the victim's face
+			# Snarls wider with every strike
+			jaw_open = 0.35 + 0.35 * (1.0 - smoothstep(0.0, 0.15, fmod(pin_time, PIN_HIT_INTERVAL)))
+	if head_mesh:
+		head_mesh.rotation.x = lerpf(head_mesh.rotation.x, look_up, 10.0 * delta)
+	if jaw:
+		jaw.rotation.x = lerpf(jaw.rotation.x, -jaw_open, 18.0 * delta)
+	var glow_target = 0.6
+	if state == GhoulState.HIDING:
+		glow_target = 0.0
+	elif state == GhoulState.LEAPING or state == GhoulState.PINNING:
+		glow_target = 1.0
+	body_glow = lerpf(body_glow, glow_target, 6.0 * delta)
+	if pupil_mat:
+		pupil_mat.emission_energy_multiplier = EYE_GLOW * minf(body_glow * 2.0, 1.0)
+	if skin_mat:
+		skin_mat.set_shader_parameter("glow", body_glow)
+	if rune_mat:
+		rune_mat.emission_energy_multiplier = RUNE_GLOW * body_glow
 
 func _animate_pose(delta: float) -> void:
 	if not body_root:
@@ -472,6 +582,7 @@ func _animate_pose(delta: float) -> void:
 	if state != GhoulState.PINNING:
 		body_root.rotation.x = lerpf(body_root.rotation.x, -target_tilt, 10.0 * delta)
 	_animate_arms(delta)
+	_animate_head(delta)
 
 func die() -> void:
 	if is_dead:

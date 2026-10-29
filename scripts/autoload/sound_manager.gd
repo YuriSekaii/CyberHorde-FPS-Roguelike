@@ -148,6 +148,20 @@ func _generate_all_sounds() -> void:
 		return (noise * 0.5 + thud * 0.5) * env * 0.7
 	)
 	
+	# 6b. Flesh tearing (Blood Ghoul claw: sharp swipe, crackling fibrous rip, wet squelch)
+	var tear_lp = [0.0, 0.0] # One-pole filter states (captured by reference)
+	sounds["flesh_tear"] = _create_wav(0.4, func(t, d):
+		var n = randf() * 2.0 - 1.0
+		tear_lp[0] = lerpf(tear_lp[0], n, 0.12) # Muffled, wet body
+		tear_lp[1] = lerpf(tear_lp[1], n, 0.5) # Fibrous crackle
+		var swipe = (n - tear_lp[1]) * exp(-t * 55.0) * 0.9
+		var rip_rate = lerpf(46.0, 13.0, t / d)
+		var rip = pow(absf(sin(TAU * rip_rate * t + sin(t * 37.0) * 2.0)), 6.0)
+		var tear = tear_lp[1] * rip * smoothstep(0.015, 0.05, t) * exp(-t * 6.5) * 1.8
+		var squelch = tear_lp[0] * exp(-t * 8.0) * 1.6 + sin(TAU * 80.0 * exp(-t * 5.0) * t) * exp(-t * 14.0) * 0.45
+		return (swipe + tear + squelch) * 0.95
+	)
+	
 	# 7. Enemy die / explosion (deep rumble + noise crackle)
 	sounds["enemy_die"] = _create_wav(0.35, func(t, d):
 		var env = exp(-t * 10.0)
