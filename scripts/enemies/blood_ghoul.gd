@@ -18,6 +18,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING }
 
 const BOSS_MAX_HP: float = 2000000.0
+const BASE_DAMAGE: float = 50.0
 const ATTACK_RANGE: float = 25.0
 const LOCK_TIME: float = 2.0
 const LEAP_SPEED: float = 42.0
@@ -100,7 +101,7 @@ func _apply_wave_scaling() -> void:
 	# Fixed HP and cadence like the Apex Overlord; damage scales with the wave curve (capped)
 	max_health = BOSS_MAX_HP
 	current_health = max_health
-	attack_damage = clampf(120.0 * GameManager.get_wave_damage_factor(), 120.0, 600.0)
+	attack_damage = clampf(BASE_DAMAGE * GameManager.get_wave_damage_factor(), BASE_DAMAGE, 600.0)
 	wave_speed_mult = 1.0
 	attack_speed_mult = 1.0
 	damage_reduction = clampf(floorf(GameManager.get_scaling_wave() / 10.0) * 0.10, 0.0, 0.50)

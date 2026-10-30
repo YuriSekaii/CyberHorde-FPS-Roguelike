@@ -3,9 +3,10 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Mantis Stalker - Stage 2 ambush predator (Wave 21+). Brown void-mantis with scythe arms.
 ## While any operative is looking at it (it's inside their view cone with a clear line of sight) it creeps slowly
 ## and strikes sluggishly. The moment nobody watches, it sprints extremely fast and slashes in rapid bursts.
-## High damage, moderate HP.
+## High damage, low HP, but heavily armored while nobody watches it.
 
 const WATCHED_SPEED_RATIO: float = 0.1 # 10% of its sprint speed while watched
+const UNWATCHED_DAMAGE_REDUCTION: float = 0.75 # Multiplies with the wave damage reduction
 const WATCHED_ATTACK_RATE: float = 1.5
 const UNWATCHED_ATTACK_RATE: float = 0.3
 const ATTACK_RANGE: float = 2.3
@@ -59,6 +60,11 @@ func _behave(delta: float) -> void:
 			target_player.take_damage(attack_damage)
 			SoundManager.play("player_hurt", 0.1, 0.5)
 		_slash_anim()
+
+func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
+	if not is_watched:
+		amount *= (1.0 - UNWATCHED_DAMAGE_REDUCTION)
+	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 
 ## True if any standing operative has it inside their view cone with nothing blocking the sight line
 func _is_being_watched() -> bool:

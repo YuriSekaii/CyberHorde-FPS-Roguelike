@@ -247,12 +247,12 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 | Enemy Type | Base HP | Speed | Damage | Attack Cooldown | Attack Type & Range | Base Weight | Notes |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
-| **Shadow Spider** | 40.0 | 6.0 m/s | 8.0 bite / 24.0 pounce | 0.8s bite, 5s pounce | Swarmer-style bite (1.6m); pounces when within 5m | 100% → ~46% | Pitch-black body, only its red eyes glow. Weight decays 5% every 5 waves |
-| **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 35% → 30% | Wave 6+. Decays 5% every 5 waves |
-| **Bog Slime** | 300.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 10% | Wave 11+. Spits the operative out, then pauses 1.2s |
-| **Mantis Stalker** | 400.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 5% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight |
-| **Spore Pit (Mini-Boss)** | 6,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.4% | Wave 31+, max 2 alive. Drops a Loot Cache |
-| **Blood Ghoul (Boss)** | 2,000,000.0 | 24 m/s flee / 42 m/s leap | 120–600 | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP; infinite horde until it dies |
+| **Shadow Spider** | 40.0 | 6.0 m/s | 8.0 bite / 24.0 pounce | 0.8s bite, 5s pounce | Swarmer-style bite (1.6m); pounces when within 5m | 100% → ~19% | Pitch-black body, only its red eyes glow. Weight decays 5% every 5 waves and another 10% every 10 waves |
+| **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 17.5% → 15% | Wave 6+. Decays 5% every 5 waves |
+| **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Spits the operative out, then pauses 1.2s |
+| **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
+| **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
+| **Blood Ghoul (Boss)** | 2,000,000.0 | 24 m/s flee / 42 m/s leap | 50–600 | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP; infinite horde until it dies |
 
 ### 🧪 Stage 2 Status Effects
 | Effect | Source | Effect | Stacking |
@@ -272,7 +272,7 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 * **Pin**: Touching an operative mid-leap pins them flat on their back (0.5× damage pounce): their camera drops to the ground and stays locked on the Ghoul straddling them, which rakes with alternating claws every **0.3s**: each hand cocks high and 45° out to its side, then slashes diagonally in across the victim's face as the torso wrenches that shoulder into the blow (blood from its claws drips onto the victim's view) (each hit plays a flesh-tearing rip and jolts the view) (0.2× damage, heals the Ghoul **1% Max HP** per landed strike) until they mash `A`/`D` 10 times. On escape it's knocked down for 1s, then flees at 24 m/s to a random tree (preferring ones ≥14m from every operative) and hides again.
 * **Miss**: If the leap touches no one, momentum drags it 5m past the locked spot (or into a trunk) and it falls, **stunned for 3s**, then flees.
 * **Hidden**: While hiding it only takes **direct bullet hits** (immune to explosions, ricochets and chain lightning, like a Spawnling) and companion drones ignore it. After losing **1% Max HP** while hidden, it flees to another random tree (the counter resets each time it hides).
-* All its attacks inflict **Bleed**. Damage = $120 \times$ wave damage factor (capped at 600); 50% damage reduction at the Stage 2 final wave.
+* All its attacks inflict **Bleed**. Damage = $50 \times$ wave damage factor (capped at 600; ≈546 at Wave 50); 50% damage reduction at the Stage 2 final wave.
 
 ---
 

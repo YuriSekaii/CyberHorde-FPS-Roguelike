@@ -32,7 +32,6 @@ const WYVERN_AFTER_WAVE: int = 5
 const SLIME_AFTER_WAVE: int = 10
 const STALKER_AFTER_WAVE: int = 20
 const SPORE_PIT_AFTER_WAVE: int = 30
-const MAX_SPORE_PITS: int = 2
 const STAGE_TRANSITION_DELAY: float = 10.0
 
 # Enemy type ids: 0=Swarmer, 1=Spitter, 2=Brute, 3=Apex Overlord, 4=Charger, 5=Void Spawner, 6=Bomber, 7=Hornet,
@@ -310,26 +309,28 @@ func _select_enemy_type(wave_num: int) -> int:
 		return 7 if wave_num > HORNET_AFTER_WAVE else 1 # Photon Hornet / Plasma Spitter
 	return 6 if wave_num > BOMBER_AFTER_WAVE else 0 # Volt Bomber / Cyber Swarmer
 
-## Stage 2 (Night Jungle) roster. Spider & Wyvern weights decay 5% every 5 waves like Stage 1's basic units.
+## Stage 2 (Night Jungle) roster. Spider & Wyvern weights decay 5% every 5 waves like Stage 1's basic units;
+## the Spider also loses another 10% every 10 waves.
 func _select_stage2_enemy_type(wave_num: int) -> int:
 	var basic_multiplier: float = pow(0.95, float(int(wave_num / 5)))
-	var w_spider: float = 1.0 * basic_multiplier
+	var spider_multiplier: float = basic_multiplier * pow(0.9, float(int(wave_num / 10)))
+	var w_spider: float = 1.0 * spider_multiplier
 	var w_wyvern: float = 0.0
 	var w_slime: float = 0.0
 	var w_stalker: float = 0.0
 	var w_pit: float = 0.0
 	if wave_num > WYVERN_AFTER_WAVE:
-		w_spider = 0.65 * basic_multiplier
-		w_wyvern = 0.35 * basic_multiplier
+		w_spider = 0.65 * spider_multiplier
+		w_wyvern = 0.175 * basic_multiplier
 	if wave_num > SLIME_AFTER_WAVE:
-		w_spider = 0.5 * basic_multiplier
-		w_wyvern = 0.3 * basic_multiplier
-		w_slime = 0.1
+		w_spider = 0.5 * spider_multiplier
+		w_wyvern = 0.15 * basic_multiplier
+		w_slime = 0.05
 	if wave_num > STALKER_AFTER_WAVE:
-		w_spider = 0.456 * basic_multiplier
-		w_stalker = 0.05
-	if wave_num > SPORE_PIT_AFTER_WAVE and get_tree().get_nodes_in_group("spore_pits").size() < MAX_SPORE_PITS:
-		w_pit = 0.004
+		w_spider = 0.456 * spider_multiplier
+		w_stalker = 0.01
+	if wave_num > SPORE_PIT_AFTER_WAVE:
+		w_pit = 0.001
 
 	var roll: float = randf() * (w_spider + w_wyvern + w_slime + w_stalker + w_pit)
 	if roll < w_pit:

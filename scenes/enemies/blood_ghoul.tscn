@@ -1482,7 +1482,7 @@ collision_mask = 5
 enemy_name = "Blood Ghoul"
 max_health = 2000000
 speed = 6
-attack_damage = 120
+attack_damage = 50
 xp_reward = 0
 scrap_reward = 0
 
