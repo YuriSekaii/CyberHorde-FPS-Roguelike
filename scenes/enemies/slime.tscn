@@ -5,71 +5,149 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_shape_1"]
 radius = 0.85
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_goo_2"]
-transparency = 1
-albedo_color = Color(0.22, 0.7, 0.18, 0.55)
-metallic = 0
-roughness = 0.12
+[sub_resource type="StandardMaterial3D" id="Mat_goo"]
+albedo_color = Color(0.34, 0.66, 0.1, 1)
+metallic_specular = 1.0
+roughness = 0.06
+rim_enabled = true
+rim = 0.7
+rim_tint = 0.2
+backlight_enabled = true
+backlight = Color(0.5, 0.85, 0.12, 1)
 emission_enabled = true
-emission = Color(0.08, 0.3, 0.04, 1)
+emission = Color(0.14, 0.38, 0.02, 1)
+emission_energy_multiplier = 0.65
+
+[sub_resource type="StandardMaterial3D" id="Mat_goo_clear"]
+transparency = 1
+albedo_color = Color(0.4, 0.75, 0.14, 0.58)
+metallic_specular = 1.0
+roughness = 0.05
+rim_enabled = true
+rim = 0.7
+rim_tint = 0.2
+emission_enabled = true
+emission = Color(0.2, 0.55, 0.04, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_goo_deep"]
+transparency = 1
+albedo_color = Color(0.2, 0.6, 0.08, 0.6)
+metallic_specular = 0.6
+roughness = 0.15
+emission_enabled = true
+emission = Color(0.1, 0.36, 0.02, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_bubble"]
+transparency = 1
+albedo_color = Color(0.7, 1, 0.5, 0.55)
+metallic_specular = 0.9
+roughness = 0.03
+emission_enabled = true
+emission = Color(0.3, 0.65, 0.12, 1)
+emission_energy_multiplier = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_bone"]
+albedo_color = Color(0.78, 0.72, 0.55, 1)
+roughness = 0.65
+emission_enabled = true
+emission = Color(0.22, 0.24, 0.1, 1)
+emission_energy_multiplier = 0.35
+
+[sub_resource type="StandardMaterial3D" id="Mat_socket"]
+albedo_color = Color(0.01, 0.03, 0.01, 1)
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.35, 1, 0.1, 1)
 emission_energy_multiplier = 0.6
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_core_3"]
-albedo_color = Color(0.04, 0.16, 0.03, 1)
-metallic = 0
-roughness = 0.4
-emission_enabled = true
-emission = Color(0.05, 0.2, 0.02, 1)
-emission_energy_multiplier = 0.4
+[sub_resource type="StandardMaterial3D" id="Mat_wood"]
+albedo_color = Color(0.32, 0.2, 0.1, 1)
+roughness = 0.85
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eye_4"]
-albedo_color = Color(0.01, 0.02, 0.01, 1)
-metallic = 0
-roughness = 0.2
+[sub_resource type="StandardMaterial3D" id="Mat_fletch"]
+albedo_color = Color(0.2, 0.42, 0.4, 1)
+roughness = 0.9
+cull_mode = 2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bubble_5"]
-transparency = 1
-albedo_color = Color(0.5, 0.95, 0.4, 0.6)
-metallic = 0
-roughness = 0.05
-emission_enabled = true
-emission = Color(0.2, 0.5, 0.1, 1)
-emission_energy_multiplier = 0.8
+[sub_resource type="SphereMesh" id="Sphere_goo"]
+material = SubResource("Mat_goo")
+radius = 1.0
+height = 2.0
+radial_segments = 24
+rings = 12
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_6"]
-material = SubResource("StandardMaterial3D_core_3")
-radius = 0.42
-height = 0.84
+[sub_resource type="SphereMesh" id="Sphere_clear"]
+material = SubResource("Mat_goo_clear")
+radius = 1.0
+height = 2.0
+radial_segments = 24
+rings = 12
+
+[sub_resource type="SphereMesh" id="Sphere_deep"]
+material = SubResource("Mat_goo_deep")
+radius = 1.0
+height = 2.0
 radial_segments = 16
 rings = 8
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_7"]
-material = SubResource("StandardMaterial3D_eye_4")
-radius = 0.1
-height = 0.2
+[sub_resource type="SphereMesh" id="Sphere_bubble"]
+material = SubResource("Mat_bubble")
+radius = 1.0
+height = 2.0
+radial_segments = 12
+rings = 6
+
+[sub_resource type="SphereMesh" id="Sphere_bone"]
+material = SubResource("Mat_bone")
+radius = 1.0
+height = 2.0
+radial_segments = 16
+rings = 8
+
+[sub_resource type="SphereMesh" id="Sphere_socket"]
+material = SubResource("Mat_socket")
+radius = 1.0
+height = 2.0
 radial_segments = 8
 rings = 4
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_8"]
-material = SubResource("StandardMaterial3D_eye_4")
-radius = 0.1
-height = 0.2
-radial_segments = 8
+[sub_resource type="CapsuleMesh" id="Capsule_goo"]
+material = SubResource("Mat_goo")
+radius = 0.5
+height = 2.0
+radial_segments = 12
 rings = 4
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_9"]
-material = SubResource("StandardMaterial3D_bubble_5")
-radius = 0.09
-height = 0.18
+[sub_resource type="CylinderMesh" id="Cone_bone"]
+material = SubResource("Mat_bone")
+top_radius = 0.0
+bottom_radius = 1.0
+height = 1.0
 radial_segments = 8
-rings = 4
+rings = 1
+cap_top = false
 
-[sub_resource type="SphereMesh" id="SphereMesh_sphere_10"]
-material = SubResource("StandardMaterial3D_goo_2")
-radius = 1
-height = 1.6
-radial_segments = 24
-rings = 12
+[sub_resource type="CylinderMesh" id="Cyl_bone"]
+material = SubResource("Mat_bone")
+top_radius = 0.8
+bottom_radius = 1.0
+height = 1.0
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Cyl_wood"]
+material = SubResource("Mat_wood")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 1.0
+radial_segments = 6
+rings = 1
+
+[sub_resource type="BoxMesh" id="Box_fletch"]
+material = SubResource("Mat_fletch")
+size = Vector3(1, 1, 1)
 
 [node name="BogSlime" type="CharacterBody3D"]
 script = ExtResource("1_script")
@@ -88,39 +166,292 @@ shape = SubResource("SphereShape3D_shape_1")
 
 [node name="MeshRoot" type="Node3D" parent="."]
 
-[node name="Core" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0.05)
-mesh = SubResource("SphereMesh_sphere_6")
+[node name="Mound" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.05, 0, 0, 0, 0.6, 0, 0, 0, 1.1, 0, 0.45, 0.25)
+mesh = SubResource("Sphere_goo")
 
-[node name="EyeL" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 1, -0.7)
-mesh = SubResource("SphereMesh_sphere_7")
+[node name="Torso" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.74, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 1.02, 0.1)
+mesh = SubResource("Sphere_goo")
 
-[node name="EyeR" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1, -0.7)
-mesh = SubResource("SphereMesh_sphere_8")
+[node name="Shoulders" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.56, 0, 0, 0, 0.55, 0, 0, 0, 0.58, 0, 1.56, -0.18)
+mesh = SubResource("Sphere_goo")
+
+[node name="Neck" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.36, 0, 0, 0, 0.4, 0, 0, 0, 0.34, 0, 1.74, -0.32)
+mesh = SubResource("Sphere_goo")
+
+[node name="ArmFootL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.34, 0, 0, 0, 0.18, 0, 0, 0, 0.36, -0.95, 0.12, -0.95)
+mesh = SubResource("Sphere_goo")
+
+[node name="ArmFootR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.34, 0, 0, 0, 0.18, 0, 0, 0, 0.36, 0.98, 0.12, -0.9)
+mesh = SubResource("Sphere_goo")
+
+[node name="Cranium" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.25, 0, 0, 0, 0.23, 0, 0, 0, 0.27, 0, 1.86, -0.6)
+mesh = SubResource("Sphere_bone")
+
+[node name="Muzzle" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.16, 0, 0, 0, 0.11, 0, 0, 0, 0.15, 0, 1.66, -0.78)
+mesh = SubResource("Sphere_bone")
+
+[node name="Jaw" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.15, 0, 0, 0, 0.04, 0, 0, 0, 0.15, 0, 1.42, -0.74)
+mesh = SubResource("Sphere_bone")
+
+[node name="SocketL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.07, 0, 0, 0, 0.062, 0, 0, 0, 0.05, -0.095, 1.81, -0.82)
+mesh = SubResource("Sphere_socket")
+
+[node name="SocketR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.07, 0, 0, 0, 0.062, 0, 0, 0, 0.05, 0.095, 1.81, -0.82)
+mesh = SubResource("Sphere_socket")
+
+[node name="Nose" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.03, 0, 0, 0, 0.042, 0, 0, 0, 0.025, 0, 1.7, -0.92)
+mesh = SubResource("Sphere_socket")
+
+[node name="FangU0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.028, 0, 0, 0, -0.1978, 0.0042, 0, -0.0297, -0.0277, -0.12, 1.5, -0.86)
+mesh = SubResource("Cone_bone")
+
+[node name="FangU1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.028, 0, 0, 0, -0.1187, 0.0042, 0, -0.0178, -0.0277, -0.055, 1.54, -0.86)
+mesh = SubResource("Cone_bone")
+
+[node name="FangU2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.028, 0, 0, 0, -0.1187, 0.0042, 0, -0.0178, -0.0277, 0.055, 1.54, -0.86)
+mesh = SubResource("Cone_bone")
+
+[node name="FangU3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.028, 0, 0, 0, -0.1978, 0.0042, 0, -0.0297, -0.0277, 0.12, 1.5, -0.86)
+mesh = SubResource("Cone_bone")
+
+[node name="FangD0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.022, 0, 0, 0, 0.1194, 0.0022, 0, -0.0119, 0.0219, -0.1, 1.5, -0.84)
+mesh = SubResource("Cone_bone")
+
+[node name="FangD1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.022, 0, 0, 0, 0.0796, 0.0022, 0, -0.008, 0.0219, 0, 1.48, -0.84)
+mesh = SubResource("Cone_bone")
+
+[node name="FangD2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.022, 0, 0, 0, 0.1194, 0.0022, 0, -0.0119, 0.0219, 0.1, 1.5, -0.84)
+mesh = SubResource("Cone_bone")
+
+[node name="Spike0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0749, 0.0263, -0.0005, -0.0036, 0.5262, -0.0215, -0.0005, 0.1579, 0.0718, 0.0674, 2.2183, -0.4555)
+mesh = SubResource("Cone_bone")
+
+[node name="Spike1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0842, -0.0949, 0.0025, 0.0115, 0.6325, -0.0346, 0.0025, 0.2846, 0.0776, -0.1312, 2.2578, -0.1265)
+mesh = SubResource("Cone_bone")
+
+[node name="Spike2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0787, 0.1051, -0.004, -0.014, 0.4994, -0.0421, -0.004, 0.3154, 0.0679, 0.1515, 2.1398, 0.1346)
+mesh = SubResource("Cone_bone")
+
+[node name="Spike3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0697, -0.0439, 0.0028, 0.0062, 0.3295, -0.0523, 0.0028, 0.3735, 0.0465, -0.0714, 1.8757, 0.4171)
+mesh = SubResource("Cone_bone")
+
+[node name="Spike4" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0597, 0.0356, -0.0033, -0.0053, 0.1782, -0.0535, -0.0033, 0.3563, 0.0271, 0.0571, 1.3356, 0.6913)
+mesh = SubResource("Cone_bone")
+
+[node name="ShoulderBone" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0283, 0.6113, -0.0064, -0.0408, 0.3956, -0.012, -0.0064, 0.1798, 0.0481, 0.6645, 1.7782, -0.0281)
+mesh = SubResource("Cyl_bone")
+
+[node name="ShoulderBoneKnob" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.075, 0, 0, 0, 0.075, 0, 0, 0, 0.075, 0.9743, 1.9786, 0.063)
+mesh = SubResource("Sphere_bone")
+
+[node name="ArrowLShaft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0072, -0.8571, 0.003, 0.0162, 0.3333, -0.0045, 0.003, 0.2381, 0.0172, -0.753, 1.2789, 0.0564)
+mesh = SubResource("Cyl_wood")
+
+[node name="ArrowLFletch0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0437, -0.1444, 0.0007, 0.0992, 0.0561, -0.001, 0.0184, 0.0401, 0.0038, -1.0914, 1.4105, 0.1504)
+mesh = SubResource("Box_fletch")
+
+[node name="ArrowLFletch1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.0184, -0.1444, 0.0016, 0.0276, 0.0561, 0.0036, -0.1049, 0.0401, 0.0007, -1.0914, 1.4105, 0.1504)
+mesh = SubResource("Box_fletch")
+
+[node name="ArrowRShaft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0096, 0.7752, -0.0039, -0.0147, 0.4104, -0.0069, -0.0039, 0.3648, 0.0161, 0.8036, 0.9172, 0.4864)
+mesh = SubResource("Cyl_wood")
+
+[node name="ArrowRFletch0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0588, 0.1306, -0.0009, -0.0898, 0.0691, -0.0015, -0.0241, 0.0614, 0.0036, 1.1096, 1.0792, 0.6304)
+mesh = SubResource("Box_fletch")
+
+[node name="ArrowRFletch1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0241, 0.1306, 0.0021, 0.0422, 0.0691, -0.0033, -0.0987, 0.0614, -0.0009, 1.1096, 1.0792, 0.6304)
+mesh = SubResource("Box_fletch")
+
+[node name="ArrowBackShaft" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0173, -0.1922, 0.0027, 0.0041, 0.3075, -0.0163, 0.0027, 0.7688, 0.0072, -0.1396, 1.1133, 0.9583)
+mesh = SubResource("Cyl_wood")
+
+[node name="ArrowBackFletch0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.1059, -0.0362, 0.0006, 0.0249, 0.0579, -0.0036, 0.0165, 0.1447, 0.0016, -0.2131, 1.2309, 1.2522)
+mesh = SubResource("Box_fletch")
+
+[node name="ArrowBackFletch1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.0165, -0.0362, 0.0038, 0.0995, 0.0579, 0.0009, -0.0439, 0.1447, 0.0006, -0.2131, 1.2309, 1.2522)
+mesh = SubResource("Box_fletch")
+
+[node name="Puddle" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(1.4, 0, 0, 0, 0.13, 0, 0, 0, 1.55, 0, 0.05, 0.1)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.6, 0, 0, 0, 0.08, 0, 0, 0, 0.45, 1.15, 0.03, -0.55)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.65, 0, 0, 0, 0.08, 0, 0, 0, 0.5, -1.2, 0.03, -0.35)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.55, 0, 0, 0, 0.07, 0, 0, 0, 0.55, 0.95, 0.03, 0.95)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.6, 0, 0, 0, 0.07, 0, 0, 0, 0.45, -0.85, 0.03, 1.15)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe4" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.7, 0, 0, 0, 0.07, 0, 0, 0, 0.45, 0.15, 0.03, -1.4)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleLobe5" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.4, 0, 0, 0, 0.06, 0, 0, 0, 0.4, -0.55, 0.03, -1.15)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="PuddleBubble0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.16, 0, 0, 0, 0.128, 0, 0, 0, 0.16, 0.7, 0.09, -0.95)
+mesh = SubResource("Sphere_bubble")
+cast_shadow = 0
+
+[node name="PuddleBubble1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.13, 0, 0, 0, 0.104, 0, 0, 0, 0.13, -0.95, 0.08, 0.5)
+mesh = SubResource("Sphere_bubble")
+cast_shadow = 0
+
+[node name="PuddleBubble2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.12, 0, 0, 0, 0.096, 0, 0, 0, 0.12, 0.35, 0.08, 1.2)
+mesh = SubResource("Sphere_bubble")
+cast_shadow = 0
+
+[node name="PuddleBubble3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.1, 0, 0, 0, 0.08, 0, 0, 0, 0.1, -0.3, 0.07, -1.5)
+mesh = SubResource("Sphere_bubble")
+cast_shadow = 0
+
+[node name="Head" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.42, 0, 0, 0, 0.5, 0, 0, 0, 0.46, 0, 1.74, -0.6)
+mesh = SubResource("Sphere_clear")
+cast_shadow = 0
+
+[node name="InnerCore" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.5, 0, 0, 0, 0.6, 0, 0, 0, 0.55, 0, 0.9, 0.15)
+mesh = SubResource("Sphere_deep")
+cast_shadow = 0
+
+[node name="Lump0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.33, 0, 0, 0, 0.3036, 0, 0, 0, 0.33, 0.48, 1.1, 0.28)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="Lump1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.36, 0, 0, 0, 0.3312, 0, 0, 0, 0.36, -0.45, 0.8, 0.38)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="Lump2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.3, 0, 0, 0, 0.276, 0, 0, 0, 0.3, 0.32, 0.62, -0.38)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="Lump3" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.28, 0, 0, 0, 0.2576, 0, 0, 0, 0.28, -0.36, 1.36, 0.02)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="Lump4" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.24, 0, 0, 0, 0.2208, 0, 0, 0, 0.24, 0.3, 1.5, 0.1)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="Lump5" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.38, 0, 0, 0, 0.3496, 0, 0, 0, 0.38, 0.05, 0.75, 0.75)
+mesh = SubResource("Sphere_goo")
+cast_shadow = 0
+
+[node name="ArmL" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0426, -0.2935, -0.3164, 0.1171, -0.737, 0.1245, -0.3164, -0.3123, 0.0035, -0.715, 0.71, -0.7)
+mesh = SubResource("Capsule_goo")
+cast_shadow = 0
+
+[node name="ArmR" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.011, 0.3126, 0.3159, -0.1252, -0.7377, 0.1126, 0.3159, -0.2813, 0.0557, 0.73, 0.71, -0.675)
+mesh = SubResource("Capsule_goo")
+cast_shadow = 0
+
+[node name="Drip0" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0003, 0.0236, 0.0997, -0.0071, -0.3297, 0.0071, 0.0997, -0.0236, 0.0003, 0.14, 1.13, -0.84)
+mesh = SubResource("Capsule_goo")
+cast_shadow = 0
+
+[node name="Drip1" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(-0.0238, -0.0292, -0.1071, 0.0084, -0.3797, 0.0067, -0.1071, -0.0234, 0.0244, -0.155, 1.045, -0.82)
+mesh = SubResource("Capsule_goo")
+cast_shadow = 0
+
+[node name="Drip2" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.0541, 0.0126, 0.0717, -0.0051, -0.2196, 0.0102, 0.0717, -0.0251, -0.0534, 0.01, 1.155, -0.78)
+mesh = SubResource("Capsule_goo")
+cast_shadow = 0
 
 [node name="Bubble0" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.2, 0.2)
-mesh = SubResource("SphereMesh_sphere_9")
+transform = Transform3D(0.09, 0, 0, 0, 0.09, 0, 0, 0, 0.09, 0.3, 1.2, 0.2)
+mesh = SubResource("Sphere_bubble")
 cast_shadow = 0
 
 [node name="Bubble1" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.6, 0.3)
-mesh = SubResource("SphereMesh_sphere_9")
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, -0.4, 0.6, 0.3)
+mesh = SubResource("Sphere_bubble")
 cast_shadow = 0
 
 [node name="Bubble2" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.4, -0.5)
-mesh = SubResource("SphereMesh_sphere_9")
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 0.15, 0.4, -0.45)
+mesh = SubResource("Sphere_bubble")
 cast_shadow = 0
 
 [node name="Bubble3" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.3, -0.2)
-mesh = SubResource("SphereMesh_sphere_9")
+transform = Transform3D(0.06, 0, 0, 0, 0.06, 0, 0, 0, 0.06, -0.2, 1.35, -0.15)
+mesh = SubResource("Sphere_bubble")
 cast_shadow = 0
 
-[node name="Body" type="MeshInstance3D" parent="MeshRoot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("SphereMesh_sphere_10")
+[node name="Bubble4" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.1, 0.85, 0.55)
+mesh = SubResource("Sphere_bubble")
+cast_shadow = 0
+
+[node name="Bubble5" type="MeshInstance3D" parent="MeshRoot"]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, -0.15, 1.75, -0.45)
+mesh = SubResource("Sphere_bubble")
 cast_shadow = 0

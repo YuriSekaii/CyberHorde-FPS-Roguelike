@@ -21,7 +21,7 @@ const MOON_YAW_DEG: float = 32.0
 const MOON_DISTANCE: float = 420.0
 
 const NIGHT_MOON_COLOR := Color(0.62, 0.72, 1.0)
-const NIGHT_MOON_ENERGY: float = 2.03
+const NIGHT_MOON_ENERGY: float = 2.54
 const NIGHT_DISC_COLOR := Color(0.92, 0.95, 1.0)
 const NIGHT_SKY_TOP := Color(0.008, 0.012, 0.035)
 const NIGHT_SKY_HORIZON := Color(0.035, 0.05, 0.09)
@@ -29,7 +29,7 @@ const NIGHT_FOG := Color(0.02, 0.03, 0.05)
 const NIGHT_AMBIENT := Color(0.3, 0.38, 0.6)
 
 const BLOOD_MOON_COLOR := Color(1.0, 0.22, 0.16)
-const BLOOD_MOON_ENERGY: float = 2.03
+const BLOOD_MOON_ENERGY: float = 2.54
 const BLOOD_DISC_COLOR := Color(1.0, 0.12, 0.06)
 const BLOOD_SKY_TOP := Color(0.04, 0.003, 0.004)
 const BLOOD_SKY_HORIZON := Color(0.12, 0.015, 0.012)

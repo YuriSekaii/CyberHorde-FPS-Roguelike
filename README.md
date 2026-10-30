@@ -240,7 +240,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 
 ### 🌲 Stage 2 Arena: Nightfall Jungle
 * Same 80×80m footprint, perimeter walls (dark hedge) and invisible sky barriers as Stage 1. All flat ground covered in wind-swayed grass. Tree trunks are the only cover and block shots and movement. Silhouette treeline beyond the walls.
-* **The Moon is the only light source** (52° high, cool blue, energy 2.03 for both the night moon and the Red Moon). Ambient light is near zero, so the moon shadow of every canopy is an almost pitch-black pool on the ground. Wave 50 turns it into a **Red Moon** (light, moon disc, sky and fog fade to blood red).
+* **The Moon is the only light source** (52° high, cool blue, energy 2.54 for both the night moon and the Red Moon). Ambient light is near zero, so the moon shadow of every canopy is an almost pitch-black pool on the ground. Wave 50 turns it into a **Red Moon** (light, moon disc, sky and fog fade to blood red).
 * The tree layout uses a fixed seed, so every co-op peer builds the same jungle. Ground enemies path on a navmesh baked from the trunks at load. The squad spawn area (9m radius around the center) has no trees.
 
 ### 🕷️ Stage 2 Enemy Stats
@@ -249,7 +249,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
 | **Shadow Spider** | 40.0 | 6.0 m/s | 8.0 bite / 24.0 pounce | 0.8s bite, 5s pounce | Swarmer-style bite (1.6m); pounces when within 5m | 100% → ~19% | Pitch-black body, only its red eyes glow. Weight decays 5% every 5 waves and another 10% every 10 waves |
 | **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 17.5% → 15% | Wave 6+. Decays 5% every 5 waves |
-| **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Spits the operative out, then pauses 1.2s |
+| **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Hunched lime ooze rising from a spreading puddle; a fanged skull shows through its translucent head, bone spikes and arrows jut from its back. Spits the operative out, then pauses 1.2s |
 | **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
 | **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
 | **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee / 42 m/s leap | 200 (fixed) | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP & damage; infinite horde until it dies |
