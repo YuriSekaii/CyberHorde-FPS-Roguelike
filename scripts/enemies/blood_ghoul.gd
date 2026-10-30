@@ -1,7 +1,7 @@
 extends "res://scripts/enemies/enemy_base.gd"
 
 ## Blood Ghoul - Stage 2 Wave 50 Final Boss (under the Red Moon).
-## A pitch-dark ghoul caked in old, dried blood that hunts from the shadows under the trees.
+## A pitch-black abyss beast splattered with its victims' blood that hunts from the shadows under the trees.
 ## Loop:
 ##   HIDE      Crouches in a tree's moon shadow (almost invisible). Waits until an operative is within 25m.
 ##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator)
@@ -35,12 +35,13 @@ const POUNCE_DMG_MULT: float = 0.5
 const PIN_STRADDLE_DIST: float = 1.0 # Crouches over the pinned operative, this far from their head
 const PIN_LEAN: float = 0.5 # Forward lean over the pinned operative; each strike lunges deeper
 const PIN_LUNGE_LEAN: float = 0.85
+const PIN_TWIST: float = 0.3 # Torso yaw that wrenches the striking shoulder forward into each blow
 const PIN_RAKE_HEIGHT: float = 0.85 # Claws rake through this height above the pinned operative (just over their face)
 # One arm's claw cycle (2 strike intervals, the strike lands at 0): drag through -> raise overhead -> swing down
 const CLAW_DRAG_END: float = 0.12
 const CLAW_RAISE_END: float = 0.46
 const EYE_GLOW: float = 4.0 # Red pupils ignite once it leaves the shadows
-const RUNE_GLOW: float = 3.0 # Emission of the burned-in sigils at full glow
+const DRIP_GRAVITY: float = 9.8 # Blood drops falling off the claws
 const FLEE_SPEED: float = 24.0
 const FLEE_TIMEOUT: float = 7.0
 const HIDE_ARRIVE_DIST: float = 1.0
@@ -71,13 +72,13 @@ var arm_fingers: Array = [] # Per arm: finger + thumb joints (curl on X)
 var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
+var claw_drips: Array[Dictionary] = [] # Per drop: tip node, mesh, age, hang time, fall speed
 
 @onready var body_root: Node3D = $MeshRoot/Body
 @onready var head_mesh: Node3D = $MeshRoot/Body/Head
 @onready var jaw: Node3D = $MeshRoot/Body/Head/Jaw
 @onready var pupil_mat: StandardMaterial3D = ($MeshRoot/Body/Head/PupilL as MeshInstance3D).mesh.material
 @onready var skin_mat: ShaderMaterial = ($MeshRoot/Body/Ribcage as MeshInstance3D).mesh.material
-@onready var rune_mat: StandardMaterial3D = ($MeshRoot/Body/SealRing as MeshInstance3D).mesh.material
 var body_glow: float = 0.0 # 0 dormant in the shadows .. 1 fully awake
 
 func _ready() -> void:
@@ -86,6 +87,7 @@ func _ready() -> void:
 	if body_root:
 		body_base_y = body_root.position.y
 	_collect_arm_joints()
+	_setup_claw_drips()
 	hide_spot = global_position
 	hide_spot.y = 0.0
 	hide_index = _nearest_hide_index(global_position)
@@ -509,7 +511,7 @@ func _animate_claw_attack(i: int, side: float) -> void:
 	for f in arm_fingers[i]:
 		f.rotation.x = curl
 
-## Head aim, snarling jaw, and the eyes / veins / sigils that wake once it leaves the shadows
+## Head aim, snarling jaw, and the eyes / fresh blood that wake once it leaves the shadows
 func _animate_head(delta: float) -> void:
 	var look_up = 0.35 # Counters the hunch so it glares ahead
 	var jaw_open = 0.3
@@ -547,8 +549,6 @@ func _animate_head(delta: float) -> void:
 		pupil_mat.emission_energy_multiplier = EYE_GLOW * minf(body_glow * 2.0, 1.0)
 	if skin_mat:
 		skin_mat.set_shader_parameter("glow", body_glow)
-	if rune_mat:
-		rune_mat.emission_energy_multiplier = RUNE_GLOW * body_glow
 
 func _animate_pose(delta: float) -> void:
 	if not body_root:
@@ -556,6 +556,7 @@ func _animate_pose(delta: float) -> void:
 	var target_tilt = 0.45 # hunched
 	var target_roll = 0.0
 	var target_drop = 0.0
+	var target_twist = 0.0
 	match state:
 		GhoulState.HIDING:
 			target_tilt = 0.75
@@ -574,15 +575,67 @@ func _animate_pose(delta: float) -> void:
 		GhoulState.PINNING:
 			target_tilt = 0.8
 			target_drop = -0.35
+			# Left claw lands at 0, right half a cycle later: the torso swings into whichever arm is striking
+			var c = -cos(pin_time * PI / PIN_HIT_INTERVAL)
+			target_twist = PIN_TWIST * signf(c) * sqrt(absf(c))
 		GhoulState.FLEEING:
 			target_tilt = 0.95 + sin(anim_time * 18.0) * 0.08
 	body_root.rotation.z = lerpf(body_root.rotation.z, target_roll, 10.0 * delta)
+	body_root.rotation.y = lerpf(body_root.rotation.y, target_twist, 18.0 * delta)
 	body_root.position.y = lerpf(body_root.position.y, body_base_y + target_drop, 10.0 * delta)
 	# Tilt > 0 leans toward the face (-Z), which is a negative X rotation
 	if state != GhoulState.PINNING:
 		body_root.rotation.x = lerpf(body_root.rotation.x, -target_tilt, 10.0 * delta)
 	_animate_arms(delta)
 	_animate_head(delta)
+	_animate_claw_drips(delta)
+
+## One blood drop per claw: it swells on the tip, then falls (onto a pinned victim's face). Hidden while it lurks.
+func _setup_claw_drips() -> void:
+	var palm = arm_hands[0].get_node_or_null("PalmL") as MeshInstance3D
+	if not palm:
+		return
+	var drop_mesh = SphereMesh.new()
+	drop_mesh.radius = 0.011
+	drop_mesh.height = 0.03
+	drop_mesh.radial_segments = 6
+	drop_mesh.rings = 3
+	drop_mesh.material = palm.mesh.material # Wet blood
+	for hand in arm_hands:
+		for finger in hand.get_children():
+			if not finger.name.begins_with("Finger"):
+				continue
+			var tip = finger.get_node_or_null("DripTip" + finger.name.trim_prefix("Finger")) as Node3D
+			if not tip:
+				continue
+			var drop = MeshInstance3D.new()
+			drop.mesh = drop_mesh
+			drop.top_level = true
+			drop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			drop.visible = false
+			add_child(drop)
+			claw_drips.append({"tip": tip, "mesh": drop, "t": randf(), "hang": randf_range(0.25, 0.9), "vel": 0.0})
+
+func _animate_claw_drips(delta: float) -> void:
+	var dripping = state != GhoulState.HIDING
+	for d in claw_drips:
+		var drop: MeshInstance3D = d["mesh"]
+		drop.visible = dripping
+		if not dripping:
+			continue
+		d["t"] += delta
+		if d["t"] < d["hang"]:
+			var k: float = d["t"] / d["hang"]
+			drop.global_position = (d["tip"] as Node3D).global_position + Vector3.DOWN * 0.012 * k
+			drop.scale = Vector3.ONE * (0.3 + 0.7 * k)
+			d["vel"] = 0.0
+		else:
+			d["vel"] += DRIP_GRAVITY * delta
+			drop.global_position += Vector3.DOWN * float(d["vel"]) * delta
+			drop.scale = Vector3(0.8, 1.5, 0.8)
+			if drop.global_position.y < global_position.y + 0.02 or d["t"] > d["hang"] + 0.8:
+				d["t"] = 0.0
+				d["hang"] = randf_range(0.25, 0.9)
 
 func die() -> void:
 	if is_dead:

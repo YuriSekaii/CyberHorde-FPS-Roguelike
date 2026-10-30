@@ -656,6 +656,8 @@ func _update_status_effects(delta: float) -> void:
 	var poison_t: float = float(p.get("poison_timer")) if p else 0.0
 	var bleed_t: float = float(p.get("bleed_timer")) if p else 0.0
 	var immune_t: float = float(p.get("trap_immunity_timer")) if p else 0.0
+	var status_immune_t: float = float(p.get("status_immunity_timer")) if p else 0.0
+	var suppression_t: float = float(p.get("gunner_timer")) if p and p.get("is_gunner_active") == true else 0.0
 
 	trap_panel.visible = trapped
 	var tint = Color(0, 0, 0, 0)
@@ -682,7 +684,11 @@ func _update_status_effects(delta: float) -> void:
 		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING), -75%% HEALING" % bleed_t)
 	if poison_t > 0.0:
 		lines.append("POISONED %.1fs — SLOWED 25%%" % poison_t)
-	if immune_t > 0.0 and not trapped:
+	if status_immune_t > 0.0:
+		lines.append("STATUS IMMUNE %.1fs" % status_immune_t)
+	if suppression_t > 0.0:
+		lines.append("SUPPRESSION IMMUNE %.1fs" % suppression_t)
+	elif immune_t > 0.0 and not trapped:
 		lines.append("TRAP IMMUNE %.1fs" % immune_t)
 	status_effects_label.text = "\n".join(lines)
 	if bleed_t > 0.0:

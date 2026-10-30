@@ -733,7 +733,8 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.85, 0.95, 0.9, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "• Instantly recovers 20% Shield and 20% HP to ALL players.
-• Grants 2s complete invulnerability to ALL players.
+• Then cleanses Poison & Bleed from ALL players.
+• Grants 2s invulnerability + status immunity to ALL players.
 • Then regenerates another 20% Shield/HP over 10s (2%/s).
 • 20s cooldown (10.0s with Cooldown Reduction)."
 autowrap_mode = 2
@@ -877,7 +878,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.35, 0.4, 1)
 theme_override_font_sizes/font_size = 13
-text = "ACTIVE [Q]: Berserk Protocol (45s)"
+text = "ACTIVE [Q]: Berserk Protocol (30s)"
 
 [node name="ActiveDesc" type="Label" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]
 layout_mode = 2
@@ -885,9 +886,10 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.95, 0.88, 0.88, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "• 5s: Invulnerable, +500% Fire Rate & infinite ammo.
+• Suppression Immune: breaks out of pins & traps.
 • All weapons become fully automatic (hold to fire).
 • Plasma Core fires instantly without charging.
-• All weapons reload when skill ends. 45s cooldown (22.5s with CD perk)."
+• All weapons reload when skill ends. 30s cooldown (15s with CD perk)."
 autowrap_mode = 2
 
 [node name="GunnerSelectBtn" type="Button" parent="Panel/VBoxContainer/ClassSelectContainer/CardsHBox/GunnerCard/Margin/VBox"]

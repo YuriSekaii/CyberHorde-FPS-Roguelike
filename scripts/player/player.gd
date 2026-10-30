@@ -57,7 +57,7 @@ var player_class: String = "medic":
 const MEDIC_COOLDOWN: float = 20.0
 const MEDIC_ACTIVE_DURATION: float = 2.0
 const ROGUE_COOLDOWN: float = 10.0
-const GUNNER_COOLDOWN: float = 45.0
+const GUNNER_COOLDOWN: float = 30.0
 const GUNNER_ACTIVE_DURATION: float = 5.0
 
 var skill_cooldown_timer: float = 0.0
@@ -113,6 +113,7 @@ const BLEED_RATE_IDLE: float = 0.01 # Fraction of Max HP lost per second
 const BLEED_RATE_MOVING: float = 0.05
 const BLEED_HEAL_REDUCTION: float = 0.75 # All healing received is cut by 75% while bleeding
 const TRAP_IMMUNITY_DURATION: float = 3.0
+const STATUS_IMMUNITY_DURATION: float = 2.0 # Medic Cellular Restore: blocks new Poison / Bleed (not traps)
 const TRAP_PRESS_REDUCTION: float = 0.5 # Seconds removed from a timed trap per A/D press
 const REMOTE_TRAP_HOLD: float = 2.0 # Remote copies can't read their owner's key presses, so they free themselves after this
 var poison_timer: float = 0.0
@@ -126,6 +127,7 @@ var trap_source: Node = null
 var trap_presses_needed: int = 0 # >0: escape after this many presses instead of on a timer
 var trap_presses_done: int = 0
 var trap_immunity_timer: float = 0.0
+var status_immunity_timer: float = 0.0
 
 # Pinned flat on your back (Blood Ghoul): camera drops to the ground and locks onto the attacker
 const STAND_HEAD_HEIGHT: float = 1.6
@@ -1085,7 +1087,7 @@ func _check_fatal_damage() -> bool:
 
 ## Venom: 25% slow + damage-over-time for 3s. Does not stack; a new dose refreshes the duration (keeping the stronger tick).
 func apply_poison(dps: float) -> void:
-	if is_downed:
+	if is_downed or status_immunity_timer > 0.0:
 		return
 	poison_dps = dps if poison_timer <= 0.0 else maxf(poison_dps, dps)
 	poison_timer = POISON_DURATION
@@ -1093,15 +1095,15 @@ func apply_poison(dps: float) -> void:
 ## Bleed: lose 1% Max HP/s (5% while moving), straight to HP, and healing is cut by 75%.
 ## Each application adds 1.5s to the remaining duration (no cap). Invulnerability nullifies the drain but the timer keeps running.
 func apply_bleed() -> void:
-	if is_downed:
+	if is_downed or status_immunity_timer > 0.0:
 		return
 	bleed_timer += BLEED_DURATION
 
 ## Traps the player in place. duration: hold time (INF = until escaped), dps: damage-over-time while held,
 ## presses_needed: >0 escapes after that many A/D presses, otherwise each press shaves TRAP_PRESS_REDUCTION off the timer.
-## Returns false if the player can't be trapped right now (already trapped, post-escape immunity, invulnerable, downed).
+## Returns false if the player can't be trapped right now (already trapped, post-escape immunity, invulnerable, Suppression Immune, downed).
 func apply_trap(source: Node, duration: float, dps: float, presses_needed: int = 0) -> bool:
-	if is_trapped or trap_immunity_timer > 0.0 or is_invulnerable or is_dashing or is_downed:
+	if is_trapped or trap_immunity_timer > 0.0 or is_invulnerable or is_suppression_immune() or is_dashing or is_downed:
 		return false
 	is_trapped = true
 	trap_source = source
@@ -1133,6 +1135,10 @@ func release_trap(escaped: bool = true) -> void:
 		SoundManager.play("dash", 0.1, -4.0)
 	if is_instance_valid(src) and src.has_method("on_trap_released"):
 		src.on_trap_released(self, escaped)
+
+## Suppression Immune: can't be pinned or trapped (Gunner while Berserk Protocol is running)
+func is_suppression_immune() -> bool:
+	return is_gunner_active
 
 ## 0..1 escape progress shown on the HUD
 func get_trap_progress() -> float:
@@ -1181,16 +1187,23 @@ func _reset_pin_view() -> void:
 	pin_roll = 0.0
 	head.rotation.z = 0.0
 
-func clear_status_effects() -> void:
+## Removes Poison and Bleed (traps are not status effects and stay)
+func cleanse_status_effects() -> void:
 	poison_timer = 0.0
 	poison_dps = 0.0
 	bleed_timer = 0.0
+
+func clear_status_effects() -> void:
+	cleanse_status_effects()
+	status_immunity_timer = 0.0
 	if is_trapped:
 		release_trap(false)
 
 func _process_status_effects(delta: float) -> void:
 	if trap_immunity_timer > 0.0:
 		trap_immunity_timer = maxf(0.0, trap_immunity_timer - delta)
+	if status_immunity_timer > 0.0:
+		status_immunity_timer = maxf(0.0, status_immunity_timer - delta)
 	if is_downed:
 		if is_trapped or poison_timer > 0.0 or bleed_timer > 0.0:
 			clear_status_effects()
@@ -1432,7 +1445,10 @@ func _apply_medic_heal_all() -> void:
 			if p.get("is_downed") == true:
 				continue
 			var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
-			p.heal(max_hp * 0.20)
+			p.heal(max_hp * 0.20) # Bleed still cuts this heal; the cleanse comes after
+			if p.has_method("cleanse_status_effects"):
+				p.cleanse_status_effects()
+				p.status_immunity_timer = STATUS_IMMUNITY_DURATION
 			if GameManager.shield_max > 0.0:
 				var s_add = GameManager.shield_max * 0.20
 				p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
@@ -1442,7 +1458,7 @@ func _apply_medic_heal_all() -> void:
 				p.trigger_invulnerability(2.0)
 			if "medic_regen_timer" in p:
 				p.medic_regen_timer = MEDIC_REGEN_DURATION
-	_spawn_floating_text("+20% HP & SHIELD (INVULN 2s, +20% REGEN 10s)", Color(0.2, 1.0, 0.6))
+	_spawn_floating_text("+20% HP & SHIELD, CLEANSED (INVULN & STATUS IMMUNE 2s, +20% REGEN 10s)", Color(0.2, 1.0, 0.6))
 
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
@@ -1504,7 +1520,7 @@ func _end_dash() -> void:
 	var exit_speed = BASE_WALK_SPEED * GameManager.speed_mult
 	velocity = dash_direction * exit_speed
 
-# --- GUNNER ACTIVE: BERSERK OVERDRIVE (45s cd, 5s duration) ---
+# --- GUNNER ACTIVE: BERSERK OVERDRIVE (30s cd, 5s duration) ---
 func _activate_gunner_skill() -> void:
 	is_gunner_active = true
 	gunner_timer = GUNNER_ACTIVE_DURATION
@@ -1512,8 +1528,11 @@ func _activate_gunner_skill() -> void:
 	skill_max_cooldown = cd
 	skill_cooldown_timer = cd
 	skill_ready = false
-	# Invulnerable for the full active duration
+	# Invulnerable and Suppression Immune for the full active duration
 	trigger_invulnerability(GUNNER_ACTIVE_DURATION)
+	# Breaking out counts as an escape: the source reacts as if mashed free (Ghoul knocked down, Slime pauses)
+	if is_trapped:
+		release_trap(true)
 	
 	if is_reloading:
 		is_reloading = false
@@ -1530,7 +1549,7 @@ func _activate_gunner_skill() -> void:
 	
 	SoundManager.play("level_up", 0.25, 0.6)
 	shake_intensity = 0.22
-	_spawn_floating_text("BERSERK OVERDRIVE! (INVULN 5s)", Color(1.0, 0.2, 0.2))
+	_spawn_floating_text("BERSERK OVERDRIVE! (INVULN & SUPPRESSION IMMUNE 5s)", Color(1.0, 0.2, 0.2))
 	
 	var cur_w = weapons[active_weapon_idx]
 	ammo_changed.emit(cur_w.current_ammo, cur_w.max_ammo, false)
