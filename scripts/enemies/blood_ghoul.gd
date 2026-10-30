@@ -18,8 +18,10 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             any range. Leaping at someone ends Engage mode.
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
-## while hidden it relocates to another random tree and drops Engage mode, fully immune until it gets there.
-## Phases (by HP, never revert even if lifesteal heals it back):
+## while hidden it relocates to another random tree and drops Engage mode.
+## Fleeing to a tree it's immune to all damage; knocked down or fallen after a miss it's fully vulnerable.
+## Phases (by HP, never revert even if lifesteal heals it back). Each new phase it drops whatever it's doing
+## (releasing a pin) and flees, immune, to a tree; in phase 4 it starts hunting from there.
 ##   1  > 2/3    As above.
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
@@ -107,7 +109,6 @@ var arm_fingers: Array = [] # Per arm: finger + thumb joints (curl on X)
 var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
-var retreat_immune: bool = false # Immune to everything while fleeing after the 1% hide-damage relocate
 var engaged: bool = false
 var idle_timer: float = 0.0 # Time hiding with nobody in reach, since its last leap
 var unwatched_timer: float = 0.0
@@ -173,12 +174,11 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 		if hide_damage_taken >= max_health * HIDE_RELOCATE_DAMAGE:
 			_set_engaged(false)
 			_start_flee()
-			retreat_immune = state == GhoulState.FLEEING
 
-## Hidden in the shadows it can only be hurt by direct bullet hits (no AoE, ricochet or chain lightning).
-## Retreating to a new tree after the 1% relocate it can't be hurt at all.
+## Fleeing to a tree it can't be hurt at all; hidden in the shadows it can only be hurt by direct bullet hits
+## (no AoE, ricochet or chain lightning)
 func is_immune_to(damage_type: int) -> bool:
-	if retreat_immune:
+	if state == GhoulState.FLEEING:
 		return true
 	return state == GhoulState.HIDING and damage_type != DAMAGE_TYPE_DIRECT and damage_type != DAMAGE_TYPE_WEAKPOINT
 
@@ -226,9 +226,12 @@ func _update_phase() -> void:
 	SoundManager.play_pitch("charger_windup", 0.45, 0.0) # Guttural growl
 	if phase >= 3:
 		engaged = true
-	# Done hiding: hunt right away (mid-leap, pin, stun or hop it switches over when that ends)
-	if phase >= 4 and (state == GhoulState.HIDING or state == GhoulState.FLEEING):
-		_start_hunt()
+	# Breaks off whatever it's doing (pin, knockdown, leap...) and retreats, immune, to a tree.
+	# In phase 4 it starts hunting once it gets there.
+	if is_instance_valid(pinned_player) and pinned_player.get("trap_source") == self:
+		pinned_player.release_trap(false)
+	_release_pin()
+	_start_flee(true)
 
 func _engage_idle_time() -> float:
 	return ENGAGE_IDLE_TIME * (PHASE_2_TIME_MULT if phase >= 2 else 1.0)
@@ -242,9 +245,6 @@ func _set_state(new_state: GhoulState) -> void:
 	var was_lurking = _is_lurking()
 	state = new_state
 	state_timer = 0.0
-	# Retreat immunity only lasts the flee itself (re-picking a tree when stuck keeps it)
-	if state != GhoulState.FLEEING:
-		retreat_immune = false
 	# The relocate counter covers one stay in the shadows, across tree hops
 	if _is_lurking() and not was_lurking:
 		hide_damage_taken = 0.0
@@ -598,8 +598,9 @@ func _release_pin() -> void:
 
 # ----------------- FLEE & HIDE -----------------
 
-func _start_flee() -> void:
-	if phase >= 4:
+## to_tree: flee to a tree even in phase 4 (the phase change retreat), where it otherwise hunts straight away
+func _start_flee(to_tree: bool = false) -> void:
+	if phase >= 4 and not to_tree:
 		_start_hunt()
 		return
 	hide_index = _pick_hide_index()
@@ -621,7 +622,7 @@ func _process_fleeing(delta: float) -> void:
 		return
 	if state_timer >= FLEE_TIMEOUT:
 		# Stuck somewhere: pick another tree
-		_start_flee()
+		_start_flee(true)
 		return
 	var dir = nav_direction_to(hide_spot, delta)
 	if dir != Vector3.ZERO:
