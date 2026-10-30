@@ -252,7 +252,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Spits the operative out, then pauses 1.2s |
 | **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
 | **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
-| **Blood Ghoul (Boss)** | 2,000,000.0 | 24 m/s flee / 42 m/s leap | 150 (fixed) | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP & damage; infinite horde until it dies |
+| **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee / 42 m/s leap | 150 (fixed) | 0.3s pin strikes | Shadow ambush, pin, lifesteal, Bleed | Wave 50 | Fixed HP & damage; infinite horde until it dies |
 
 ### 🧪 Stage 2 Status Effects
 | Effect | Source | Effect | Stacking |
