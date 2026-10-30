@@ -23,7 +23,8 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   1  > 2/3    As above.
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
-##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction.
+##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on in
+##               1.5s; knockdown 1.5s, miss stun 4s.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
@@ -73,6 +74,9 @@ const PHASE_4_HP: float = 0.1
 const PHASE_2_TIME_MULT: float = 0.5 # Engage trigger and hop wait from phase 2
 const PHASE_2_HOP_SPEED_MULT: float = 1.5
 const PHASE_4_DAMAGE_REDUCTION: float = 0.9 # While exposed; multiplies with the wave reduction
+const PHASE_4_LOCK_TIME: float = 1.5
+const PHASE_4_FALL_STUN_TIME: float = 4.0
+const PHASE_4_KNOCKDOWN_TIME: float = 1.5
 const HUNT_SPEED: float = 24.0
 const HUNT_HOLD_DIST: float = 12.0 # Closes to this range, then crouches for the lock
 const VIEW_CONE_DOT: float = 0.8 # ~37 degrees off the look direction (same as the Mantis Stalker)
@@ -189,13 +193,13 @@ func _behave(delta: float) -> void:
 			_process_overshoot(delta)
 		GhoulState.FALLEN:
 			_hold_still(delta)
-			if state_timer >= FALL_STUN_TIME:
+			if state_timer >= (PHASE_4_FALL_STUN_TIME if phase >= 4 else FALL_STUN_TIME):
 				_start_flee()
 		GhoulState.PINNING:
 			_process_pinning(delta)
 		GhoulState.KNOCKDOWN:
 			_hold_still(delta)
-			if state_timer >= KNOCKDOWN_TIME:
+			if state_timer >= (PHASE_4_KNOCKDOWN_TIME if phase >= 4 else KNOCKDOWN_TIME):
 				_start_flee()
 		GhoulState.FLEEING:
 			_process_fleeing(delta)
@@ -271,7 +275,7 @@ func _process_hiding(delta: float) -> void:
 	var to_p = p.global_position - global_position
 	rotation.y = lerp_angle(rotation.y, atan2(-to_p.x, -to_p.z), 3.0 * delta)
 	range_timer += delta
-	if range_timer >= LOCK_TIME:
+	if range_timer >= (PHASE_4_LOCK_TIME if phase >= 4 else LOCK_TIME):
 		# Silent lock-in: no sound, no flash, no indicator
 		_start_leap(p.global_position)
 
@@ -406,7 +410,7 @@ func _process_hunting(delta: float) -> void:
 		range_timer = 0.0
 	else:
 		range_timer += delta
-		if range_timer >= LOCK_TIME:
+		if range_timer >= (PHASE_4_LOCK_TIME if phase >= 4 else LOCK_TIME):
 			_start_leap(prey.global_position)
 			return
 	var move_speed = 0.0 if flat_d <= HUNT_HOLD_DIST else HUNT_SPEED * slow_multiplier

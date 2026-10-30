@@ -281,7 +281,7 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 | **1** | > 2/3 | As above |
 | **2** | ≤ 2/3 | Engage Mode triggers after **5s**; hops after **1s** unwatched; hops **+50% speed** (45 m/s) |
 | **3** | ≤ 1/3 | **Permanently engaged** (leaps and the 1% flee no longer end it); hops the **instant** nobody is looking at it |
-| **4** | ≤ 10% | **Stops hiding**: endlessly sprints (24 m/s) at the nearest operative, closes to 12m, then locks for 2s and leaps; after a pin, knockdown or miss stun it resumes the hunt instead of fleeing. **90% damage reduction** while exposed (on top of the wave reduction) |
+| **4** | ≤ 10% | **Stops hiding**: endlessly sprints (24 m/s) at the nearest operative, closes to 12m, then locks for **1.5s** and leaps; after a pin, knockdown (**1.5s**) or miss stun (**4s**) it resumes the hunt instead of fleeing. **90% damage reduction** while exposed (on top of the wave reduction) |
 
 ---
 
