@@ -18,7 +18,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING }
 
 const BOSS_MAX_HP: float = 1000000.0
-const BOSS_DAMAGE: float = 150.0 # Fixed, no wave scaling
+const BOSS_DAMAGE: float = 200.0 # Fixed, no wave scaling
 const ATTACK_RANGE: float = 25.0
 const LOCK_TIME: float = 2.0
 const LEAP_SPEED: float = 42.0
