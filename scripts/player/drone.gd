@@ -18,6 +18,7 @@ var _was_berserk: bool = false
 @onready var ring: MeshInstance3D = $DroneRing
 
 const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
+const BulletScript = preload("res://scripts/projectiles/bullet.gd")
 
 func _ready() -> void:
 	if assigned_weapon_idx < 0:
@@ -197,10 +198,12 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null,
 	# Inherits Gunner Passive (+25% critical strike chance)
 	var is_gunner = (p_owner != null and (p_owner.get("player_class") == "gunner" or p_owner.get("player_class") == "slayer"))
 	var crit_bonus: float = 0.25 if is_gunner else 0.0
+	# Over the bullet simulation budget, fewer pellets fire, each carrying the merged pellets' damage
+	var fired_bullets = BulletScript.budget_pellets(total_bullets)
+	var pellet_damage = w.damage * float(total_bullets) / float(fired_bullets)
 	
-	for i in range(total_bullets):
-		var bullet = BULLET_SCENE.instantiate()
-		scene_root.add_child(bullet)
+	for i in range(fired_bullets):
+		var bullet = BulletScript.acquire(scene_root, BULLET_SCENE)
 		bullet.global_position = global_position + aim_dir * 0.4
 		
 		# Direction with spread matching assigned weapon spread
@@ -227,7 +230,7 @@ func _fire_weapon(target_pos: Vector3, w, is_plasma: bool, p_owner: Node = null,
 		# - Multi-Barrel Splitter (extra projectiles)
 		# - Extended Mag (same magazine capacity)
 		# - Rapid Loader (same reload speed)
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, is_plasma, w.base_crit_chance + crit_bonus, p_owner)
+		bullet.setup(bullet_dir, pellet_damage, w.is_explosive, is_plasma, w.base_crit_chance + crit_bonus, p_owner)
 	
 	if not is_berserk and current_ammo <= 0:
 		_start_reload(w)

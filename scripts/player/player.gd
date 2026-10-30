@@ -217,6 +217,7 @@ var _plasma_was_ready: bool = true
 @onready var downed_beacon: OmniLight3D = $DownedBeacon
 
 const BULLET_SCENE = preload("res://scenes/projectiles/bullet.tscn")
+const BulletScript = preload("res://scripts/projectiles/bullet.gd")
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 
 func _ready() -> void:
@@ -760,10 +761,12 @@ func _fire_active_weapon() -> void:
 	var total_projectiles = int(round(w.pellets * (1.0 + GameManager.extra_projectile_mult)))
 	var shoot_origin = camera.global_position + (-camera.global_transform.basis.z * 0.5)
 	var base_dir = -camera.global_transform.basis.z
+	# Over the bullet simulation budget, fewer pellets fire, each carrying the merged pellets' damage
+	var fired_projectiles = BulletScript.budget_pellets(total_projectiles)
+	var pellet_damage = w.damage * float(total_projectiles) / float(fired_projectiles)
 	
-	for i in range(total_projectiles):
-		var bullet = BULLET_SCENE.instantiate()
-		get_parent().add_child(bullet)
+	for i in range(fired_projectiles):
+		var bullet = BulletScript.acquire(get_parent(), BULLET_SCENE)
 		bullet.global_position = shoot_origin
 		
 		var spread_angle = w.spread * (0.5 if is_aiming else 1.0)
@@ -777,7 +780,7 @@ func _fire_active_weapon() -> void:
 		var bullet_dir = (base_dir + camera.global_transform.basis.x * spread_x + camera.global_transform.basis.y * spread_y).normalized()
 		
 		var crit_bonus = 0.25 if (player_class == "gunner" or player_class == "slayer") else 0.0
-		bullet.setup(bullet_dir, w.damage, w.is_explosive, active_weapon_idx == 2, w.base_crit_chance + crit_bonus, self)
+		bullet.setup(bullet_dir, pellet_damage, w.is_explosive, active_weapon_idx == 2, w.base_crit_chance + crit_bonus, self)
 	
 	# Notify squad of gunfire visual & sound
 	if NetworkManager.is_multiplayer:
@@ -1339,8 +1342,7 @@ func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:
 	var w = weapons[wep_idx] if wep_idx < weapons.size() else null
 	if w:
 		SoundManager.play(w.sound_name, 0.1, -2.0)
-		var bullet = BULLET_SCENE.instantiate()
-		get_parent().add_child(bullet)
+		var bullet = BulletScript.acquire(get_parent(), BULLET_SCENE)
 		bullet.global_position = origin
 		bullet.setup(dir, w.damage, w.is_explosive, wep_idx == 2, w.base_crit_chance)
 

@@ -1,4 +1,4 @@
-extends Area3D
+extends Node3D
 
 const BASE_BULLET_SPEED: float = 70.0
 const PLASMA_SPEED: float = BASE_BULLET_SPEED / 3.0 # ~23.33 m/s (1/3 of standard bullet speed)
@@ -8,6 +8,7 @@ const PLASMA_HITBOX_RADIUS: float = 0.75 # Generous hitbox radius for plasma orb
 @export var base_damage: float = 25.0
 @export var is_explosive: bool = false
 @export var is_plasma: bool = false
+@export var collision_mask: int = 3 # Layer 1 world + Layer 2 enemies (bullets are plain Node3Ds swept by raycasts)
 
 var direction: Vector3 = Vector3.FORWARD
 var lifetime: float = 2.5
@@ -18,6 +19,9 @@ var already_hit: Array[Node] = []
 var crit_chance: float = 0.10
 var is_ricochet: bool = false
 var shooter: Node = null
+var sim_pos: Vector3 = Vector3.ZERO # Simulated position; the node itself only moves while the bullet is drawn
+var _space: PhysicsDirectSpaceState3D = null
+var _hit_rids: Array[RID] = [] # Pierced enemies, excluded from the sweep so the bullet travels on through them
 
 # Dynamic bullet visual threshold tracking
 static var active_bullets: Array[Node] = []
@@ -25,6 +29,31 @@ static var visible_bullets: Array[Node] = []
 static var active_bullet_lights: int = 0
 const MAX_BULLET_LIGHTS: int = 8
 static var last_ricochet_sound_msec: int = 0
+static var last_chain_sound_msec: int = 0
+
+# Static bullet pool: spent bullets park hidden in the scene and are reused (no per-pellet instantiate/free)
+static var bullet_pool: Array[Node] = []
+const MAX_BULLET_POOL: int = 512
+var _in_pool: bool = false
+
+# One shared raycast query for every bullet sweep (no per-tick allocation)
+static var _ray_query: PhysicsRayQueryParameters3D = null
+static var _ray_query_has_exclude: bool = false
+
+# Bullets leaving the 80x80 arena (or flying above its 48m ceiling) can't hit anything, so they're recycled early
+const ARENA_CULL_EXTENT: float = 42.0
+const ARENA_CULL_CEILING: float = 50.0
+
+# Simulation budget: once this many bullets are alive, multi-pellet volleys merge into fewer, heavier pellets
+const BULLET_SIM_BUDGET: int = 400
+
+## How many pellets a volley of `count` should actually spawn: all of them under budget, otherwise 1/2, 1/3, ...
+## as the live count passes 1x, 2x, ... the budget. Callers scale per-pellet damage by count / result.
+static func budget_pellets(count: int) -> int:
+	var merge = 1 + int(active_bullets.size() / BULLET_SIM_BUDGET)
+	if count <= 1 or merge <= 1:
+		return count
+	return maxi(1, ceili(float(count) / float(merge)))
 
 # Static pooled lightning beam instances (Zero heap allocation during combat)
 static var beam_pool: Array[MeshInstance3D] = []
@@ -49,14 +78,71 @@ var _has_registered: bool = false
 
 const ExplosionScript = preload("res://scripts/projectiles/explosion.gd")
 
+## Takes a parked bullet from the pool, or instantiates a new one under parent. Call setup() on the result.
+static func acquire(parent: Node, scene: PackedScene) -> Node:
+	while not bullet_pool.is_empty():
+		var b = bullet_pool.pop_back()
+		if is_instance_valid(b) and b.is_inside_tree():
+			b._activate()
+			return b
+	var nb = scene.instantiate()
+	parent.add_child(nb)
+	return nb
+
 func _ready() -> void:
-	pierces_left = GameManager.pierce_count
-	if GameManager.bouncing_bullets:
-		bounces_left = GameManager.bounce_count
-	_register_bullet()
+	_activate()
 
 func _exit_tree() -> void:
 	_unregister_bullet()
+	if _in_pool:
+		_in_pool = false
+		bullet_pool.erase(self)
+
+func _activate() -> void:
+	_in_pool = false
+	timer = 0.0
+	speed = BASE_BULLET_SPEED
+	lifetime = 2.5
+	is_explosive = false
+	is_plasma = false
+	is_ricochet = false
+	shooter = null
+	already_hit.clear()
+	_hit_rids.clear()
+	pierces_left = GameManager.pierce_count
+	bounces_left = GameManager.bounce_count if GameManager.bouncing_bullets else 0
+	visible = true
+	_space = get_world_3d().direct_space_state
+	set_physics_process(true)
+	_register_bullet()
+
+## Spent bullet: park it hidden in the pool for reuse (plasma orbs carry custom visuals, so they're freed)
+func _release() -> void:
+	if _in_pool:
+		return
+	_unregister_bullet()
+	if is_plasma or bullet_pool.size() >= MAX_BULLET_POOL or not is_inside_tree():
+		queue_free()
+		return
+	_in_pool = true
+	visible = false
+	set_physics_process(false)
+	shooter = null
+	already_hit.clear()
+	_hit_rids.clear()
+	bullet_pool.append(self)
+
+static func _get_ray_query(from: Vector3, to: Vector3, mask: int, exclude: Array[RID]) -> PhysicsRayQueryParameters3D:
+	if _ray_query == null:
+		_ray_query = PhysicsRayQueryParameters3D.new()
+	_ray_query.from = from
+	_ray_query.to = to
+	_ray_query.collision_mask = mask
+	# Assigning exclude copies the array, so skip it for the common case (nothing pierced yet)
+	if not exclude.is_empty() or _ray_query_has_exclude:
+		_ray_query.exclude = exclude
+		_ray_query_has_exclude = not exclude.is_empty()
+	return _ray_query
 
 func _register_bullet() -> void:
 	if _has_registered:
@@ -117,6 +203,8 @@ func set_visual(state: bool) -> void:
 		return
 
 	is_visual = state
+	if is_visual:
+		_sync_node()
 	if mesh_instance:
 		mesh_instance.visible = is_visual
 	else:
@@ -207,7 +295,14 @@ func _setup_plasma_visuals() -> void:
 			active_bullet_lights += 1
 			has_light = true
 
+## Moves the node to the simulated position and faces it along its flight (only needed while drawn)
+func _sync_node() -> void:
+	global_position = sim_pos
+	if direction != Vector3.ZERO and absf(direction.dot(Vector3.UP)) < 0.999:
+		look_at(sim_pos + direction, Vector3.UP)
+
 func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool = false, base_crit: float = 0.10, p_shooter: Node = null) -> void:
+	sim_pos = global_position # Callers place the bullet before setup
 	direction = dir.normalized()
 	base_damage = dmg
 	is_explosive = explosive or GameManager.explosive_rounds
@@ -217,21 +312,27 @@ func setup(dir: Vector3, dmg: float, explosive: bool = false, from_plasma: bool 
 	if is_plasma:
 		speed = PLASMA_SPEED
 		lifetime = 4.5
+		is_visual = true # Plasma orbs are always drawn (and always move their node)
 		if not self in visible_bullets:
 			visible_bullets.append(self)
 		_setup_plasma_visuals()
-	if direction != Vector3.ZERO:
-		look_at(global_position + direction, Vector3.UP)
+	if is_visual:
+		_sync_node()
 
 func _physics_process(delta: float) -> void:
 	timer += delta
 	if timer >= lifetime:
-		queue_free()
+		_release()
+		return
+	
+	var p = sim_pos
+	if absf(p.x) > ARENA_CULL_EXTENT or absf(p.z) > ARENA_CULL_EXTENT or p.y > ARENA_CULL_CEILING or p.y < -2.0:
+		_release()
 		return
 	
 	var move_step = direction * speed * delta
-	var next_pos = global_position + move_step
-	var space_state = get_world_3d().direct_space_state
+	var next_pos = sim_pos + move_step
+	var space_state = _space
 	
 	if is_plasma:
 		# Rotating & pulsing plasma orb visual animation
@@ -247,21 +348,15 @@ func _physics_process(delta: float) -> void:
 		
 		# --- PLASMA COLLISION DETECTION WITH LARGE HITBOX ---
 		# 1. Environment collision (walls, floor) with raycast so it doesn't snag on corners/doorways
-		var ray_query = PhysicsRayQueryParameters3D.create(
-			global_position,
-			next_pos,
-			1, # Layer 1: World / Environment
-			[self]
-		)
-		var wall_result = space_state.intersect_ray(ray_query)
-		var wall_dist = global_position.distance_to(wall_result.position) if wall_result else INF
+		var wall_result = space_state.intersect_ray(_get_ray_query(sim_pos, next_pos, 1, _hit_rids)) # Layer 1: World / Environment
+		var wall_dist = sim_pos.distance_to(wall_result.position) if wall_result else INF
 		
 		# 2. Check enemies with generous hitbox
 		var best_enemy: Node = null
 		var best_enemy_dist = INF
 		var best_hit_pos = Vector3.ZERO
 		
-		var seg = next_pos - global_position
+		var seg = next_pos - sim_pos
 		var seg_len_sq = seg.length_squared()
 		
 		for enemy in EnemyBase.all_enemies:
@@ -282,18 +377,18 @@ func _physics_process(delta: float) -> void:
 			var epos = enemy.global_position + shape_offset
 			
 			# Broadphase distance cull
-			if absf(epos.x - global_position.x) > 4.0 or absf(epos.z - global_position.z) > 4.0 or absf(epos.y - global_position.y) > 4.0:
+			if absf(epos.x - sim_pos.x) > 4.0 or absf(epos.z - sim_pos.z) > 4.0 or absf(epos.y - sim_pos.y) > 4.0:
 				continue
 			
 			var t = 0.0
 			if seg_len_sq > 0.0001:
-				t = clampf((epos - global_position).dot(seg) / seg_len_sq, 0.0, 1.0)
-			var closest_pt = global_position + seg * t
+				t = clampf((epos - sim_pos).dot(seg) / seg_len_sq, 0.0, 1.0)
+			var closest_pt = sim_pos + seg * t
 			var dist = closest_pt.distance_to(epos)
 			
 			# Generous contact threshold: projectile radius (0.75m) + enemy collision radius
 			if dist <= (PLASMA_HITBOX_RADIUS + enemy_rad):
-				var travel_d = global_position.distance_to(closest_pt)
+				var travel_d = sim_pos.distance_to(closest_pt)
 				if travel_d < wall_dist and travel_d < best_enemy_dist:
 					best_enemy = enemy
 					best_enemy_dist = travel_d
@@ -301,28 +396,28 @@ func _physics_process(delta: float) -> void:
 		
 		# 3. Resolve collision
 		if best_enemy != null:
-			global_position = next_pos
+			_move_to(next_pos)
 			_handle_hit(best_enemy, best_hit_pos, -direction)
 			return
 		elif wall_result:
 			_handle_hit(wall_result.collider, wall_result.position, wall_result.normal)
 			return
 		else:
-			global_position = next_pos
+			_move_to(next_pos)
 			return
 	
-	# Standard bullet raycast sweep
-	var query = PhysicsRayQueryParameters3D.create(
-		global_position,
-		next_pos,
-		collision_mask,
-		[self]
-	)
-	var result = space_state.intersect_ray(query)
+	# Standard bullet raycast sweep (pierced enemies are excluded so the bullet passes through them)
+	var result = space_state.intersect_ray(_get_ray_query(sim_pos, next_pos, collision_mask, _hit_rids))
 	if result:
 		_handle_hit(result.collider, result.position, result.normal)
 	else:
-		global_position = next_pos
+		_move_to(next_pos)
+
+## Advances the simulated position; hidden bullets skip the node transform update entirely
+func _move_to(p: Vector3) -> void:
+	sim_pos = p
+	if is_visual:
+		global_position = p
 
 func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> void:
 	if collider in already_hit:
@@ -330,6 +425,8 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 	
 	if collider is Node and collider.is_in_group("enemies"):
 		already_hit.append(collider)
+		if collider is CollisionObject3D:
+			_hit_rids.append(collider.get_rid())
 		var is_crit = randf() < crit_chance
 		var final_dmg = base_damage * GameManager.damage_mult
 		if is_crit:
@@ -344,9 +441,9 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			var is_from_rogue = (shooter != null and shooter.get("player_class") == "rogue")
 			
 			if collider.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-				collider.rpc_take_damage.rpc(final_dmg, is_crit, global_position, hit_dmg_type, is_from_rogue)
+				collider.rpc_take_damage.rpc(final_dmg, is_crit, sim_pos, hit_dmg_type, is_from_rogue)
 			elif collider.has_method("take_damage"):
-				collider.take_damage(final_dmg, is_crit, global_position, hit_dmg_type, shooter)
+				collider.take_damage(final_dmg, is_crit, sim_pos, hit_dmg_type, shooter)
 			
 			if not is_immune:
 				GameManager.record_damage(final_dmg, is_crit)
@@ -370,7 +467,7 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			_ricochet_from(hit_pos, -direction, collider)
 			return
 		else:
-			queue_free()
+			_release()
 			return
 	else:
 		# Hit environment / wall / floor
@@ -391,7 +488,7 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 			_trigger_plasma_chain_lightning(hit_pos, wall_hit_dmg, null, false)
 		else:
 			_trigger_impact_effects(hit_pos, wall_hit_dmg)
-		queue_free()
+		_release()
 
 func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) -> void:
 	is_ricochet = true
@@ -408,9 +505,9 @@ func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) 
 	else:
 		direction = bounce_dir
 	
-	global_position = pos + surface_normal * 0.15
-	if direction != Vector3.ZERO:
-		look_at(global_position + direction, Vector3.UP)
+	sim_pos = pos + surface_normal * 0.15
+	if is_visual:
+		_sync_node()
 	
 	# Audio throttling on ricochet (attenuated to 1/4 volume: 4.0 dB - 12.0 dB = -8.0 dB)
 	var now = Time.get_ticks_msec()
@@ -499,16 +596,16 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 					break
 	
 	if hit_count > 0:
-		SoundManager.play("hitmarker", 0.15, 6.0)
+		_play_chain_sound()
 	
 	# Direct hit damage
 	if direct_enemy != null and is_instance_valid(direct_enemy) and not direct_enemy.is_dead:
 		var direct_dmg_type = _get_direct_hit_type(direct_enemy, hit_pos)
 		var direct_immune = direct_enemy.has_method("is_immune_to") and direct_enemy.is_immune_to(direct_dmg_type)
 		if direct_enemy.has_method("rpc_take_damage") and NetworkManager.is_multiplayer:
-			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, global_position, direct_dmg_type)
+			direct_enemy.rpc_take_damage.rpc(impact_dmg, is_direct_crit, sim_pos, direct_dmg_type)
 		elif direct_enemy.has_method("take_damage"):
-			direct_enemy.take_damage(impact_dmg, is_direct_crit, global_position, direct_dmg_type)
+			direct_enemy.take_damage(impact_dmg, is_direct_crit, sim_pos, direct_dmg_type)
 		
 		if not direct_immune:
 			GameManager.record_damage(impact_dmg, is_direct_crit)
@@ -571,7 +668,7 @@ func _trigger_plasma_chain_lightning(hit_pos: Vector3, impact_dmg: float, direct
 			secondary_hits += 1
 	
 	if secondary_hits > 0 and hit_count == 0:
-		SoundManager.play("hitmarker", 0.15, 6.0)
+		_play_chain_sound()
 
 func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, initial_enemy: Node) -> void:
 	var total_chains = GameManager.chain_lightning_targets
@@ -648,6 +745,13 @@ func _trigger_chain_lightning_at_pos(origin_pos: Vector3, chain_dmg: float, init
 		current_pos = best_cand_pos
 	
 	if hit_count > 0:
+		_play_chain_sound()
+
+## Chain lightning zap sound, throttled like ricochets so pellet storms don't spam the SFX pool
+func _play_chain_sound() -> void:
+	var now = Time.get_ticks_msec()
+	if now - last_chain_sound_msec >= 35:
+		last_chain_sound_msec = now
 		SoundManager.play("hitmarker", 0.15, 6.0)
 
 func _create_lightning_beam(start_pos: Vector3, end_pos: Vector3) -> void:

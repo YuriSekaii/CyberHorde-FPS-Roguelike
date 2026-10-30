@@ -71,6 +71,10 @@ var local_player: Node = null
 var fps_label: Label = null
 var fps_update_timer: float = 0.0
 var hitmarker_timer: float = 0.0
+# Boss HP arrives once per hit (thousands/s under Berserk); the bar is redrawn at most once per frame
+var _boss_hp_dirty: bool = false
+var _boss_hp_cur: float = 0.0
+var _boss_hp_max: float = 1.0
 
 # Stage 2 status overlay (built in code)
 var status_tint: ColorRect = null
@@ -190,6 +194,10 @@ func _process(delta: float) -> void:
 			var limit = "UNLIMITED" if Engine.max_fps == 0 else str(Engine.max_fps)
 			var gpu_ms = RenderingServer.viewport_get_measured_render_time_gpu(get_viewport().get_viewport_rid())
 			fps_label.text = "FPS: %d  (limit %s)  |  GPU: %.2f ms / frame" % [Engine.get_frames_per_second(), limit, gpu_ms]
+	
+	if _boss_hp_dirty:
+		_boss_hp_dirty = false
+		_refresh_boss_bar()
 	
 	if hitmarker.visible:
 		hitmarker_timer -= delta
@@ -509,11 +517,19 @@ func _on_boss_spawned(boss_node: Node) -> void:
 		boss_name_label.text = "[FINAL BOSS] APEX OVERLORD"
 
 func _on_boss_health_updated(cur_hp: float, max_hp: float) -> void:
-	boss_container.visible = true
-	boss_bar.max_value = max_hp
-	boss_bar.value = cur_hp
-	var pct = (cur_hp / maxf(1.0, max_hp)) * 100.0
-	boss_hp_label.text = "%d / %d (%.0f%%)" % [int(cur_hp), int(max_hp), pct]
+	_boss_hp_cur = cur_hp
+	_boss_hp_max = max_hp
+	if not boss_container.visible:
+		boss_container.visible = true
+		_refresh_boss_bar()
+	else:
+		_boss_hp_dirty = true
+
+func _refresh_boss_bar() -> void:
+	boss_bar.max_value = _boss_hp_max
+	boss_bar.value = _boss_hp_cur
+	var pct = (_boss_hp_cur / maxf(1.0, _boss_hp_max)) * 100.0
+	boss_hp_label.text = "%d / %d (%.0f%%)" % [int(_boss_hp_cur), int(_boss_hp_max), pct]
 
 func _on_boss_defeated() -> void:
 	boss_container.visible = false

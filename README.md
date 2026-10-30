@@ -82,11 +82,14 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 ## ⚙️ Performance & Optimization Architecture
 
-* **Bullet Mesh Capping**: Rendered bullet meshes are capped at 40. Excess bullets simulate as non-visual raycasts with 100% damage, pierce, and status effects intact. Bullet lights capped at 8.
+* **Bullet Mesh Capping**: Rendered bullet meshes are capped at 40. Excess bullets simulate as non-visual raycasts with 100% damage, pierce, and status effects intact (hidden bullets track their position in a variable and never move their node). Bullet lights capped at 8.
+* **Bullet Pooling**: Bullets are plain `Node3D` raycast sweepers (no physics body) recycled from a 512-slot static pool, sharing one ray query. Bullets that leave the arena (|X/Z| > 42m, Y > 50m) are recycled early.
+* **Bullet Simulation Budget**: Past 400 live bullets, multi-pellet volleys (player and drones) merge into fewer, heavier pellets — 1/2 the pellets past 400, 1/3 past 800, … — with the same total volley damage (explosions and Tesla arcs scale with it). Only reached in extreme cases such as Berserk Protocol with a maxed Scatter Cannon.
 * **Static Particle & Light Pooling**: 24 pre-allocated GPU explosion instances and 48 beam meshes prevent dynamic instantiation stalls. Explosion lights capped at 4 concurrent lights.
 * **Optimized AoE**: Synchronous single-pass queries using `EnemyBase.all_enemies` with 2D AABB pre-filtering (`absf(dx) > r or absf(dz) > r`) eliminate `sqrt()` math. Bullets/explosions keep physics monitoring disabled.
 * **Horde Limits**: Arena enemy limit capped at 40 (`MAX_CONCURRENT_ENEMIES`). Pairwise enemy-on-enemy collision solving is disabled via `collision_mask = 5` (world + player only).
-* **Damage Label Throttling**: Active damage numbers capped at 35; toggleable via `F8`.
+* **Damage Label Throttling**: Active damage numbers capped at 35 (crits 50), checked before spawning; toggleable via `F8`.
+* **Hit Feedback Throttling**: Boss HP bar redraws at most once per frame; the same SFX can't restart within 15ms; ricochet and Tesla Arc zaps are throttled to one per 35ms.
 * **Frame Rate Cap**: Hard FPS cap via `Engine.max_fps` (30 / 60 / Unlimited, independent of VSync); drops to 30 while unfocused (`GameManager.BACKGROUND_MAX_FPS`). Physics stays at 60 Hz. Note: Task Manager GPU % is relative to the current clock — at a 60 FPS cap the driver downclocks the GPU, so ~30–40% is normal (measured on an RTX 3090: 450 MHz of 2115 MHz, ~2.5 ms/frame at that clock vs ~0.26 ms at full clock).
 
 ---
@@ -174,7 +177,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Nanite Magnet** | `Common` | +60% XP & Loot collection radius | 2 |
 | **Hardened Alloy** | `Rare` | +10% Damage Reduction against all incoming damage | 5 (50% max) |
 | **Hollow-Point Rounds** | `Rare` | +0.5× Critical Hit Damage Multiplier | Infinite |
-| **Hyper-Penetrator** | `Rare` | Projectiles pierce through +1 enemy | 2 |
+| **Hyper-Penetrator** | `Rare` | Projectiles pierce through +1 enemy (pierced enemies are excluded from the bullet's sweep, so it carries on to the next target) | 2 |
 | **Aegis Energy Shield** | `Rare` | +25 Regenerating Shield capacity (grants shield on pick) | Infinite |
 | **Vampiric Siphon** | `Rare` | Restores +4 HP on enemy kill | 1 |
 | **Cryo Rounds** | `Rare` | Every damage instance you deal (direct, ricochet, explosion AoE, chain lightning, drone) slows the target by 25% for 3 seconds | 1 |

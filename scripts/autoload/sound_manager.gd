@@ -6,6 +6,9 @@ extends Node
 var sounds: Dictionary = {}
 var sfx_pool: Array[AudioStreamPlayer] = []
 const MAX_SFX_PLAYERS: int = 24
+# The same sound can't restart within one frame (pellet storms / drone volleys would just steal voices)
+const MIN_REPLAY_MSEC: int = 15
+var _last_play_msec: Dictionary = {}
 
 var master_volume: float = 0.8
 var sfx_volume: float = 0.8
@@ -36,7 +39,7 @@ func _init_sfx_pool() -> void:
 		sfx_pool.append(player)
 
 func play(sound_name: String, pitch_range: float = 0.05, volume_db: float = 0.0) -> void:
-	if not sounds.has(sound_name) or sfx_volume <= 0.01:
+	if not sounds.has(sound_name) or sfx_volume <= 0.01 or not _can_replay(sound_name):
 		return
 	var target_player: AudioStreamPlayer = null
 	for p in sfx_pool:
@@ -53,7 +56,7 @@ func play(sound_name: String, pitch_range: float = 0.05, volume_db: float = 0.0)
 	target_player.play()
 
 func play_pitch(sound_name: String, pitch: float, volume_db: float = 0.0) -> void:
-	if not sounds.has(sound_name) or sfx_volume <= 0.01:
+	if not sounds.has(sound_name) or sfx_volume <= 0.01 or not _can_replay(sound_name):
 		return
 	var target_player: AudioStreamPlayer = null
 	for p in sfx_pool:
@@ -67,6 +70,13 @@ func play_pitch(sound_name: String, pitch: float, volume_db: float = 0.0) -> voi
 	target_player.pitch_scale = maxf(0.1, pitch)
 	target_player.volume_db = volume_db + linear_to_db(sfx_volume)
 	target_player.play()
+
+func _can_replay(sound_name: String) -> bool:
+	var now = Time.get_ticks_msec()
+	if now - int(_last_play_msec.get(sound_name, -MIN_REPLAY_MSEC)) < MIN_REPLAY_MSEC:
+		return false
+	_last_play_msec[sound_name] = now
+	return true
 
 # ----------------- SOUND SYNTHESIS -----------------
 

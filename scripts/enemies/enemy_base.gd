@@ -24,6 +24,7 @@ static var all_enemies: Array[Node] = []
 
 @onready var mesh_root: Node3D = $MeshRoot
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
+const DamageNumberScript = preload("res://scripts/ui/damage_number.gd")
 const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
 const DAMAGE_TYPE_DIRECT: int = 0
@@ -185,7 +186,7 @@ func _on_immune_hit(_from_pos: Vector3) -> void:
 	if now - _last_immune_feedback_msec >= 100:
 		_last_immune_feedback_msec = now
 		SoundManager.play("shield_hit", 0.15, -4.0)
-	if GameManager.show_damage_numbers:
+	if GameManager.show_damage_numbers and DamageNumberScript.can_spawn():
 		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
 		get_parent().add_child(dnum)
 		dnum.global_position = global_position + Vector3(randf_range(-0.2, 0.2), 0.8, randf_range(-0.2, 0.2))
@@ -220,8 +221,8 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 		_last_hit_sound_msec = now
 		SoundManager.play("crit_hit" if is_crit else "enemy_hit", 0.15)
 	
-	# Spawn floating damage number (can be toggled in pause menu / F8)
-	if GameManager.show_damage_numbers:
+	# Spawn floating damage number (can be toggled in pause menu / F8; capped, see DamageNumberScript.can_spawn)
+	if GameManager.show_damage_numbers and DamageNumberScript.can_spawn(is_crit):
 		var dnum = DAMAGE_NUMBER_SCENE.instantiate()
 		get_parent().add_child(dnum)
 		dnum.global_position = global_position + Vector3(randf_range(-0.3, 0.3), 1.2, randf_range(-0.3, 0.3))

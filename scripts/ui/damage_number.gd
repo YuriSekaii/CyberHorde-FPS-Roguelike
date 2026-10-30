@@ -8,6 +8,11 @@ var timer: float = 0.0
 
 static var active_count: int = 0
 const MAX_ACTIVE: int = 35
+const MAX_ACTIVE_CRIT: int = 50 # Crits get some headroom over normal numbers, but are capped too
+
+## Checked before instantiating, so hits over the cap cost nothing
+static func can_spawn(is_crit: bool = false) -> bool:
+	return active_count < (MAX_ACTIVE_CRIT if is_crit else MAX_ACTIVE)
 
 func _ready() -> void:
 	active_count += 1
@@ -16,10 +21,6 @@ func _exit_tree() -> void:
 	active_count = maxi(0, active_count - 1)
 
 func setup(amount: float, is_crit: bool) -> void:
-	if active_count > MAX_ACTIVE and not is_crit:
-		queue_free()
-		return
-	
 	if not is_node_ready():
 		await ready
 	
