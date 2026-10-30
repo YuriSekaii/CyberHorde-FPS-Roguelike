@@ -11,10 +11,11 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
-##   ENGAGE    If no operative enters its 25m reach for 10s, its eyes glow red and it takes 90% less damage while
-##             hiding. Whenever no operative has looked at it for 2s (staring pauses the count, 2s of staring resets
-##             it) it hops to another tree closer to the nearest operative, then waits for another 2s unwatched.
-##             Leaping at someone ends Engage mode.
+##   ENGAGE    After 10s total hiding with nobody in its 25m reach (the count only restarts after a leap), its eyes
+##             glow red and it takes 90% less damage while hiding. Whenever no operative has looked at it for 2s
+##             (staring pauses the count, 2s of staring resets it) it hops to another tree closer to the nearest
+##             operative, then waits for another 2s unwatched. No closer tree left: it leaps straight at them from
+##             any range. Leaping at someone ends Engage mode.
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
 ## while hidden it relocates to another random tree and drops Engage mode.
@@ -90,7 +91,7 @@ var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
 var engaged: bool = false
-var idle_timer: float = 0.0 # Time hiding with nobody in reach
+var idle_timer: float = 0.0 # Time hiding with nobody in reach, since its last leap
 var unwatched_timer: float = 0.0
 var stare_timer: float = 0.0
 var hop_index: int = -1 # Tree it's hopping to, -1 = open ground toward the operative (no closer tree left)
@@ -191,8 +192,6 @@ func _set_state(new_state: GhoulState) -> void:
 	# The relocate counter covers one stay in the shadows, across tree hops
 	if _is_lurking() and not was_lurking:
 		hide_damage_taken = 0.0
-	if state != GhoulState.HIDING:
-		idle_timer = 0.0
 	# Companion drones can't spot it while it hides
 	if state == GhoulState.HIDING:
 		add_to_group("drone_ignore")
@@ -213,7 +212,7 @@ func _process_hiding(delta: float) -> void:
 	var p = _nearest_player_in_range(ATTACK_RANGE)
 	if p == null:
 		range_timer = 0.0
-		# Nobody comes close: grow restless, then hunt them tree by tree
+		# Nobody comes close: grow restless (the count only restarts after a leap), then hunt them tree by tree
 		if engaged:
 			_process_engaged(delta)
 		else:
@@ -221,7 +220,6 @@ func _process_hiding(delta: float) -> void:
 			if idle_timer >= ENGAGE_IDLE_TIME:
 				_set_engaged(true)
 		return
-	idle_timer = 0.0
 	# Slowly turn to watch the prey
 	var to_p = p.global_position - global_position
 	rotation.y = lerp_angle(rotation.y, atan2(-to_p.x, -to_p.z), 3.0 * delta)
@@ -277,6 +275,8 @@ func _start_hop(prey_pos: Vector3) -> void:
 	unwatched_timer = 0.0
 	stare_timer = 0.0
 	if not _pick_hop_target(prey_pos):
+		# No tree left that gets it closer: leap straight at them, however far
+		_start_leap(prey_pos)
 		return
 	var flat = Vector3(hop_target.x - global_position.x, 0.0, hop_target.z - global_position.z)
 	hop_dist = flat.length()
@@ -289,7 +289,7 @@ func _start_hop(prey_pos: Vector3) -> void:
 	_set_state(GhoulState.HOPPING)
 
 ## Next tree toward the operative: the closest to them within one hop, else the nearest tree that's still closer.
-## No closer tree left: open ground that brings it into reach of them. False if there's nowhere useful to go.
+## False if no tree gets it closer.
 func _pick_hop_target(prey_pos: Vector3) -> bool:
 	var my_d = Vector2(prey_pos.x - global_position.x, prey_pos.z - global_position.z).length()
 	var arena = _get_arena()
@@ -313,15 +313,9 @@ func _pick_hop_target(prey_pos: Vector3) -> bool:
 			best_far_d = d_me
 			best_far = i
 	hop_index = best_near if best_near >= 0 else best_far
-	if hop_index >= 0:
-		hop_target = spots[hop_index]
-		return true
-	var gap = my_d - ATTACK_RANGE * 0.8
-	if gap < HOP_MIN_GAIN:
+	if hop_index < 0:
 		return false
-	var dir = Vector3(prey_pos.x - global_position.x, 0.0, prey_pos.z - global_position.z) / my_d
-	hop_target = global_position + dir * minf(gap, HOP_MAX_DIST)
-	hop_target.y = 0.0
+	hop_target = spots[hop_index]
 	return true
 
 func _process_hopping(delta: float) -> void:
@@ -390,7 +384,8 @@ func _process_leaping(delta: float) -> void:
 	if is_on_wall() and state_timer > 0.05:
 		_fall_down()
 		return
-	if leap_traveled >= leap_dist or state_timer >= LEAP_TIMEOUT:
+	# Long Engage-mode leaps get the flight time they need
+	if leap_traveled >= leap_dist or state_timer >= maxf(LEAP_TIMEOUT, leap_dist / LEAP_SPEED + 0.3):
 		overshoot_speed = LEAP_SPEED
 		_set_state(GhoulState.OVERSHOOT)
 
