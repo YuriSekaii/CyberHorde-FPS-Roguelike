@@ -464,7 +464,7 @@ func _animate_arms(delta: float) -> void:
 				reach = -0.6
 				elbow_bend = 1.0
 				curl = 0.9
-		var target = Quaternion.from_euler(Vector3(reach, 0.0, side * 0.12))
+		var target = Quaternion.from_euler(Vector3(reach, 0.0, side * 0.2))
 		arm_pivots[i].quaternion = arm_pivots[i].quaternion.slerp(target, 12.0 * delta)
 		arm_elbows[i].rotation.x = lerpf(arm_elbows[i].rotation.x, elbow_bend, 12.0 * delta)
 		arm_hands[i].rotation.x = lerpf(arm_hands[i].rotation.x, wrist, 12.0 * delta)
@@ -553,7 +553,7 @@ func _animate_head(delta: float) -> void:
 func _animate_pose(delta: float) -> void:
 	if not body_root:
 		return
-	var target_tilt = 0.45 # hunched
+	var target_tilt = 0.3 # stooped
 	var target_roll = 0.0
 	var target_drop = 0.0
 	var target_twist = 0.0
@@ -592,15 +592,15 @@ func _animate_pose(delta: float) -> void:
 
 ## One blood drop per claw: it swells on the tip, then falls (onto a pinned victim's face). Hidden while it lurks.
 func _setup_claw_drips() -> void:
-	var palm = arm_hands[0].get_node_or_null("PalmL") as MeshInstance3D
-	if not palm:
+	var claw = arm_hands[0].get_node_or_null("FingerL0/ClawL00") as MeshInstance3D
+	if not claw:
 		return
 	var drop_mesh = SphereMesh.new()
 	drop_mesh.radius = 0.011
 	drop_mesh.height = 0.03
 	drop_mesh.radial_segments = 6
 	drop_mesh.rings = 3
-	drop_mesh.material = palm.mesh.material # Wet blood
+	drop_mesh.material = claw.mesh.material # Wet blood
 	for hand in arm_hands:
 		for finger in hand.get_children():
 			if not finger.name.begins_with("Finger"):
