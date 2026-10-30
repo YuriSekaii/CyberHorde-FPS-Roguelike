@@ -11,11 +11,12 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
+##   STALK     If an operative camps (stays within 8m of one spot for 6s) out of its reach, it creeps toward them
+##             tree by tree, but only while no operative is looking at it (like a Mantis Stalker).
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
-## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
-## while hidden it relocates to another random tree.
+## While hiding or stalking it's fully immune to damage and drones ignore it: it can only be hurt once it leaps.
 
-enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING }
+enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, STALKING }
 
 const BOSS_MAX_HP: float = 1000000.0
 const BOSS_DAMAGE: float = 200.0 # Fixed, no wave scaling
@@ -47,7 +48,13 @@ const FLEE_SPEED: float = 24.0
 const FLEE_TIMEOUT: float = 7.0
 const HIDE_ARRIVE_DIST: float = 1.0
 const HIDE_MIN_PLAYER_DIST: float = 14.0
-const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding that makes it switch trees
+const CAMP_RADIUS: float = 8.0 # An operative who stays within this of one spot...
+const CAMP_TIME: float = 6.0 # ...for this long is camping, and gets stalked
+const STALK_SPEED: float = 9.0
+const STALK_STEP_MIN_GAIN: float = 3.0 # Each tree it creeps to must be at least this much closer to the prey
+const VIEW_CONE_DOT: float = 0.8 # ~37 degrees off the look direction (same as the Mantis Stalker)
+const VIEW_MAX_DIST: float = 70.0
+const WATCH_CHECK_INTERVAL: float = 0.1
 const GRAVITY: float = 20.0
 
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
@@ -72,7 +79,15 @@ var arm_hands: Array[Node3D] = []
 var arm_fingers: Array = [] # Per arm: finger + thumb joints (curl on X)
 var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
-var hide_damage_taken: float = 0.0
+var camp_anchors: Dictionary = {} # Player instance id -> spot they've stayed near
+var camp_times: Dictionary = {} # Player instance id -> seconds spent near that spot
+var stalk_prey: Node = null
+var stalk_spot: Vector3 = Vector3.ZERO
+var stalk_index: int = -1 # Tree it's creeping to, -1 = straight at the prey (no closer tree left)
+var stalk_move_time: float = 0.0
+var stalk_phase: float = 0.0 # Prowl animation, only advances while it actually moves
+var is_watched: bool = false
+var watch_check_timer: float = 0.0
 var claw_drips: Array[Dictionary] = [] # Per drop: tip node, mesh, age, hang time, fall speed
 
 @onready var body_root: Node3D = $MeshRoot/Body
@@ -107,24 +122,22 @@ func _apply_wave_scaling() -> void:
 	damage_reduction = clampf(floorf(GameManager.get_scaling_wave() / 10.0) * 0.10, 0.0, 0.50)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
-	var hp_before = current_health
 	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 	if is_dead:
 		return
 	GameManager.boss_health_updated.emit(current_health, max_health)
-	# Hurt enough while hidden: slip away to another tree
-	if state == GhoulState.HIDING:
-		hide_damage_taken += maxf(0.0, hp_before - current_health)
-		if hide_damage_taken >= max_health * HIDE_RELOCATE_DAMAGE:
-			_start_flee()
 
-## Hidden in the shadows it can only be hurt by direct bullet hits (no AoE, ricochet or chain lightning)
-func is_immune_to(damage_type: int) -> bool:
-	return state == GhoulState.HIDING and damage_type != DAMAGE_TYPE_DIRECT and damage_type != DAMAGE_TYPE_WEAKPOINT
+## Lurking in the shadows (hiding or stalking) it can't be hurt at all: it must be baited into leaping
+func is_immune_to(_damage_type: int) -> bool:
+	return _is_lurking()
+
+func _is_lurking() -> bool:
+	return state == GhoulState.HIDING or state == GhoulState.STALKING
 
 func _behave(delta: float) -> void:
 	state_timer += delta
 	anim_time += delta
+	_update_camping(delta)
 	match state:
 		GhoulState.HIDING:
 			_process_hiding(delta)
@@ -144,14 +157,15 @@ func _behave(delta: float) -> void:
 				_start_flee()
 		GhoulState.FLEEING:
 			_process_fleeing(delta)
+		GhoulState.STALKING:
+			_process_stalking(delta)
 	_animate_pose(delta)
 
 func _set_state(new_state: GhoulState) -> void:
 	state = new_state
 	state_timer = 0.0
-	# Companion drones can't spot it while it hides
-	if state == GhoulState.HIDING:
-		hide_damage_taken = 0.0
+	# Companion drones can't spot it while it lurks
+	if _is_lurking():
 		add_to_group("drone_ignore")
 	else:
 		remove_from_group("drone_ignore")
@@ -170,6 +184,10 @@ func _process_hiding(delta: float) -> void:
 	var p = _nearest_player_in_range(ATTACK_RANGE)
 	if p == null:
 		range_timer = 0.0
+		# Nobody comes close: go after whoever is camping out of reach
+		var prey = _find_camper()
+		if prey:
+			_start_stalk(prey)
 		return
 	# Slowly turn to watch the prey
 	var to_p = p.global_position - global_position
@@ -190,6 +208,131 @@ func _nearest_player_in_range(max_range: float) -> Node:
 			best_d = d
 			best = p
 	return best
+
+# ----------------- STALK CAMPERS -----------------
+
+## Tracks how long each operative has stayed near one spot (strafing in place still counts as camping)
+func _update_camping(delta: float) -> void:
+	var seen: Dictionary = {}
+	for p in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(p) or p.get("is_downed") == true:
+			continue
+		var id = p.get_instance_id()
+		seen[id] = true
+		var pos: Vector3 = p.global_position
+		var anchor = camp_anchors.get(id)
+		if anchor == null or Vector2(pos.x - anchor.x, pos.z - anchor.z).length() > CAMP_RADIUS:
+			camp_anchors[id] = pos
+			camp_times[id] = 0.0
+		else:
+			camp_times[id] += delta
+	for id in camp_anchors.keys():
+		if not seen.has(id):
+			camp_anchors.erase(id)
+			camp_times.erase(id)
+
+## The operative who has camped the longest, once past CAMP_TIME
+func _find_camper() -> Node:
+	var best: Node = null
+	var best_t = CAMP_TIME
+	for p in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(p) or p.get("is_downed") == true:
+			continue
+		var t: float = camp_times.get(p.get_instance_id(), 0.0)
+		if t >= best_t:
+			best_t = t
+			best = p
+	return best
+
+func _start_stalk(prey: Node) -> void:
+	stalk_prey = prey
+	stalk_move_time = 0.0
+	_pick_stalk_spot()
+	_set_state(GhoulState.STALKING)
+
+## Next tree on the way to the prey: the nearest one that's clearly closer to them; none left = straight at them
+func _pick_stalk_spot() -> void:
+	var prey_pos: Vector3 = stalk_prey.global_position
+	var my_d = Vector2(prey_pos.x - global_position.x, prey_pos.z - global_position.z).length()
+	stalk_index = -1
+	stalk_spot = Vector3(prey_pos.x, 0.0, prey_pos.z)
+	var arena = _get_arena()
+	if arena == null:
+		return
+	var spots: Array[Vector3] = arena.get_hide_spots()
+	var best_d = INF
+	for i in range(spots.size()):
+		if i == hide_index or spots[i].distance_to(prey_pos) > my_d - STALK_STEP_MIN_GAIN:
+			continue
+		var d = global_position.distance_squared_to(spots[i])
+		if d < best_d:
+			best_d = d
+			stalk_index = i
+			stalk_spot = spots[i]
+
+func _process_stalking(delta: float) -> void:
+	if not is_on_floor():
+		velocity.y -= GRAVITY * delta
+	# Within reach of someone: crouch here and lock on as usual
+	if _nearest_player_in_range(ATTACK_RANGE) != null or not is_instance_valid(stalk_prey) or stalk_prey.get("is_downed") == true:
+		_stop_stalking()
+		return
+	watch_check_timer -= delta
+	if watch_check_timer <= 0.0:
+		watch_check_timer = WATCH_CHECK_INTERVAL
+		is_watched = _is_being_watched()
+	# Freezes the moment anyone looks its way
+	if is_watched:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		return
+	if stalk_index < 0:
+		stalk_spot = Vector3(stalk_prey.global_position.x, 0.0, stalk_prey.global_position.z)
+	var to_spot = Vector3(stalk_spot.x - global_position.x, 0.0, stalk_spot.z - global_position.z)
+	stalk_move_time += delta
+	if to_spot.length() <= HIDE_ARRIVE_DIST or stalk_move_time >= FLEE_TIMEOUT:
+		# Reached the next tree (or got stuck): settle in; hiding picks the next hop if they're still camping
+		_stop_stalking()
+		return
+	stalk_phase += delta
+	var dir = nav_direction_to(stalk_spot, delta)
+	if dir != Vector3.ZERO:
+		var move_dir = steer_around_cover(dir, delta)
+		var creep_speed = STALK_SPEED * slow_multiplier
+		velocity.x = move_dir.x * creep_speed
+		velocity.z = move_dir.z * creep_speed
+		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), 8.0 * delta)
+	move_and_slide()
+
+func _stop_stalking() -> void:
+	velocity.x = 0.0
+	velocity.z = 0.0
+	hide_index = stalk_index if Vector2(stalk_spot.x - global_position.x, stalk_spot.z - global_position.z).length() <= HIDE_ARRIVE_DIST else -1
+	hide_spot = global_position
+	range_timer = 0.0
+	stalk_prey = null
+	_set_state(GhoulState.HIDING)
+
+## True if any standing operative has it inside their view cone with nothing blocking the sight line
+func _is_being_watched() -> bool:
+	var center = global_position + Vector3(0, 1.2, 0)
+	var space = get_world_3d().direct_space_state
+	for p in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(p) or p.get("is_downed") == true or not p.has_method("get_look_direction"):
+			continue
+		var eye: Vector3 = p.get_eye_position()
+		var to_me = center - eye
+		var d = to_me.length()
+		if d > VIEW_MAX_DIST or d < 0.01:
+			continue
+		if p.get_look_direction().dot(to_me / d) < VIEW_CONE_DOT:
+			continue
+		var query = PhysicsRayQueryParameters3D.create(eye, center, 1)
+		query.exclude = [get_rid()]
+		if space.intersect_ray(query).is_empty():
+			return true
+	return false
 
 # ----------------- LEAP / MISS -----------------
 
@@ -457,6 +600,11 @@ func _animate_arms(delta: float) -> void:
 			GhoulState.FLEEING:
 				reach = -0.3 + sin(anim_time * 18.0 + i * PI) * 0.7
 				elbow_bend = 0.6
+			GhoulState.STALKING:
+				reach = 0.7 + sin(stalk_phase * 7.0 + i * PI) * 0.35 # Low prowl, claws pawing forward
+				elbow_bend = 1.1
+				wrist = 0.5
+				curl = 0.6
 			GhoulState.FALLEN:
 				reach = 0.3
 				elbow_bend = 0.9
@@ -517,7 +665,7 @@ func _animate_head(delta: float) -> void:
 	var look_up = 0.35 # Counters the hunch so it glares ahead
 	var jaw_open = 0.3
 	match state:
-		GhoulState.HIDING:
+		GhoulState.HIDING, GhoulState.STALKING:
 			look_up = 0.55
 			jaw_open = 0.05
 		GhoulState.LEAPING, GhoulState.OVERSHOOT:
@@ -541,7 +689,7 @@ func _animate_head(delta: float) -> void:
 	if jaw:
 		jaw.rotation.x = lerpf(jaw.rotation.x, -jaw_open, 18.0 * delta)
 	var glow_target = 0.6
-	if state == GhoulState.HIDING:
+	if _is_lurking():
 		glow_target = 0.0
 	elif state == GhoulState.LEAPING or state == GhoulState.PINNING:
 		glow_target = 1.0
@@ -581,6 +729,9 @@ func _animate_pose(delta: float) -> void:
 			target_twist = PIN_TWIST * signf(c) * sqrt(absf(c))
 		GhoulState.FLEEING:
 			target_tilt = 0.95 + sin(anim_time * 18.0) * 0.08
+		GhoulState.STALKING:
+			target_tilt = 0.8 + sin(stalk_phase * 14.0) * 0.04
+			target_drop = -0.35
 	body_root.rotation.z = lerpf(body_root.rotation.z, target_roll, 10.0 * delta)
 	body_root.rotation.y = lerpf(body_root.rotation.y, target_twist, 18.0 * delta)
 	body_root.position.y = lerpf(body_root.position.y, body_base_y + target_drop, 10.0 * delta)
@@ -618,7 +769,7 @@ func _setup_claw_drips() -> void:
 			claw_drips.append({"tip": tip, "mesh": drop, "t": randf(), "hang": randf_range(0.25, 0.9), "vel": 0.0})
 
 func _animate_claw_drips(delta: float) -> void:
-	var dripping = state != GhoulState.HIDING
+	var dripping = not _is_lurking()
 	for d in claw_drips:
 		var drop: MeshInstance3D = d["mesh"]
 		drop.visible = dripping
