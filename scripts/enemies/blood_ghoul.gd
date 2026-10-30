@@ -18,7 +18,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             any range. Leaping at someone ends Engage mode.
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
-## while hidden it relocates to another random tree and drops Engage mode.
+## while hidden it relocates to another random tree and drops Engage mode, fully immune until it gets there.
 ## Phases (by HP, never revert even if lifesteal heals it back):
 ##   1  > 2/3    As above.
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
@@ -107,6 +107,7 @@ var arm_fingers: Array = [] # Per arm: finger + thumb joints (curl on X)
 var body_base_y: float = 1.0 # Torso pivot height from the scene; pose drops are offsets from it
 var anim_time: float = 0.0
 var hide_damage_taken: float = 0.0
+var retreat_immune: bool = false # Immune to everything while fleeing after the 1% hide-damage relocate
 var engaged: bool = false
 var idle_timer: float = 0.0 # Time hiding with nobody in reach, since its last leap
 var unwatched_timer: float = 0.0
@@ -172,9 +173,13 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 		if hide_damage_taken >= max_health * HIDE_RELOCATE_DAMAGE:
 			_set_engaged(false)
 			_start_flee()
+			retreat_immune = state == GhoulState.FLEEING
 
-## Hidden in the shadows it can only be hurt by direct bullet hits (no AoE, ricochet or chain lightning)
+## Hidden in the shadows it can only be hurt by direct bullet hits (no AoE, ricochet or chain lightning).
+## Retreating to a new tree after the 1% relocate it can't be hurt at all.
 func is_immune_to(damage_type: int) -> bool:
+	if retreat_immune:
+		return true
 	return state == GhoulState.HIDING and damage_type != DAMAGE_TYPE_DIRECT and damage_type != DAMAGE_TYPE_WEAKPOINT
 
 ## In the shadows: hiding under a tree or hopping between trees
@@ -237,6 +242,9 @@ func _set_state(new_state: GhoulState) -> void:
 	var was_lurking = _is_lurking()
 	state = new_state
 	state_timer = 0.0
+	# Retreat immunity only lasts the flee itself (re-picking a tree when stuck keeps it)
+	if state != GhoulState.FLEEING:
+		retreat_immune = false
 	# The relocate counter covers one stay in the shadows, across tree hops
 	if _is_lurking() and not was_lurking:
 		hide_damage_taken = 0.0
