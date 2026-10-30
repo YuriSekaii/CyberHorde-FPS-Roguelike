@@ -3,6 +3,8 @@ extends Node3D
 @export var type_id: int = 0
 @export var duration: float = 3.0
 
+const PILLAR_HEIGHT: float = 0.5
+
 var net_name: String = ""
 var time_left: float = 3.0
 var is_bursting: bool = false
@@ -142,8 +144,9 @@ func _apply_theme() -> void:
 			cyl.height = 9.0
 			pillar.position.y = -4.25
 		else:
-			cyl.height = 3.5
-			pillar.position.y = 1.75
+			# Low glow hugging the ground, so it never blocks the view
+			cyl.height = PILLAR_HEIGHT
+			pillar.position.y = PILLAR_HEIGHT * 0.5
 		pillar.mesh = cyl
 	
 	if ring_mat:

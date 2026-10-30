@@ -288,6 +288,7 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.
 * **Loot Caches**: Spawns every 2 waves and drops from defeated Void Spawners and Spore Pits. Press `E` for bonus scrap/health and 1 free card pick.
 * **Jump Pads**: 4 Stage 1 launch pads propelling players skyward for aerial traversal (none in the Stage 2 jungle).
+* **Spawn Telegraphs**: Each incoming enemy is announced by a color-coded ground portal (spinning ring, filling disc, low 0.5m glow, sparks under ~1.4m, countdown label at 1.2m) kept low so it never blocks the view. The Void Spawner's portal instead beams up to its sky spawn point.
 
 ---
 
