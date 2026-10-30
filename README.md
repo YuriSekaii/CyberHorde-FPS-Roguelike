@@ -252,7 +252,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Hunched translucent lime ooze rising from a spreading puddle; a fanged skull shows through its clearer head, bone spikes and arrows jut from its back. Spits the operative out, then pauses 1.2s |
 | **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
 | **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
-| **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee / 30 m/s tree hop / 42 m/s leap | 200 (fixed) | 0.3s pin strikes | Shadow ambush, Engage Mode tree hops, pin, lifesteal, Bleed | Wave 50 | Fixed HP & damage; infinite horde until it dies |
+| **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee & hunt / 30–45 m/s tree hop / 42 m/s leap | 200 (fixed) | 0.3s pin strikes | Shadow ambush, Engage Mode tree hops, pin, lifesteal, Bleed; 4 HP phases | Wave 50 | Fixed HP & damage; infinite horde until it dies |
 
 ### 🧪 Stage 2 Status Effects
 | Effect | Source | Effect | Stacking |
@@ -274,6 +274,14 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 * **Engage Mode (anti-camping)**: After **10s** total spent hiding with no operative in its 25m reach (time with someone in reach doesn't count; the count only restarts after a leap or a 1% flee), it engages: its eyes smoulder red (visible from afar, dimmer than its hunting blaze) and it takes **90% less damage while hiding**. Once **no operative has looked at it for 2s** (view cone + clear line of sight, like a Mantis Stalker; staring pauses the count, 2s of staring resets it), it hops (30 m/s arc) to another tree closer to the nearest operative: the closest to them within 22m, else the nearest tree still ≥3m closer. If no tree gets it closer, it **leaps straight at them from any range** instead. After each hop the 2s unwatched count restarts. Once someone is within 25m the usual lock and leap take over; leaping ends Engage Mode.
 * **Hidden**: While hiding it only takes **direct bullet hits** (immune to explosions, ricochets and chain lightning, like a Spawnling) and companion drones ignore it. After losing **1% Max HP** in one stay in the shadows (tree hops don't reset the count), it flees to another random tree and **drops Engage Mode**.
 * All its attacks inflict **Bleed**. Fixed **200 damage** (no wave scaling): pounce 100, pin strike 40; 50% damage reduction at the Stage 2 final wave.
+* **Phases** (by HP; each one only escalates, so pin lifesteal can't undo it; a low growl marks each change):
+
+| Phase | HP | Changes |
+|:---|:---|:---|
+| **1** | > 2/3 | As above |
+| **2** | ≤ 2/3 | Engage Mode triggers after **5s**; hops after **1s** unwatched; hops **+50% speed** (45 m/s) |
+| **3** | ≤ 1/3 | **Permanently engaged** (leaps and the 1% flee no longer end it); hops the **instant** nobody is looking at it |
+| **4** | ≤ 10% | **Stops hiding**: endlessly sprints (24 m/s) at the nearest operative, closes to 12m, then locks for 2s and leaps; after a pin, knockdown or miss stun it resumes the hunt instead of fleeing. **90% damage reduction** while exposed (on top of the wave reduction) |
 
 ---
 

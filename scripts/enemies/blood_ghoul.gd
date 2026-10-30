@@ -19,8 +19,13 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
 ## while hidden it relocates to another random tree and drops Engage mode.
+## Phases (by HP, never revert even if lifesteal heals it back):
+##   1  > 2/3    As above.
+##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
+##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
+##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction.
 
-enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING }
+enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
 const BOSS_MAX_HP: float = 1000000.0
 const BOSS_DAMAGE: float = 200.0 # Fixed, no wave scaling
@@ -62,6 +67,14 @@ const HOP_SPEED: float = 30.0
 const HOP_TIMEOUT: float = 2.0
 const HOP_MAX_DIST: float = 22.0 # Prefers trees within one hop
 const HOP_MIN_GAIN: float = 3.0 # Each hop must land at least this much closer to the operative
+const PHASE_2_HP: float = 2.0 / 3.0 # HP fraction at or below which each phase starts
+const PHASE_3_HP: float = 1.0 / 3.0
+const PHASE_4_HP: float = 0.1
+const PHASE_2_TIME_MULT: float = 0.5 # Engage trigger and hop wait from phase 2
+const PHASE_2_HOP_SPEED_MULT: float = 1.5
+const PHASE_4_DAMAGE_REDUCTION: float = 0.9 # While exposed; multiplies with the wave reduction
+const HUNT_SPEED: float = 24.0
+const HUNT_HOLD_DIST: float = 12.0 # Closes to this range, then crouches for the lock
 const VIEW_CONE_DOT: float = 0.8 # ~37 degrees off the look direction (same as the Mantis Stalker)
 const VIEW_MAX_DIST: float = 70.0
 const WATCH_CHECK_INTERVAL: float = 0.1
@@ -100,6 +113,8 @@ var hop_dir: Vector3 = Vector3.ZERO
 var hop_dist: float = 0.0
 var hop_traveled: float = 0.0
 var hop_vy: float = 0.0
+var hop_speed: float = HOP_SPEED
+var phase: int = 1
 var is_watched: bool = false
 var watch_check_timer: float = 0.0
 var eye_engage: float = 0.0 # Engage-mode eye glow, 0..1 of ENGAGED_EYE_GLOW
@@ -139,13 +154,16 @@ func _apply_wave_scaling() -> void:
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
 	if engaged and state == GhoulState.HIDING:
 		amount *= (1.0 - ENGAGED_DAMAGE_REDUCTION)
+	elif phase >= 4:
+		amount *= (1.0 - PHASE_4_DAMAGE_REDUCTION)
 	var hp_before = current_health
 	super.take_damage(amount, is_crit, from_pos, damage_type, killer_source)
 	if is_dead:
 		return
 	GameManager.boss_health_updated.emit(current_health, max_health)
+	_update_phase()
 	# Hurt enough while hidden (or hopping between trees): slip away to another tree and calm down
-	if _is_lurking():
+	if _is_lurking() and phase < 4:
 		hide_damage_taken += maxf(0.0, hp_before - current_health)
 		if hide_damage_taken >= max_health * HIDE_RELOCATE_DAMAGE:
 			_set_engaged(false)
@@ -183,7 +201,33 @@ func _behave(delta: float) -> void:
 			_process_fleeing(delta)
 		GhoulState.HOPPING:
 			_process_hopping(delta)
+		GhoulState.HUNTING:
+			_process_hunting(delta)
 	_animate_pose(delta)
+
+# ----------------- PHASES -----------------
+
+## Phases only escalate: healing back over a threshold (pin lifesteal) doesn't calm it down
+func _update_phase() -> void:
+	var frac = current_health / max_health
+	var new_phase = 4 if frac <= PHASE_4_HP else (3 if frac <= PHASE_3_HP else (2 if frac <= PHASE_2_HP else 1))
+	if new_phase <= phase:
+		return
+	phase = new_phase
+	SoundManager.play_pitch("charger_windup", 0.45, 0.0) # Guttural growl
+	if phase >= 3:
+		engaged = true
+	# Done hiding: hunt right away (mid-leap, pin, stun or hop it switches over when that ends)
+	if phase >= 4 and (state == GhoulState.HIDING or state == GhoulState.FLEEING):
+		_start_hunt()
+
+func _engage_idle_time() -> float:
+	return ENGAGE_IDLE_TIME * (PHASE_2_TIME_MULT if phase >= 2 else 1.0)
+
+func _hop_unwatched_time() -> float:
+	if phase >= 3:
+		return 0.0
+	return HOP_UNWATCHED_TIME * (PHASE_2_TIME_MULT if phase >= 2 else 1.0)
 
 func _set_state(new_state: GhoulState) -> void:
 	var was_lurking = _is_lurking()
@@ -208,6 +252,9 @@ func _hold_still(delta: float) -> void:
 # ----------------- HIDE & LOCK -----------------
 
 func _process_hiding(delta: float) -> void:
+	if phase >= 4:
+		_start_hunt()
+		return
 	_hold_still(delta)
 	var p = _nearest_player_in_range(ATTACK_RANGE)
 	if p == null:
@@ -217,7 +264,7 @@ func _process_hiding(delta: float) -> void:
 			_process_engaged(delta)
 		else:
 			idle_timer += delta
-			if idle_timer >= ENGAGE_IDLE_TIME:
+			if idle_timer >= _engage_idle_time():
 				_set_engaged(true)
 		return
 	# Slowly turn to watch the prey
@@ -243,7 +290,7 @@ func _nearest_player_in_range(max_range: float) -> Node:
 # ----------------- ENGAGE MODE & TREE HOPS -----------------
 
 func _set_engaged(on: bool) -> void:
-	engaged = on
+	engaged = on or phase >= 3 # Permanent from phase 3
 	idle_timer = 0.0
 	unwatched_timer = 0.0
 	stare_timer = 0.0
@@ -268,7 +315,7 @@ func _process_engaged(delta: float) -> void:
 		return
 	stare_timer = 0.0
 	unwatched_timer += delta
-	if unwatched_timer >= HOP_UNWATCHED_TIME:
+	if unwatched_timer >= _hop_unwatched_time():
 		_start_hop(prey.global_position)
 
 func _start_hop(prey_pos: Vector3) -> void:
@@ -282,8 +329,9 @@ func _start_hop(prey_pos: Vector3) -> void:
 	hop_dist = flat.length()
 	hop_dir = flat / hop_dist
 	hop_traveled = 0.0
+	hop_speed = HOP_SPEED * (PHASE_2_HOP_SPEED_MULT if phase >= 2 else 1.0)
 	# Arc that lands exactly on the target spot
-	var flight_time = hop_dist / HOP_SPEED
+	var flight_time = hop_dist / hop_speed
 	hop_vy = LEAP_GRAVITY * flight_time * 0.5 + (hop_target.y - global_position.y) / maxf(flight_time, 0.05)
 	rotation.y = atan2(-hop_dir.x, -hop_dir.z)
 	_set_state(GhoulState.HOPPING)
@@ -320,7 +368,7 @@ func _pick_hop_target(prey_pos: Vector3) -> bool:
 
 func _process_hopping(delta: float) -> void:
 	hop_vy -= LEAP_GRAVITY * delta
-	velocity = hop_dir * HOP_SPEED + Vector3(0.0, hop_vy, 0.0)
+	velocity = hop_dir * hop_speed + Vector3(0.0, hop_vy, 0.0)
 	var before = global_position
 	move_and_slide()
 	var moved = global_position - before
@@ -334,6 +382,43 @@ func _process_hopping(delta: float) -> void:
 		unwatched_timer = 0.0
 		stare_timer = 0.0
 		_set_state(GhoulState.HIDING)
+
+# ----------------- PHASE 4: ENDLESS HUNT -----------------
+
+func _start_hunt() -> void:
+	range_timer = 0.0
+	_set_state(GhoulState.HUNTING)
+
+## Sprints at the nearest operative, crouches once close and leaps after the usual 2s lock
+func _process_hunting(delta: float) -> void:
+	if not is_on_floor():
+		velocity.y -= GRAVITY * delta
+	var prey = _nearest_player_in_range(INF)
+	if prey == null:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		return
+	var to_p = prey.global_position - global_position
+	var flat_d = Vector2(to_p.x, to_p.z).length()
+	rotation.y = lerp_angle(rotation.y, atan2(-to_p.x, -to_p.z), 10.0 * delta)
+	if flat_d > ATTACK_RANGE:
+		range_timer = 0.0
+	else:
+		range_timer += delta
+		if range_timer >= LOCK_TIME:
+			_start_leap(prey.global_position)
+			return
+	var move_speed = 0.0 if flat_d <= HUNT_HOLD_DIST else HUNT_SPEED * slow_multiplier
+	var dir = nav_direction_to(prey.global_position, delta)
+	if dir != Vector3.ZERO and move_speed > 0.0:
+		var move_dir = steer_around_cover(dir, delta)
+		velocity.x = move_dir.x * move_speed
+		velocity.z = move_dir.z * move_speed
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+	move_and_slide()
 
 ## True if any standing operative has it inside their view cone with nothing blocking the sight line
 func _is_being_watched() -> bool:
@@ -502,6 +587,9 @@ func _release_pin() -> void:
 # ----------------- FLEE & HIDE -----------------
 
 func _start_flee() -> void:
+	if phase >= 4:
+		_start_hunt()
+		return
 	hide_index = _pick_hide_index()
 	var arena = _get_arena()
 	if arena and hide_index >= 0:
@@ -620,7 +708,7 @@ func _animate_arms(delta: float) -> void:
 				elbow_bend = 0.1
 				wrist = -0.4
 				curl = -0.3
-			GhoulState.FLEEING:
+			GhoulState.FLEEING, GhoulState.HUNTING:
 				reach = -0.3 + sin(anim_time * 18.0 + i * PI) * 0.7
 				elbow_bend = 0.6
 			GhoulState.HOPPING:
@@ -697,6 +785,9 @@ func _animate_head(delta: float) -> void:
 		GhoulState.FLEEING:
 			look_up = 0.6
 			jaw_open = 0.3
+		GhoulState.HUNTING:
+			look_up = 0.7
+			jaw_open = 0.55
 		GhoulState.FALLEN:
 			look_up = 0.0
 			jaw_open = 0.4
@@ -752,7 +843,7 @@ func _animate_pose(delta: float) -> void:
 			# Left claw lands at 0, right half a cycle later: the torso swings into whichever arm is striking
 			var c = -cos(pin_time * PI / PIN_HIT_INTERVAL)
 			target_twist = PIN_TWIST * signf(c) * sqrt(absf(c))
-		GhoulState.FLEEING:
+		GhoulState.FLEEING, GhoulState.HUNTING:
 			target_tilt = 0.95 + sin(anim_time * 18.0) * 0.08
 		GhoulState.HOPPING:
 			target_tilt = 1.0
