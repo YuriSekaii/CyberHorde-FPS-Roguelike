@@ -11,12 +11,12 @@ A fast-paced 3D First-Person Horde Roguelike Shooter with online co-op multiplay
 
 ## 🎮 Quick Start & Launchers
 
-The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks on first run with zero external setup.
+The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks and imports assets on first run with zero external setup.
 
 | Launcher Script | Description |
 | :--- | :--- |
-| **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine if missing. |
-| **`Update_Game.bat`** | Runs `git pull` from Windows Explorer. |
+| **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine and imports assets if missing. |
+| **`Update_Game.bat`** | Runs `git pull` from Windows Explorer and re-imports assets. |
 | **`Test_Coop_2Players.bat`** | Launches two game windows side-by-side for local 2-player co-op testing. |
 | **`Open_In_Godot_Editor.bat`** | Opens the project directly inside the Godot 4.7 Editor. |
 | **`Push_To_GitHub.bat`** | Stages, commits, and pushes local changes to `origin main`. |
@@ -39,7 +39,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 * **Check for Updates**: Click `🔄 CHECK FOR UPDATES` in the main lobby. Runs an async `git fetch` against remote GitHub.
 * **Status**: Confirms current commit hash (`✓ GAME IS UP TO DATE!`) or shows available commit count and recent commit messages.
-* **1-Click Pull & Restart**: Click `⬇ UPDATE GAME NOW (GIT PULL)` to pull changes, then `🚀 RESTART GAME NOW` to relaunch.
+* **1-Click Pull & Restart**: Click `⬇ UPDATE GAME NOW (GIT PULL)` to pull changes, then `🚀 RESTART GAME NOW` to relaunch. Automatically re-imports new assets headlessly before restarting.
 * **desktop.ini Cleanup**: Before every fetch/pull, stray Windows `desktop.ini` files inside `.git` are deleted (they break git with `fatal: bad object refs/desktop.ini`).
 
 ---

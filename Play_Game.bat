@@ -43,6 +43,14 @@ if not defined GODOT_EXE (
     exit /b
 )
 
+:: 5. Ensure assets are imported into .godot/ (one-time setup for fresh clones)
+if not exist "%~dp0.godot\imported\" (
+    echo ========================================================
+    echo  First-Time Setup: Importing game assets into Godot...
+    echo ========================================================
+    "%GODOT_EXE%" --headless --editor --quit
+)
+
 echo Starting CyberHorde: Rogue Protocol using: "%GODOT_EXE%"...
 "%GODOT_EXE%"
 if %ERRORLEVEL% neq 0 (

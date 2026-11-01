@@ -196,6 +196,10 @@ func _worker_pull_updates() -> void:
 		var c_err = OS.execute("git", ["-C", proj_dir, "rev-parse", "--short", "HEAD"], out, true)
 		if c_err == 0 and out.size() > 0:
 			new_commit = out[0].strip_edges()
+		
+		# Auto-import newly pulled assets so restarting loads them immediately
+		var import_out: Array = []
+		OS.execute(OS.get_executable_path(), ["--headless", "--editor", "--quit"], import_out, true)
 	
 	_finish_pull.call_deferred(success, pull_msg, new_commit)
 
