@@ -15,9 +15,9 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 | Launcher Script | Description |
 | :--- | :--- |
-| **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine and imports assets if missing. |
-| **`Update_Game.bat`** | Runs `git pull` from Windows Explorer and re-imports assets. |
-| **`Test_Coop_2Players.bat`** | Launches two game windows side-by-side for local 2-player co-op testing. |
+| **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine and renders missing/deleted assets before launch. |
+| **`Update_Game.bat`** | Runs `git pull` from Windows Explorer and re-imports/renders assets. |
+| **`Test_Coop_2Players.bat`** | Launches two game windows side-by-side for local 2-player co-op testing. Auto-imports assets if missing. |
 | **`Open_In_Godot_Editor.bat`** | Opens the project directly inside the Godot 4.7 Editor. |
 | **`Push_To_GitHub.bat`** | Stages, commits, and pushes local changes to `origin main`. |
 
@@ -317,6 +317,7 @@ CyberHorde-FPS-Roguelike/
 │   ├── lobby_relay.py                # Online lobby relay (WebSocket, lobby codes, max 4 players)
 │   └── run_relay.bat                 # Starts the relay hidden in the background (port 8095)
 ├── scripts/
+│   ├── bootstrap.gd                  # Auto-recovery asset verification and headless background import
 │   ├── autoload/
 │   │   ├── game_manager.gd           # ★ Perk catalog (`upgrade_database`), stats, level/reroll logic, current stage
 │   │   ├── network_manager.gd        # LAN (ENet) + online lobby squad management & signals

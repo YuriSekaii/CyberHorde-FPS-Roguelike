@@ -33,9 +33,25 @@ extends CanvasLayer
 @onready var skill_name_label: Label = get_node_or_null("BottomLeft/SkillContainer/SkillDetails/SkillNameLabel")
 @onready var skill_status_label: Label = get_node_or_null("BottomLeft/SkillContainer/SkillDetails/SkillStatusLabel")
 
-const ICON_MEDIC = preload("res://assets/icons/skills/medic_restore.svg")
-const ICON_ROGUE = preload("res://assets/icons/skills/rogue_dash.svg")
-const ICON_GUNNER = preload("res://assets/icons/skills/gunner_berserk.svg")
+var icon_medic: Texture2D = null
+var icon_rogue: Texture2D = null
+var icon_gunner: Texture2D = null
+
+func _get_class_icon(c: String) -> Texture2D:
+	match c:
+		"medic":
+			if not icon_medic and ResourceLoader.exists("res://assets/icons/skills/medic_restore.svg"):
+				icon_medic = load("res://assets/icons/skills/medic_restore.svg")
+			return icon_medic
+		"rogue":
+			if not icon_rogue and ResourceLoader.exists("res://assets/icons/skills/rogue_dash.svg"):
+				icon_rogue = load("res://assets/icons/skills/rogue_dash.svg")
+			return icon_rogue
+		"gunner", "slayer":
+			if not icon_gunner and ResourceLoader.exists("res://assets/icons/skills/gunner_berserk.svg"):
+				icon_gunner = load("res://assets/icons/skills/gunner_berserk.svg")
+			return icon_gunner
+	return null
 
 const FEVER_COLORS: Dictionary = {
 	"D": Color(0.65, 0.65, 0.65),
@@ -296,21 +312,21 @@ func _update_skill_display_class(p_class: String) -> void:
 		return
 		
 	var theme_col = Color(0.2, 1.0, 0.7)
-	var icon_tex = ICON_MEDIC
+	var icon_tex = _get_class_icon(c)
 	var s_name = "CELLULAR RESTORE"
 	
 	match c:
 		"medic":
 			theme_col = Color(0.2, 1.0, 0.7)
-			icon_tex = ICON_MEDIC
+			pass
 			s_name = "CELLULAR RESTORE"
 		"rogue":
 			theme_col = Color(1.0, 0.85, 0.2)
-			icon_tex = ICON_ROGUE
+			pass
 			s_name = "QUANTUM DASH"
 		"gunner", "slayer":
 			theme_col = Color(1.0, 0.3, 0.35)
-			icon_tex = ICON_GUNNER
+			pass
 			s_name = "BERSERK PROTOCOL"
 	
 	if skill_icon:

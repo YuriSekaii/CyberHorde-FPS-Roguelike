@@ -14,3 +14,4 @@ godot*.exe
 .DS_Store
 Thumbs.db
 relay_runtime.log
+Reference/

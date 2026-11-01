@@ -43,12 +43,33 @@ if not defined GODOT_EXE (
     exit /b
 )
 
-:: 5. Ensure assets are imported into .godot/ (one-time setup for fresh clones)
-if not exist "%~dp0.godot\imported\" (
+:: Set Godot import binary (prefer console executable for clean headless background execution)
+set "GODOT_IMPORT_EXE=%GODOT_EXE%"
+for %%i in ("%~dp0*godot*console*.exe") do (
+    if exist "%%~i" set "GODOT_IMPORT_EXE=%%~i"
+)
+
+:: 5. Ensure assets are imported and rendered into .godot/ before launching
+set "NEED_IMPORT=0"
+if not exist "%~dp0.godot\imported\" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\global_script_class_cache.cfg" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\imported\*.ctex" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\imported\icon.svg-*.ctex" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\imported\medic_restore.svg-*.ctex" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\imported\rogue_dash.svg-*.ctex" set "NEED_IMPORT=1"
+if not exist "%~dp0.godot\imported\gunner_berserk.svg-*.ctex" set "NEED_IMPORT=1"
+if not exist "%~dp0icon.svg.import" set "NEED_IMPORT=1"
+if not exist "%~dp0assets\icons\skills\medic_restore.svg.import" set "NEED_IMPORT=1"
+if not exist "%~dp0assets\icons\skills\rogue_dash.svg.import" set "NEED_IMPORT=1"
+if not exist "%~dp0assets\icons\skills\gunner_berserk.svg.import" set "NEED_IMPORT=1"
+
+if "%NEED_IMPORT%"=="1" (
     echo ========================================================
-    echo  First-Time Setup: Importing game assets into Godot...
+    echo  First-Time Setup: Importing / Rendering game assets...
     echo ========================================================
-    "%GODOT_EXE%" --headless --editor --quit
+    "%GODOT_IMPORT_EXE%" --headless --editor --quit --path "%~dp0."
+    echo  Asset import completed!
+    echo ========================================================
 )
 
 echo Starting CyberHorde: Rogue Protocol using: "%GODOT_EXE%"...

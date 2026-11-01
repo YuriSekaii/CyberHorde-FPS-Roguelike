@@ -199,7 +199,7 @@ func _worker_pull_updates() -> void:
 		
 		# Auto-import newly pulled assets so restarting loads them immediately
 		var import_out: Array = []
-		OS.execute(OS.get_executable_path(), ["--headless", "--editor", "--quit"], import_out, true)
+		OS.execute(OS.get_executable_path(), ["--headless", "--editor", "--quit", "--path", proj_dir], import_out, true)
 	
 	_finish_pull.call_deferred(success, pull_msg, new_commit)
 
