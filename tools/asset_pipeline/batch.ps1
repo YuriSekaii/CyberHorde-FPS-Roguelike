@@ -11,7 +11,7 @@ foreach ($a in Import-Csv "$PSScriptRoot\assets_manifest.csv") {
     if (-not (Test-Path $img)) { continue }
     if ((Test-Path $out) -and -not $Force) { Write-Output "SKIP $($a.name) (already built)"; continue }
     $back = "$repo\Reference\AssetGen\$($a.name)_back.png"
-    $p = @{ Name = $a.name; Height = [double]$a.height_m; Tris = [int]$a.max_tris; Tex = [int]$a.tex_px; Yaw = [double]$a.yaw_deg }
+    $p = @{ Name = $a.name; Height = [double]$a.height_m; Tris = [int]$a.max_tris; Tex = [int]$a.tex_px; Yaw = [double]$a.yaw_deg; Desat = [double]$a.desat }
     if (Test-Path $back) { $p.Back = $back }
     try { & "$PSScriptRoot\make_asset.ps1" @p } catch { Write-Output "FAIL $($a.name): $_" }
 }

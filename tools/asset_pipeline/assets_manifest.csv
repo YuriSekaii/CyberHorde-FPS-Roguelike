@@ -1,7 +1,7 @@
-name,tier,height_m,max_tris,tex_px,yaw_deg,target,notes
-pulse_carbine,1,0.24,12000,1024,90,scenes/player/player.tscn WeaponRig/Rifle,first-person rifle; side-profile image barrel right
-scatter_cannon,1,0.26,12000,1024,90,scenes/player/player.tscn WeaponRig/Shotgun,first-person shotgun
-plasma_core,1,0.28,12000,1024,90,scenes/player/player.tscn WeaponRig/Plasma,first-person charge gun
+name,tier,height_m,max_tris,tex_px,yaw_deg,target,notes,desat
+pulse_carbine,1,0.24,12000,1024,-90,scenes/player/player.tscn WeaponRig/Rifle,first-person rifle; side-profile image barrel right,0.85
+scatter_cannon,1,0.26,12000,1024,-90,scenes/player/player.tscn WeaponRig/Shotgun,first-person shotgun,0.85
+plasma_core,1,0.28,12000,1024,-90,scenes/player/player.tscn WeaponRig/Plasma,first-person charge gun,0.85
 nanite_xp_crystal,1,0.35,800,256,0,scenes/loot/loot_pickup.tscn,cyan/green; keep spin/bob code
 medical_stim,1,0.35,800,256,0,scenes/loot/loot_pickup.tscn,red
 scrap_currency,1,0.30,800,256,0,scenes/loot/loot_pickup.tscn,gold

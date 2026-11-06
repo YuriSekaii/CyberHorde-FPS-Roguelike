@@ -6,10 +6,10 @@ uid="uid://bs36jasu7h6m2"
 
 [deps]
 
-files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation"]
+files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation", "res://tools/asset_pipeline/assets_manifest.desat.translation"]
 
 source_file="res://tools/asset_pipeline/assets_manifest.csv"
-dest_files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation"]
+dest_files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation", "res://tools/asset_pipeline/assets_manifest.desat.translation"]
 
 [params]
 

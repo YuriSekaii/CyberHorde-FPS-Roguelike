@@ -1,8 +1,9 @@
 """Blender: turn a raw Hunyuan3D-2 .glb into a game-ready Godot asset (no rig).
-Run: blender -b --factory-startup --python prep_prop.py -- <raw.glb> <out.glb> <height_m> <max_tris> <tex_px> [yaw_deg] [preview.png]
+Run: blender -b --factory-startup --python prep_prop.py -- <raw.glb> <out.glb> <height_m> <max_tris> <tex_px> [yaw_deg] [preview.png] [desat]
 - welds seams, drops tiny floating bits, decimates to max_tris, smooth shading with sharp edges > 35 deg
 - scales so the tallest side (Z) is height_m, origin at bottom centre, faces Godot -Z (yaw_deg turns it first:
-  0 for creatures/props shown front-on, 90 for weapons drawn in side profile with the barrel pointing right)
+  0 for creatures/props shown front-on, -90 for weapons drawn in side profile with the barrel pointing right)
+- desat (0-1) greys out tinted non-glowing texels; materials get Metallic 0.2 / Roughness 0.5
 - resizes the texture to tex_px and adds an emission map from the bright saturated (neon/glowing) texels
 """
 import bpy, bmesh, sys, math, json
@@ -11,6 +12,7 @@ a = sys.argv[sys.argv.index("--") + 1:]
 src, out, height, max_tris, tex = a[0], a[1], float(a[2]), int(a[3]), int(a[4])
 yaw = float(a[5]) if len(a) > 5 else 0.0
 preview = a[6] if len(a) > 6 else None
+desat = float(a[7]) if len(a) > 7 else 0.0
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
@@ -65,6 +67,10 @@ if mat and mat.node_tree:
     nt = mat.node_tree
     texn = next((n for n in nt.nodes if n.type == 'TEX_IMAGE'), None)
     bsdf = next((n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED'), None)
+    # Hunyuan's glb omits metallicFactor; glTF defaults missing metallicFactor to 1.0, so models render black/maroon in Godot
+    if bsdf:
+        bsdf.inputs['Metallic'].default_value = 0.2
+        bsdf.inputs['Roughness'].default_value = 0.5
     if texn and texn.image:
         img = texn.image
         if img.size[0] > tex: img.scale(tex, tex)
@@ -74,6 +80,9 @@ if mat and mat.node_tree:
         sat = (mx - mn) / np.maximum(mx, 1e-4)
         mask = (sat > 0.55) & (mx > 0.6)  # glowing neon / eyes / energy cores
         emit_px = int(mask.sum())
+        if desat > 0:  # desaturate everything except the glowing texels
+            lum = rgb[..., 0] * 0.2126 + rgb[..., 1] * 0.7152 + rgb[..., 2] * 0.0722
+            rgb[~mask] = rgb[~mask] + (lum[~mask, None] - rgb[~mask]) * desat
         alb = bpy.data.images.new(o.name + "_albedo", W, H); alb.pixels.foreach_set(px.ravel()); alb.pack()
         texn.image = alb
         if emit_px > 0.0005 * W * H and bsdf:
@@ -108,4 +117,4 @@ if preview:  # quick look: front + 3/4, textured
 
 tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
 print("PREP " + json.dumps({"out": out, "tris_in": tris0, "tris": tris, "size_m": [round(x, 3) for x in o.dimensions],
-                            "tex": tex, "emission_px": emit_px}))
+                             "tex": tex, "emission_px": emit_px, "desat": desat}))
