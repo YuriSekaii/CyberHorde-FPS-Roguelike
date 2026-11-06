@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkvgbj1ywpj10"
-path="res://.godot/imported/pulse_carbine_tmpd_kggvdm.png-b5bfbc29a9900b33780e63d66dc2c62a.ctex"
+uid="uid://bhsr2ubr1myvd"
+path="res://.godot/imported/pulse_carbine_tmp0fh8_dk_.png-0c9a31622fb3f2bdaf5f63144058ea1e.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "1288a675361680f89374d032326566c0"
+"md5": "bd01854b5abd636663e410970f4b0b54"
 }
 
 [deps]
 
-source_file="res://assets/models/pulse_carbine/pulse_carbine_tmpd_kggvdm.png"
-dest_files=["res://.godot/imported/pulse_carbine_tmpd_kggvdm.png-b5bfbc29a9900b33780e63d66dc2c62a.ctex"]
+source_file="res://assets/models/pulse_carbine/pulse_carbine_tmp0fh8_dk_.png"
+dest_files=["res://.godot/imported/pulse_carbine_tmp0fh8_dk_.png-0c9a31622fb3f2bdaf5f63144058ea1e.ctex"]
 
 [params]
 

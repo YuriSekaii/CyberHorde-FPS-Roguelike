@@ -28,8 +28,10 @@ const GRAVITY: float = 20.0
 var mouse_sensitivity: float = 0.0022
 
 # Weapon Positioning (Hip vs Aim Down Sights)
-const HIP_POSITION: Vector3 = Vector3(0.24, -0.22, -0.45)
+const HIP_POSITION: Vector3 = Vector3(0.22, -0.24, -0.62)
 const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
+const HIP_ROTATION_DEG: Vector3 = Vector3(0.0, 14.0, -3.0)  # inward yaw + slight cant so the gun's side and barrel show at the hip
+const VIEWMODEL_FOV: float = 55.0
 var is_aiming: bool = false
 var target_sway_pos: Vector3 = Vector3.ZERO
 var target_sway_rot: Vector3 = Vector3.ZERO
@@ -185,17 +187,18 @@ const DRONE_SCENE = preload("res://scenes/player/drone.tscn")
 # Node References
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
-@onready var weapon_rig: Node3D = $Head/Camera3D/WeaponRig
-@onready var gun_model_rifle: Node3D = $Head/Camera3D/WeaponRig/Rifle
-@onready var gun_model_shotgun: Node3D = $Head/Camera3D/WeaponRig/Shotgun
-@onready var gun_model_plasma: Node3D = $Head/Camera3D/WeaponRig/Plasma
-@onready var plasma_core_mesh: MeshInstance3D = $Head/Camera3D/WeaponRig/Plasma/Core
+@onready var weapon_rig: Node3D = $Head/Camera3D/ViewmodelRoot/WeaponRig
+@onready var gun_model_rifle: Node3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/Rifle
+@onready var gun_model_shotgun: Node3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/Shotgun
+@onready var gun_model_plasma: Node3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/Plasma
+@onready var plasma_core_mesh: MeshInstance3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/Plasma/Core
 const COLOR_PLASMA_READY: Color = Color(0.9, 0.1, 1.0, 1.0) # Purple when ready to fire
 const COLOR_PLASMA_COOLDOWN: Color = Color(1.0, 0.12, 0.12, 1.0) # Red during cooldown / unable to shoot
 var plasma_core_mat: StandardMaterial3D = null
 var _plasma_was_ready: bool = true
-@onready var muzzle_flash_light: OmniLight3D = $Head/Camera3D/WeaponRig/MuzzleFlashLight
-@onready var muzzle_particles: CPUParticles3D = $Head/Camera3D/WeaponRig/MuzzleParticles
+@onready var muzzle_flash_light: OmniLight3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/MuzzleFlashLight
+@onready var muzzle_particles: CPUParticles3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/MuzzleParticles
+@onready var viewmodel_root: Node3D = $Head/Camera3D/ViewmodelRoot
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
 @onready var drone_companion: Node3D = $DroneCompanion
 
@@ -897,6 +900,10 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	is_aiming = Input.is_action_pressed("aim")
 	var target_fov = 65.0 if is_aiming else (98.0 if is_dashing else 85.0)
 	camera.fov = lerpf(camera.fov, target_fov, 14.0 * delta)
+	# Scaling the gun's screen-space X/Y (not depth) by tan(fov/2)/tan(vm_fov/2) renders it exactly as a 55° camera would, so world FOV changes (ADS 65°, dash 98°) don't warp the gun.
+	if viewmodel_root:
+		var k := tan(deg_to_rad(camera.fov) * 0.5) / tan(deg_to_rad(VIEWMODEL_FOV) * 0.5)
+		viewmodel_root.scale = Vector3(k, k, 1.0)
 	
 	var base_pos = ADS_POSITION if is_aiming else HIP_POSITION
 	var is_moving = is_on_floor() and velocity.length_squared() > 1.0
@@ -932,7 +939,8 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	if weapon_rig:
 		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
 		final_target_pos += PIN_WEAPON_OFFSET * smoothstep(0.0, 1.0, pin_view_blend)
-		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
+		var base_rot = Vector3.ZERO if is_aiming else HIP_ROTATION_DEG * (PI / 180.0)
+		var final_target_rot = base_rot + target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
 		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
 		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
 

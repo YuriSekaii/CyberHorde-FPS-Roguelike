@@ -1,6 +1,6 @@
 # One asset: concept image -> Hunyuan3D-2 (local GPU) -> Blender prep -> assets/models/<Name>/<Name>.glb -> Godot import
 # Usage: powershell -ExecutionPolicy Bypass -File tools\asset_pipeline\make_asset.ps1 -Name cyber_swarmer -Height 1.1 -Tris 4000
-#   -Image defaults to Reference\AssetGen\<Name>.png ; optional -Back <png> (back view), -Tex 1024, -Yaw 0, -Desat 0, -Octree 380
+#   -Image defaults to Reference\AssetGen\<Name>.png ; optional -Back <png> (back view), -Tex 1024, -Yaw 0, -Desat 0, -Octree 380, -MaxFaces 40000
 param(
     [Parameter(Mandatory)] [string]$Name,
     [Parameter(Mandatory)] [double]$Height,
@@ -11,6 +11,7 @@ param(
     [double]$Yaw = 0,
     [double]$Desat = 0,
     [int]$Octree = 380,
+    [int]$MaxFaces = 40000,
     [string]$Hunyuan = "D:\AI\Hunyuan3D-2",
     [string]$Blender = "D:\Blender\Blender-5.2.4\blender.exe",
     [string]$Work = "D:\AI\gen"
@@ -24,7 +25,7 @@ $raw = "$w\raw.glb"
 $ErrorActionPreference = "Continue"  # PS 5.1: native stderr under 2>&1 would otherwise throw; failures are caught by the Test-Path checks
 
 if (-not (Test-Path $raw)) {  # delete raw.glb to regenerate; otherwise only the cheap prep step reruns
-    $env:HY3DGEN_MODELS = "D:\AI\hy3dgen_models"; $env:HF_HOME = "D:\AI\hf_cache"; $env:OCTREE = "$Octree"
+    $env:HY3DGEN_MODELS = "D:\AI\hy3dgen_models"; $env:HF_HOME = "D:\AI\hf_cache"; $env:OCTREE = "$Octree"; $env:MAXFACES = "$MaxFaces"
     $args_ = @("$Hunyuan\make_model.py", $Image, $raw); if ($Back) { $args_ += $Back }
     & "$Hunyuan\.venv\Scripts\python.exe" @args_ 2>&1 | Select-String "DONE|Traceback|Error" | ForEach-Object { $_.Line }
     if (-not (Test-Path $raw)) { throw "Hunyuan generation failed for $Name" }
