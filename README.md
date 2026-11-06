@@ -395,7 +395,7 @@ CyberHorde-FPS-Roguelike/
 
 ### 3. How to Add a Weapon
 1. In [`scripts/player/player.gd`](scripts/player/player.gd): Add a new `Weapon.new()` instance in `_setup_weapons()` and append to `weapons`.
-2. In [`scenes/player/player.tscn`](scenes/player/player.tscn): Add visual mesh under `Head/Camera3D/ViewmodelRoot/WeaponRig`. Weapons sit at `HIP_POSITION` (0.24, -0.22, -0.45) with no rotation, so barrels point straight ahead; `ViewmodelRoot` is a plain identity parent. The Pulse Carbine overrides this with its own Apex-style hip pose (`RIFLE_HIP_POSITION`/`RIFLE_HIP_ROTATION_DEG`, big in the bottom-right with its side showing) and its own `RIFLE_ADS_POSITION`.
+2. In [`scenes/player/player.tscn`](scenes/player/player.tscn): Add visual mesh under `Head/Camera3D/ViewmodelRoot/WeaponRig`. Weapons sit at `HIP_POSITION` (0.24, -0.22, -0.45) with no rotation, so barrels point straight ahead; `ViewmodelRoot` is a plain identity parent. The Pulse Carbine only has its own `RIFLE_ADS_POSITION`.
 3. Update `_switch_weapon()` and `_update_third_person_weapon()` in `player.gd` for model visibility.
 
 ### 4. How to Add an Enemy Type
