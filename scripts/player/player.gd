@@ -836,7 +836,7 @@ func _switch_weapon(new_idx: int) -> void:
 		return
 	active_weapon_idx = new_idx
 	is_reloading = false
-	equip_cooldown = 0.1
+	equip_cooldown = 0.1 / (GameManager.fire_rate_mult * (6.0 if is_slayer_active else 1.0))
 	
 	var w = weapons[active_weapon_idx]
 	gun_model_rifle.visible = (active_weapon_idx == 0)

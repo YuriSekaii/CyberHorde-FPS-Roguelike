@@ -67,7 +67,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Fire** | `Left Mouse Button` | Primary weapon attack |
 | **Aim (ADS)** | `Right Mouse Button` (hold) | Zoom to 65° FOV, half spread; gun bob/sway/kick and screen shake cut by 90% |
 | **Reload** | `R` | Manual reload (automatic when magazine is empty) |
-| **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
+| **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Cycle between Rifle, Shotgun, and Plasma (0.1s equip delay before firing, reduced by fire rate bonuses) |
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
 | **Revive Ally** | `E` (hold 5s) | Within 3m of downed squadmate (4.0s for Medics) |
 | **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
@@ -106,7 +106,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 ### Weapon Mechanics Notes
 * **Plasma Core Charge Cycle**: Requires holding `LMB` for at least 0.18s before releasing to fire. Releasing early cancels without ammo cost or cooldown. The core glow shifts to Warning Red during cooldown/reload, popping to Neon Purple when ready.
-* **Independent Cooldown Tracking**: Weapons track fire cooldowns independently across swaps. Holstered weapons continue cooling down in the background, preventing quick-swap cooldown bypass exploits on heavy weapons like the Plasma Core.
+* **Independent Cooldown Tracking**: Weapons track fire cooldowns independently across swaps. Holstered weapons continue cooling down in the background, preventing quick-swap cooldown bypass exploits on heavy weapons like the Plasma Core. Swapping carries a 0.1s equip delay before firing, reduced by fire rate bonuses.
 * **Tesla Arc Emitter Synergy**: When firing the Plasma Core with Tesla Arc Emitter, a radial lightning bolt strikes **every enemy** in the explosive radius before detonation, and each bolt then chains outward up to 8.5m.
 
 ---
