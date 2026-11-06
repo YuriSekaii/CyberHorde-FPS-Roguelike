@@ -917,9 +917,11 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 		bob_time = 0.0
 		camera.position = camera.position.lerp(Vector3.ZERO, 8.0 * delta)
 	
+	var ads_damp = 0.1 if is_aiming else 1.0 # ADS: gun shake/bob/sway/kick cut by 90%
 	if shake_intensity > 0.001:
-		camera.h_offset = randf_range(-shake_intensity, shake_intensity)
-		camera.v_offset = randf_range(-shake_intensity, shake_intensity)
+		var s = shake_intensity * ads_damp
+		camera.h_offset = randf_range(-s, s)
+		camera.v_offset = randf_range(-s, s)
 		shake_intensity = lerpf(shake_intensity, 0.0, 12.0 * delta)
 	else:
 		camera.h_offset = 0.0
@@ -931,9 +933,9 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	target_sway_rot = target_sway_rot.lerp(Vector3.ZERO, 8.0 * delta)
 	
 	if weapon_rig:
-		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
+		var final_target_pos = base_pos + (gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)) * ads_damp
 		final_target_pos += PIN_WEAPON_OFFSET * smoothstep(0.0, 1.0, pin_view_blend)
-		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
+		var final_target_rot = (target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)) * ads_damp
 		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
 		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
 

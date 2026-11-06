@@ -65,6 +65,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Jump** | `Spacebar` | Includes 150ms coyote time and jump buffering |
 | **Sprint** | `Shift` (hold) | 1.4× movement speed multiplier |
 | **Fire** | `Left Mouse Button` | Primary weapon attack |
+| **Aim (ADS)** | `Right Mouse Button` (hold) | Zoom to 65° FOV, half spread; gun bob/sway/kick and screen shake cut by 90% |
 | **Reload** | `R` | Manual reload (automatic when magazine is empty) |
 | **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Instant cycle between Rifle, Shotgun, and Plasma |
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
