@@ -1,0 +1,29 @@
+name,tier,height_m,max_tris,tex_px,yaw_deg,target,notes
+pulse_carbine,1,0.24,12000,1024,90,scenes/player/player.tscn WeaponRig/Rifle,first-person rifle; side-profile image barrel right
+scatter_cannon,1,0.26,12000,1024,90,scenes/player/player.tscn WeaponRig/Shotgun,first-person shotgun
+plasma_core,1,0.28,12000,1024,90,scenes/player/player.tscn WeaponRig/Plasma,first-person charge gun
+nanite_xp_crystal,1,0.35,800,256,0,scenes/loot/loot_pickup.tscn,cyan/green; keep spin/bob code
+medical_stim,1,0.35,800,256,0,scenes/loot/loot_pickup.tscn,red
+scrap_currency,1,0.30,800,256,0,scenes/loot/loot_pickup.tscn,gold
+loot_cache,1,1.40,4000,1024,0,scenes/loot/chest.tscn,floating cache; lid may need a separate part
+jump_pad,1,0.35,3000,512,0,scenes/world/jump_pad.tscn,radius 1.6m disc
+cover_wall_low,1,1.10,2500,512,0,scenes/world/arena.tscn,waist-high cyan-trim wall
+cover_barricade,1,2.60,3000,512,0,scenes/world/arena.tscn,tall barricade
+arena_pillar,1,8.00,3000,512,0,scenes/world/arena.tscn,tall pillar; match collider
+jungle_tree_a,1,12.00,6000,1024,0,scripts/world/jungle_arena.gd,match trunk collider radius
+jungle_tree_b,1,10.00,6000,1024,0,scripts/world/jungle_arena.gd,variant
+assault_drone,2,0.50,3000,512,0,scenes/player/drone.tscn,rigid; code bobs/aims it
+photon_hornet,2,1.20,4000,512,0,scenes/enemies/hornet.tscn,rigid flyer
+cyber_spawnling,2,0.90,2000,512,0,scenes/enemies/spawnling.tscn,rigid spinning drill; many on screen
+void_spawner,2,3.40,10000,1024,0,scenes/enemies/spawner.tscn,rigid flying carrier
+volt_bomber,2,1.10,3000,512,0,scenes/enemies/bomber.tscn,check script for animated parts first
+spore_pit,2,4.00,8000,1024,0,scenes/enemies/spore_pit.tscn,rooted; pulse via scale
+cyber_swarmer,3,1.10,4000,512,0,scenes/enemies/swarmer.tscn,needs rig + retarget (Ghoul recipe)
+plasma_spitter,3,1.30,5000,512,0,scenes/enemies/spitter.tscn,needs rig
+armored_goliath,3,2.20,9000,1024,0,scenes/enemies/brute.tscn,needs rig
+cyber_charger,3,1.60,8000,1024,0,scenes/enemies/charger.tscn,needs rig
+apex_overlord,3,4.20,40000,2048,0,scenes/enemies/boss.tscn,boss; needs rig; phase 3 wings
+shadow_spider,3,1.00,4000,512,0,scenes/enemies/spider.tscn,8 legs; needs rig
+venom_wyvern,3,1.40,5000,512,0,scenes/enemies/wyvern.tscn,wings; needs rig
+mantis_stalker,3,2.00,6000,1024,0,scenes/enemies/stalker.tscn,needs rig
+operative_avatar,3,1.80,10000,1024,0,scenes/player/player.tscn,third-person squad body; neon accent recoloured per class

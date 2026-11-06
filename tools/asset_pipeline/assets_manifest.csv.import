@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bs36jasu7h6m2"
+
+[deps]
+
+files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation"]
+
+source_file="res://tools/asset_pipeline/assets_manifest.csv"
+dest_files=["res://tools/asset_pipeline/assets_manifest.tier.translation", "res://tools/asset_pipeline/assets_manifest.height.translation", "res://tools/asset_pipeline/assets_manifest.max.translation", "res://tools/asset_pipeline/assets_manifest.tex.translation", "res://tools/asset_pipeline/assets_manifest.yaw.translation", "res://tools/asset_pipeline/assets_manifest.target.translation", "res://tools/asset_pipeline/assets_manifest.notes.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

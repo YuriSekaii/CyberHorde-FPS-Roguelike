@@ -305,6 +305,12 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 
 ---
 
+## 🎨 3D Asset Pipeline
+
+New 3D art is made as: Gemini concept image → **Hunyuan3D-2** on the local GPU → Blender cleanup (`tools/asset_pipeline/prep_prop.py`) → `assets/models/<name>/<name>.glb`. Drop images in `Reference/AssetGen/<name>.png` and run `toolssset_pipelineatch.ps1`. The pipeline, rules, tiers and integration recipe are in [`docs/ASSET_PIPELINE.md`](docs/ASSET_PIPELINE.md); prompts for every asset are in [`docs/ASSET_PROMPTS.md`](docs/ASSET_PROMPTS.md).
+
+---
+
 ## 📂 Project Architecture
 
 ```
@@ -314,7 +320,9 @@ CyberHorde-FPS-Roguelike/
 ├── Test_Coop_2Players.bat            # 2-player local co-op launcher
 ├── Open_In_Godot_Editor.bat          # Godot Editor launcher
 ├── Push_To_GitHub.bat                # Git commit & push script
-├── assets/models/blood_ghoul/        # Rigged Blood Ghoul .glb (AI-generated, Blender-cleaned)
+├── assets/models/<name>/            # AI-generated .glb assets (see docs/ASSET_PIPELINE.md)
+├── docs/ASSET_PIPELINE.md / ASSET_PROMPTS.md  # Image → Hunyuan3D-2 → Blender → Godot pipeline + Gemini prompts
+├── tools/asset_pipeline/            # make_asset.ps1, batch.ps1, prep_prop.py, assets_manifest.csv, ghoul_pose_harness.gd
 ├── server/
 │   ├── lobby_relay.py                # Online lobby relay (WebSocket, lobby codes, max 4 players)
 │   └── run_relay.bat                 # Starts the relay hidden in the background (port 8095)
