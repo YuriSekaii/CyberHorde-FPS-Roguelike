@@ -129,9 +129,21 @@ var claw_drips: Array[Dictionary] = [] # Per drop: tip node, mesh, age, hang tim
 @onready var body_root: Node3D = $MeshRoot/Body
 @onready var head_mesh: Node3D = $MeshRoot/Body/Head
 @onready var jaw: Node3D = $MeshRoot/Body/Head/Jaw
-@onready var pupil_mat: StandardMaterial3D = ($MeshRoot/Body/Head/PupilL as MeshInstance3D).mesh.material
+@onready var model: Node3D = $MeshRoot/Model # mesh_root comes from EnemyBase
+@onready var pupil_mat: StandardMaterial3D = null # EyeL's active material (shared by both eyes)
 @onready var skin_mat: ShaderMaterial = ($MeshRoot/Body/Ribcage as MeshInstance3D).mesh.material
 var body_glow: float = 0.0 # 0 dormant in the shadows .. 1 fully awake
+
+# ----------------- RIGGED MODEL RETARGET -----------------
+var skeleton: Skeleton3D = null
+var rest_d: Dictionary = {} # Driver Node3D -> MeshRoot-space basis at rest
+var rest_local: Dictionary = {} # Driver Node3D -> local basis at rest
+var rest_b: Dictionary = {} # Bone name -> skeleton-space global rest basis
+var bone_index: Dictionary = {} # Bone name -> skeleton index
+var drivers: Dictionary = {} # Bone name -> driver Node3D
+var second_drivers: Dictionary = {} # Second-joint bone name -> its first-joint driver Node3D
+var model_body_mats: Array = [] # Per model body material: {"mat": StandardMaterial3D, "base": Color}
+var leg_rest: Dictionary = {} # Side -> thigh/shin/foot rest data for the planted-feet IK
 
 func _ready() -> void:
 	enemy_name = "Blood Ghoul"
@@ -139,6 +151,7 @@ func _ready() -> void:
 	if body_root:
 		body_base_y = body_root.position.y
 	_collect_arm_joints()
+	_setup_model()
 	_setup_claw_drips()
 	hide_spot = global_position
 	hide_spot.y = 0.0
@@ -548,6 +561,8 @@ func _process_pinning(delta: float) -> void:
 
 ## Where a pinned operative's camera looks: the Ghoul's face looming over them
 func get_pin_focus_point() -> Vector3:
+	if skeleton and bone_index.has("Head"): # The visible skull, not the hidden procedural head
+		return skeleton.global_transform * skeleton.get_bone_global_pose(bone_index["Head"]).origin
 	return head_mesh.global_position if head_mesh else global_position + Vector3(0.0, 1.4, 0.0)
 
 ## A Ghoul attack: damage + Bleed; pin strikes also heal it 1% Max HP when they land
@@ -678,6 +693,227 @@ func _pick_hide_index() -> int:
 	return hide_index
 
 # ----------------- VISUALS -----------------
+
+## Shortcut: the old procedural meshes stay in the scene as invisible drivers instead of being
+## deleted, so every existing animation and gameplay path keeps working unchanged.
+func _hide_procedural_meshes(node: Node) -> void:
+	for child in node.get_children():
+		if child == model:
+			continue
+		if child is MeshInstance3D:
+			child.visible = false
+		_hide_procedural_meshes(child)
+
+func _find_skeleton(node: Node) -> Skeleton3D:
+	if node is Skeleton3D:
+		return node
+	for child in node.get_children():
+		var found := _find_skeleton(child)
+		if found:
+			return found
+	return null
+
+func _setup_model() -> void:
+	if not model or not mesh_root:
+		return
+	_hide_procedural_meshes(mesh_root)
+	skeleton = _find_skeleton(model)
+	if skeleton == null:
+		return
+	# The old pupils were the glowing eyes; the rig's EyeL/EyeR now share this material.
+	var eye = model.find_child("EyeL", true, false) as MeshInstance3D
+	if eye and eye.mesh:
+		pupil_mat = eye.get_active_material(0) as StandardMaterial3D
+		if pupil_mat == null:
+			pupil_mat = eye.mesh.surface_get_material(0) as StandardMaterial3D
+	for body_name in ["BloodGhoul", "BloodGhoul_head"]:
+		var mi = model.find_child(body_name, true, false) as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			continue
+		for s in range(mi.mesh.get_surface_count()):
+			var mat = mi.get_active_material(s)
+			if not (mat is StandardMaterial3D):
+				continue
+			var known := false
+			for entry in model_body_mats:
+				if entry["mat"] == mat:
+					known = true
+					break
+			if not known:
+				model_body_mats.append({"mat": mat, "base": mat.albedo_color})
+	_build_retarget()
+
+func _model_basis(n: Node3D) -> Basis:
+	return (mesh_root.global_transform.affine_inverse() * n.global_transform).basis.orthonormalized()
+
+func _bone_rest_basis(bone: String) -> Basis:
+	return rest_b[bone]
+
+func _add_driver(bone: String, path: String) -> Node3D:
+	if not bone_index.has(bone):
+		return null
+	var node = body_root.get_node_or_null(path) as Node3D
+	if node == null:
+		return null
+	drivers[bone] = node
+	if not rest_d.has(node):
+		rest_d[node] = _model_basis(node)
+		rest_local[node] = node.transform.basis
+	return node
+
+func _build_retarget() -> void:
+	if skeleton == null or body_root == null or mesh_root == null:
+		return
+	rest_d.clear()
+	rest_local.clear()
+	rest_b.clear()
+	bone_index.clear()
+	drivers.clear()
+	second_drivers.clear()
+	leg_rest.clear()
+	for i in range(skeleton.get_bone_count()):
+		var bone_name := skeleton.get_bone_name(i)
+		bone_index[bone_name] = i
+		rest_b[bone_name] = skeleton.get_bone_global_rest(i).basis
+	# Record the driver rest poses from the upright skeleton, not the scene's hunched body pose.
+	var saved := body_root.transform
+	body_root.transform = Transform3D(Basis(), saved.origin)
+	for side in ["L", "R"]:
+		var arm = "ArmPivot" + side
+		var hand = arm + "/Elbow" + side + "/Hand" + side
+		_add_driver("UpperArm." + side, arm)
+		_add_driver("Forearm." + side, arm + "/Elbow" + side)
+		_add_driver("Hand." + side, hand)
+		for n in range(1, 5):
+			var finger_node = _add_driver("Finger%d_1.%s" % [n, side], hand + "/Finger" + side + str(n - 1))
+			if finger_node:
+				second_drivers["Finger%d_2.%s" % [n, side]] = finger_node
+		var thumb_node = _add_driver("Thumb_1." + side, hand + "/Thumb" + side)
+		if thumb_node:
+			second_drivers["Thumb_2." + side] = thumb_node
+	_add_driver("Head", "Head")
+	_add_driver("Jaw", "Head/Jaw")
+	body_root.transform = saved
+	for side in ["L", "R"]:
+		var ti := int(bone_index.get("Thigh." + side, -1))
+		var si := int(bone_index.get("Shin." + side, -1))
+		var fi := int(bone_index.get("Foot." + side, -1))
+		if ti < 0 or si < 0 or fi < 0:
+			continue
+		var thigh_rest := skeleton.get_bone_global_rest(ti)
+		var shin_rest := skeleton.get_bone_global_rest(si)
+		var foot_rest := skeleton.get_bone_global_rest(fi)
+		leg_rest[side] = {
+			"upper": (shin_rest.origin - thigh_rest.origin).length(),
+			"lower": (foot_rest.origin - shin_rest.origin).length(),
+			# Joint-to-joint directions: imported bone axes aren't guaranteed to run along the bone
+			"thigh_dir": (shin_rest.origin - thigh_rest.origin).normalized(),
+			"shin_dir": (foot_rest.origin - shin_rest.origin).normalized(),
+			"foot_origin": foot_rest.origin,
+			"foot_basis": rest_b["Foot." + side],
+		}
+
+## Copies the invisible procedural joint poses onto the imported skeleton every frame.
+func _retarget_skeleton() -> void:
+	if skeleton == null or body_root == null or mesh_root == null:
+		return
+	var count := skeleton.get_bone_count()
+	var global_pose: Array[Transform3D] = []
+	global_pose.resize(count)
+	var roll: float = body_root.rotation.z
+	var roll_basis := Basis(Vector3(0.0, 0.0, 1.0), roll)
+	var tilt := Basis.from_euler(Vector3(body_root.rotation.x, body_root.rotation.y, 0.0))
+	var half := Basis(Quaternion.IDENTITY.slerp(tilt.get_rotation_quaternion(), 0.5))
+	var drop: float = body_root.position.y - body_base_y
+	var leg_w: float = 1.0 - clampf(absf(roll) / 1.2, 0.0, 1.0)
+	var hips_i := int(bone_index.get("Hips", -1))
+	var spine_i := int(bone_index.get("Spine", -1))
+	var chest_i := int(bone_index.get("Chest", -1))
+	var ik_shin_dir: Dictionary = {}
+	for i in range(count):
+		var bone := skeleton.get_bone_name(i)
+		var local := skeleton.get_bone_rest(i)
+		var parent_i := skeleton.get_bone_parent(i)
+		var parent_global := Transform3D.IDENTITY if parent_i < 0 else global_pose[parent_i]
+		var target_basis := Basis.IDENTITY
+		var has_target := false
+		if i == hips_i:
+			# Body roll turns the hips; the torso gets the tilt/twist half on Spine and half on Chest.
+			target_basis = roll_basis * _bone_rest_basis(bone)
+			has_target = true
+			local.origin += Vector3(0.0, drop, 0.0)
+		elif i == spine_i:
+			target_basis = roll_basis * half * _bone_rest_basis(bone)
+			has_target = true
+		elif i == chest_i:
+			target_basis = roll_basis * half * half * _bone_rest_basis(bone)
+			has_target = true
+		elif drivers.has(bone):
+			var node: Node3D = drivers[bone]
+			var node_rest: Basis = rest_d[node]
+			var delta := _model_basis(node) * node_rest.inverse()
+			if bone == "Jaw": # The model's mouth already gapes at rest: open half as far as the old jaw
+				var head_node := node.get_parent() as Node3D
+				var half_open := Quaternion.IDENTITY.slerp((node.basis * (rest_local[node] as Basis).inverse()).get_rotation_quaternion(), 0.5)
+				delta = _model_basis(head_node) * Basis(half_open) * (rest_d[head_node] as Basis).inverse()
+			target_basis = delta * _bone_rest_basis(bone)
+			has_target = true
+		elif second_drivers.has(bone):
+			var node: Node3D = second_drivers[bone]
+			var node_rest: Basis = rest_d[node]
+			var delta := _model_basis(node) * node_rest.inverse()
+			var local_rest: Basis = rest_local[node]
+			var local_delta := node.basis * local_rest.inverse()
+			# Curl the second finger/thumb joint as much again as the first.
+			var parent_now := _model_basis(node.get_parent() as Node3D)
+			var extra := parent_now * local_delta * parent_now.inverse()
+			target_basis = extra * delta * _bone_rest_basis(bone)
+			has_target = true
+		elif bone.begins_with("Thigh.") and leg_rest.has(bone.trim_prefix("Thigh.")):
+			var side := bone.trim_prefix("Thigh.")
+			var info: Dictionary = leg_rest[side]
+			var thigh_origin := (parent_global * local).origin
+			var foot_target: Vector3 = info["foot_origin"]
+			var to_target := foot_target - thigh_origin
+			var dist := to_target.length()
+			if dist > 0.001:
+				var upper: float = info["upper"]
+				var lower: float = info["lower"]
+				var dir := to_target / dist
+				var pole := Vector3(0.0, 0.0, -1.0) # Knees bend forward (-Z), like the model's rest pose
+				var pole_proj := pole - dir * pole.dot(dir)
+				if pole_proj.length_squared() < 0.0001:
+					pole_proj = Vector3.RIGHT - dir * dir.dot(Vector3.RIGHT)
+				pole_proj = pole_proj.normalized()
+				var reach := clampf(dist, absf(upper - lower) + 0.001, upper + lower - 0.001)
+				var cos_a := clampf((upper * upper + reach * reach - lower * lower) / (2.0 * upper * reach), -1.0, 1.0)
+				var sin_a := sqrt(maxf(0.0, 1.0 - cos_a * cos_a))
+				var knee := thigh_origin + dir * (upper * cos_a) + pole_proj * (upper * sin_a)
+				var thigh_dir := (knee - thigh_origin).normalized()
+				ik_shin_dir[side] = (foot_target - knee).normalized()
+				var ik_basis := Basis(Quaternion(info["thigh_dir"], thigh_dir)) * _bone_rest_basis(bone)
+				var default_basis := (parent_global * local).basis
+				target_basis = Basis(default_basis.get_rotation_quaternion().slerp(ik_basis.get_rotation_quaternion(), leg_w))
+				has_target = true
+		elif bone.begins_with("Shin.") and ik_shin_dir.has(bone.trim_prefix("Shin.")):
+			var side := bone.trim_prefix("Shin.")
+			var info: Dictionary = leg_rest[side]
+			var ik_basis := Basis(Quaternion(info["shin_dir"], ik_shin_dir[side])) * _bone_rest_basis(bone)
+			var default_basis := (parent_global * local).basis
+			target_basis = Basis(default_basis.get_rotation_quaternion().slerp(ik_basis.get_rotation_quaternion(), leg_w))
+			has_target = true
+		elif bone.begins_with("Foot.") and leg_rest.has(bone.trim_prefix("Foot.")):
+			var side := bone.trim_prefix("Foot.")
+			var info: Dictionary = leg_rest[side]
+			var default_basis := (parent_global * local).basis
+			var ik_basis: Basis = info["foot_basis"]
+			target_basis = Basis(default_basis.get_rotation_quaternion().slerp(ik_basis.get_rotation_quaternion(), leg_w))
+			has_target = true
+		if has_target:
+			local.basis = (parent_global.basis.inverse() * target_basis).orthonormalized()
+		skeleton.set_bone_pose_position(i, local.origin)
+		skeleton.set_bone_pose_rotation(i, local.basis.get_rotation_quaternion())
+		global_pose[i] = parent_global * skeleton.get_bone_pose(i)
 
 func _collect_arm_joints() -> void:
 	for side in ["L", "R"]:
@@ -827,6 +1063,12 @@ func _animate_head(delta: float) -> void:
 		pupil_mat.emission_energy_multiplier = maxf(EYE_GLOW * minf(body_glow * 2.0, 1.0), ENGAGED_EYE_GLOW * eye_engage)
 	if skin_mat:
 		skin_mat.set_shader_parameter("glow", body_glow)
+	# Keep the rigged body nearly invisible in the shadows and fully lit once it wakes.
+	var glow_scale := lerpf(0.3, 1.0, body_glow)
+	for entry in model_body_mats:
+		var mat: StandardMaterial3D = entry["mat"]
+		var base: Color = entry["base"]
+		mat.albedo_color = Color(base.r * glow_scale, base.g * glow_scale, base.b * glow_scale, base.a)
 
 func _animate_pose(delta: float) -> void:
 	if not body_root:
@@ -870,11 +1112,12 @@ func _animate_pose(delta: float) -> void:
 	_animate_arms(delta)
 	_animate_head(delta)
 	_animate_claw_drips(delta)
+	_retarget_skeleton()
 
 ## One blood drop per claw: it swells on the tip, then falls (onto a pinned victim's face). Hidden while it lurks.
 func _setup_claw_drips() -> void:
 	var claw = arm_hands[0].get_node_or_null("FingerL0/ClawL00") as MeshInstance3D
-	if not claw:
+	if not claw or skeleton == null:
 		return
 	var drop_mesh = SphereMesh.new()
 	drop_mesh.radius = 0.011
@@ -882,20 +1125,21 @@ func _setup_claw_drips() -> void:
 	drop_mesh.radial_segments = 6
 	drop_mesh.rings = 3
 	drop_mesh.material = claw.mesh.material # Wet blood
-	for hand in arm_hands:
-		for finger in hand.get_children():
-			if not finger.name.begins_with("Finger"):
-				continue
-			var tip = finger.get_node_or_null("DripTip" + finger.name.trim_prefix("Finger")) as Node3D
-			if not tip:
-				continue
+	# Drips hang off the rig's claw-tip bones now (arm_hands[0] is the .L hand).
+	for i in range(2):
+		var side := "L" if i == 0 else "R"
+		for n in range(1, 5):
+			var attach := BoneAttachment3D.new()
+			attach.name = "DripTip%s%d" % [side, n - 1]
+			skeleton.add_child(attach)
+			attach.bone_name = "ClawTip%d.%s" % [n, side]
 			var drop = MeshInstance3D.new()
 			drop.mesh = drop_mesh
 			drop.top_level = true
 			drop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			drop.visible = false
 			add_child(drop)
-			claw_drips.append({"tip": tip, "mesh": drop, "t": randf(), "hang": randf_range(0.25, 0.9), "vel": 0.0})
+			claw_drips.append({"tip": attach, "mesh": drop, "t": randf(), "hang": randf_range(0.25, 0.9), "vel": 0.0})
 
 func _animate_claw_drips(delta: float) -> void:
 	var dripping = not _is_lurking()

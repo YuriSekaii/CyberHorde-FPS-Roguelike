@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemies/blood_ghoul.gd" id="1_script"]
 [ext_resource type="Shader" path="res://assets/shaders/ghoul_skin.gdshader" id="2_skin"]
+[ext_resource type="PackedScene" path="res://assets/models/blood_ghoul/blood_ghoul.glb" id="3_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_shape"]
 radius = 0.55
@@ -1491,6 +1492,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
 shape = SubResource("CapsuleShape3D_shape")
 
 [node name="MeshRoot" type="Node3D" parent="."]
+
+[node name="Model" parent="MeshRoot" instance=ExtResource("3_model")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
 
 [node name="ThighL" type="MeshInstance3D" parent="MeshRoot"]
 transform = Transform3D(-0.97619, -0.20353, -0.07506, 0.21693, -0.91589, -0.33776, 0, -0.346, 0.93823, -0.18, 0.775, -0.055)
