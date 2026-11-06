@@ -51,7 +51,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 * **Online Networking**: The same high-level RPCs, sent through the CyberHorde lobby relay at `wss://phu-ai-lab.tailbca584.ts.net/cyberhorde` (Tailscale Funnel → [`server/lobby_relay.py`](server/lobby_relay.py) on port `8095`). The lobby creator is the authoritative host (peer 1). Joiners get ids 2–4, and a lobby holds max 4 players. When the host leaves, the lobby closes.
 * **Squad Avatars**: Host (Player 1) has Neon Cyan accents; Client (Player 2) has Neon Amber accents. Overhead tags show name and live HP bar.
 * **Shared Economy**: XP and Scrap are squad-shared. Upgrade card selection is simultaneous; choosing cards activates an **Aegis Stasis** protective shield.
-* **Revive System**: Downed players enter a crawling beacon state. Teammates hold `E` for 5 seconds within 3m to revive them with 50% HP and 3s invulnerability (4.0s for Medics).
+* **Revive System**: Downed players lie flat on their back (same pose and low camera as a Blood Ghoul pin) and can still crawl, marked by a beacon. Teammates hold `E` for 5 seconds within 3m to revive them with 50% HP and 3s invulnerability (4.0s for Medics).
 * **Targeting AI**: Horde units dynamically acquire and split aggro toward the nearest active, non-downed player.
 
 ---
@@ -191,7 +191,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 4 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 2 |
 | **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion per bounce (and Plasma Core chain lightning) | 2 |
 | **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, Gunner Berserk Protocol active, and Rogue passive reload speed). Drones never target Spawnlings | 3 |
-| **Emergency Defibrillator**| `Legendary`| Prevents fatal damage, fully restores HP & Shield + 5s invulnerability. Recharges every 10 waves | 1 |
+| **Emergency Defibrillator**| `Legendary`| Prevents fatal damage, fully restores HP & Shield + 5s invulnerability. Recharges every 10 waves. Co-op: only fires once the whole squad is down (a downed holder gets back up the moment the last teammate falls) | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
 
 ---

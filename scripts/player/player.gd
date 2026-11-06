@@ -545,7 +545,19 @@ func _physics_process(delta: float) -> void:
 	_handle_head_bob_and_shake(delta)
 	_handle_teammate_revive(delta)
 
+## True if any other player in the "player" group is still valid and not downed
+func _any_teammate_up() -> bool:
+	for p in get_tree().get_nodes_in_group("player"):
+		if p != self and is_instance_valid(p) and p.get("is_downed") == false:
+			return true
+	return false
+
 func _handle_downed_state(delta: float) -> void:
+	# Second Wind: the moment the last teammate goes down, a downed holder gets back up
+	if GameManager.second_wind_available and not _any_teammate_up():
+		rpc_set_downed.rpc(false)
+		_trigger_second_wind()
+		return
 	bleedout_timer -= delta
 	if bleedout_timer <= 0.0:
 		die()
@@ -985,11 +997,11 @@ func _animate_third_person_legs(delta: float) -> void:
 			tp_left_leg.rotation.x = lerpf(tp_left_leg.rotation.x, 0.0, 10.0 * delta)
 			tp_right_leg.rotation.x = lerpf(tp_right_leg.rotation.x, 0.0, 10.0 * delta)
 
-## Remote view of a pinned operative: the body lies flat on its back
+## Remote view of a pinned or downed operative: the body lies flat on its back
 func _animate_third_person_pin(delta: float) -> void:
 	if not third_person_model:
 		return
-	var lying = is_pinned_down()
+	var lying = is_pinned_down() or is_downed
 	third_person_model.rotation.x = lerpf(third_person_model.rotation.x, PI * 0.5 if lying else 0.0, 12.0 * delta)
 	third_person_model.position.y = lerpf(third_person_model.position.y, TP_PINNED_HEIGHT if lying else TP_STAND_HEIGHT, 12.0 * delta)
 
@@ -1073,13 +1085,14 @@ func _lose_health_direct(amount: float) -> void:
 	_check_fatal_damage()
 
 ## Updates the overhead tag and resolves lethal damage (Second Wind / downed / death). Returns true if the hit was lethal.
+## Second Wind (Emergency Defibrillator) only fires when every operative is down, not while any teammate is still up.
 func _check_fatal_damage() -> bool:
 	if status_label:
 		status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
 	if current_health > 0:
 		return false
 	clear_status_effects()
-	if GameManager.second_wind_available:
+	if GameManager.second_wind_available and not _any_teammate_up():
 		_trigger_second_wind()
 	elif NetworkManager.is_multiplayer and not is_downed:
 		rpc_set_downed.rpc(true)
@@ -1369,7 +1382,7 @@ func rpc_set_downed(downed: bool) -> void:
 		SoundManager.play("player_hurt", 0.2, -4.0)
 		if is_local_player:
 			_reset_pin_view()
-			head.position.y = 0.7 # Lower camera to ground crawl
+			head.position.y = PINNED_HEAD_HEIGHT # Lie flat on your back like a pin
 		if status_label:
 			status_label.text = "DOWNED!"
 			status_label.modulate = Color(1, 0.2, 0.2)
