@@ -86,6 +86,18 @@ const VIEW_MAX_DIST: float = 70.0
 const WATCH_CHECK_INTERVAL: float = 0.1
 const GRAVITY: float = 20.0
 
+## Anatomical joint limits (degrees), keyed by bone name prefix (.L/.R stripped;
+## Finger1_1..Finger4_1 -> Finger_1, Finger1_2..Finger4_2 -> Finger_2).
+## Each entry: [x_min, x_max, z_min, z_max, twist_min, twist_max] about local X/Z/Y.
+const JOINT_LIMITS: Dictionary = {
+	"Forearm": [-150.0, 5.0, -10.0, 10.0, -70.0, 70.0],
+	"Hand": [-80.0, 70.0, -30.0, 30.0, -15.0, 15.0],
+	"Finger_1": [-90.0, 20.0, -15.0, 15.0, -5.0, 5.0],
+	"Finger_2": [-100.0, 5.0, -5.0, 5.0, -5.0, 5.0],
+	"Thumb_1": [-60.0, 25.0, -30.0, 30.0, -20.0, 20.0],
+	"Thumb_2": [-80.0, 10.0, -5.0, 5.0, -5.0, 5.0],
+}
+
 const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
 var state: GhoulState = GhoulState.HIDING
@@ -814,6 +826,10 @@ func _build_retarget() -> void:
 			var bone_dir: Vector3 = (skeleton.get_bone_global_rest(h_i).origin - skeleton.get_bone_global_rest(f_i).origin).normalized()
 			var driver_down: Vector3 = -(rest_d.get(f_driver) as Basis).y
 			rest_align[f_bone] = Basis(Quaternion(bone_dir, driver_down))
+		var align: Basis = rest_align.get(f_bone, Basis.IDENTITY)
+		for hand_bone in [h_bone, "Finger1_1." + side, "Finger2_1." + side, "Finger3_1." + side, "Finger4_1." + side, "Finger1_2." + side, "Finger2_2." + side, "Finger3_2." + side, "Finger4_2." + side, "Thumb_1." + side, "Thumb_2." + side]:
+			if bone_index.has(hand_bone):
+				rest_align[hand_bone] = align
 	for side in ["L", "R"]:
 		var ti := int(bone_index.get("Thigh." + side, -1))
 		var si := int(bone_index.get("Shin." + side, -1))
@@ -832,6 +848,51 @@ func _build_retarget() -> void:
 			"foot_origin": foot_rest.origin,
 			"foot_basis": rest_b["Foot." + side],
 		}
+
+## Strips the .L/.R suffix and maps FingerN_1/FingerN_2 to Finger_1/Finger_2.
+func _limit_key(bone_name: String) -> String:
+	var name: String = bone_name
+	if name.ends_with(".L") or name.ends_with(".R"):
+		name = name.substr(0, name.length() - 2)
+	if name.begins_with("Finger") and name.ends_with("_1"):
+		return "Finger_1"
+	if name.begins_with("Finger") and name.ends_with("_2"):
+		return "Finger_2"
+	return name
+
+## Clamps the pose-space rotation of bone_index to anatomical limits (swing about
+## local X/Z, twist about local Y), relative to the bone's rest pose. Bones without
+## a JOINT_LIMITS entry are returned unchanged.
+func _limit_joint(bone_index: int, local_basis: Basis) -> Basis:
+	var key: String = _limit_key(skeleton.get_bone_name(bone_index))
+	if not JOINT_LIMITS.has(key):
+		return local_basis
+	var limits: Array = JOINT_LIMITS[key]
+	var rest_rot: Quaternion = skeleton.get_bone_rest(bone_index).basis.get_rotation_quaternion()
+	var rel: Quaternion = rest_rot.inverse() * local_basis.get_rotation_quaternion()
+	if rel.w < 0.0: # Same rotation, shortest-path sign, so the swing angle stays under 180°
+		rel = -rel
+	var twist: Quaternion = Quaternion(0.0, rel.y, 0.0, rel.w).normalized()
+	var swing: Quaternion = rel * twist.inverse()
+	var swing_vec: Vector3 = swing.get_axis() * swing.get_angle()
+	swing_vec.x = clampf(swing_vec.x, deg_to_rad(limits[0]), deg_to_rad(limits[1]))
+	swing_vec.z = clampf(swing_vec.z, deg_to_rad(limits[2]), deg_to_rad(limits[3]))
+	var swing_mag: float = swing_vec.length()
+	var swing_clamped: Quaternion = Quaternion.IDENTITY
+	if swing_mag > 0.0:
+		swing_clamped = Quaternion(swing_vec / swing_mag, swing_mag)
+	var twist_angle: float = 2.0 * atan2(twist.y, twist.w)
+	if twist_angle > PI:
+		twist_angle -= 2.0 * PI
+	elif twist_angle < -PI:
+		twist_angle += 2.0 * PI
+	twist_angle = clampf(twist_angle, deg_to_rad(limits[4]), deg_to_rad(limits[5]))
+	var twist_clamped: Quaternion = Quaternion(Vector3.UP, twist_angle)
+	var scale: Vector3 = Vector3(local_basis.x.length(), local_basis.y.length(), local_basis.z.length())
+	var result: Basis = Basis(rest_rot * swing_clamped * twist_clamped)
+	if scale != Vector3.ONE:
+		result = result.scaled(scale)
+	return result
 
 ## Copies the invisible procedural joint poses onto the imported skeleton every frame.
 func _retarget_skeleton() -> void:
@@ -888,7 +949,8 @@ func _retarget_skeleton() -> void:
 			# Curl the second finger/thumb joint as much again as the first.
 			var parent_now := _model_basis(node.get_parent() as Node3D)
 			var extra := parent_now * local_delta * parent_now.inverse()
-			target_basis = extra * delta * _bone_rest_basis(bone)
+			var align: Basis = rest_align.get(bone, Basis.IDENTITY)
+			target_basis = extra * delta * align * _bone_rest_basis(bone)
 			has_target = true
 		elif bone.begins_with("Thigh.") and leg_rest.has(bone.trim_prefix("Thigh.")):
 			var side := bone.trim_prefix("Thigh.")
@@ -932,6 +994,7 @@ func _retarget_skeleton() -> void:
 			has_target = true
 		if has_target:
 			local.basis = (parent_global.basis.inverse() * target_basis).orthonormalized()
+			local.basis = _limit_joint(i, local.basis)
 		skeleton.set_bone_pose_position(i, local.origin)
 		skeleton.set_bone_pose_rotation(i, local.basis.get_rotation_quaternion())
 		global_pose[i] = parent_global * skeleton.get_bone_pose(i)

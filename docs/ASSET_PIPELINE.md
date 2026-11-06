@@ -44,7 +44,7 @@ Scripts are in `D:\AI\BloodGhoul_work\scripts`. Run with `blender -b --python X.
 3. Optional: `merge_head.py` swaps in a separately generated high-detail head.
 4. `export.py`: adds claw-tip leaf bones, scales, turns the model to face −Z, puts the feet at 0, validates all meshes, exports glb.
 5. Godot: keep the old procedural joints as **invisible drivers**. Each frame, copy their MeshRoot-space rotation deltas onto the matching bones; see `_retarget_skeleton()` in `scripts/enemies/blood_ghoul.gd`, which includes leg IK. This leaves the gameplay and animation code untouched.
-6. Visual test: `tools/asset_pipeline/ghoul_pose_harness.gd` forces each animation state and saves screenshots, and prints `ARM <shot> <L|R> upper=… fore=… roll=…` (degrees between each arm bone and its driver joint's −Y, should be ~0; roll = elbow-hinge twist from the body's left-right axis, natural within ~±55°). Copy and adapt it for other creatures.
+6. Visual test: `tools/asset_pipeline/ghoul_pose_harness.gd` forces each animation state and saves screenshots, and prints `ARM <shot> <L|R> upper=… fore=… roll=…` (degrees between each arm bone and its driver joint's −Y, should be ~0; roll = elbow-hinge twist from the body's left-right axis, natural within ~±55°; `elbow=(x,z,twist)` / `wrist=(x,z,twist)` = bone-local swing-twist from rest, must stay inside `JOINT_LIMITS`). Copy and adapt it for other creatures.
 
 ## Lessons (don't relearn these)
 

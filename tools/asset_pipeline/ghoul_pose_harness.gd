@@ -7,9 +7,9 @@ var OUT: String = OS.get_environment("HARNESS_OUT") if OS.get_environment("HARNE
 var ghoul: Node3D
 var cam: Camera3D
 var victim: Node3D
-var shots := []  # [name, state, pin_time, cam_pos, cam_target]
-var idx := -1
-var frames := 0
+var shots: Array = []  # [name, state, pin_time, cam_pos, cam_target]
+var idx: int = -1
+var frames: int = 0
 
 func _initialize() -> void:
 	var world := Node3D.new(); root.add_child(world)
@@ -54,13 +54,13 @@ func _process(delta: float) -> bool:
 		if idx >= 0:
 			var shot: String = shots[idx][0]
 			_print_arm_angles(shot)
-			var img := root.get_texture().get_image()
+			var img: Image = root.get_texture().get_image()
 			img.save_png(OUT + shot + ".png")
 			print("SHOT ", shot)
 		idx += 1; frames = 0
 		if idx >= shots.size():
 			print("HARNESS DONE"); quit(); return true
-		var s = shots[idx]
+		var s: Array = shots[idx]
 		ghoul.state = s[1]
 		ghoul.pinned_player = victim if s[1] == ghoul.GhoulState.PINNING else null
 		cam.global_position = s[3]; cam.look_at(s[4])
@@ -91,6 +91,8 @@ func _print_arm_angles(shot: String) -> void:
 		var upper_deg: float = 0.0
 		var fore_deg: float = 0.0
 		var roll_deg: float = 0.0
+		var elbow_angles: Vector3 = Vector3.ZERO
+		var wrist_angles: Vector3 = Vector3.ZERO
 		if u_i >= 0 and f_i >= 0 and h_i >= 0:
 			var sg: Transform3D = skel.global_transform # bone poses are skeleton-local; pivots are world
 			var pose_u: Transform3D = sg * skel.get_bone_global_pose(u_i)
@@ -106,4 +108,25 @@ func _print_arm_angles(shot: String) -> void:
 			var right: Vector3 = ghoul.global_transform.basis.x
 			var ref: Vector3 = (right - pivot_down * right.dot(pivot_down)).normalized()
 			roll_deg = rad_to_deg(ref.signed_angle_to(pivots[i].global_transform.basis.x, pivot_down))
-		print("ARM %s %s upper=%.2f fore=%.2f roll=%.1f" % [shot, side, upper_deg, fore_deg, roll_deg])
+			elbow_angles = _bone_swing_twist_deg(skel, f_i)
+			wrist_angles = _bone_swing_twist_deg(skel, h_i)
+		print("ARM %s %s upper=%.2f fore=%.2f roll=%.1f elbow=(%.1f,%.1f,%.1f) wrist=(%.1f,%.1f,%.1f)" % [shot, side, upper_deg, fore_deg, roll_deg, elbow_angles.x, elbow_angles.y, elbow_angles.z, wrist_angles.x, wrist_angles.y, wrist_angles.z])
+
+## Swing-twist of a bone's pose rotation vs its rest rotation, twist about local Y.
+## Returns (flex_deg, side_deg, twist_deg), rounded to 1 decimal.
+func _bone_swing_twist_deg(skel: Skeleton3D, idx: int) -> Vector3:
+	var rest_rot: Quaternion = skel.get_bone_rest(idx).basis.get_rotation_quaternion()
+	var pose_rot: Quaternion = skel.get_bone_pose_rotation(idx)
+	var rel: Quaternion = rest_rot.inverse() * pose_rot
+	var twist: Quaternion = Quaternion(0.0, rel.y, 0.0, rel.w).normalized()
+	var swing: Quaternion = rel * twist.inverse()
+	var swing_vec: Vector3 = swing.get_axis() * swing.get_angle()
+	var twist_angle: float = 2.0 * atan2(twist.y, twist.w)
+	if twist_angle > PI:
+		twist_angle -= 2.0 * PI
+	elif twist_angle < -PI:
+		twist_angle += 2.0 * PI
+	return Vector3(
+		roundf(rad_to_deg(swing_vec.x) * 10.0) / 10.0,
+		roundf(rad_to_deg(swing_vec.z) * 10.0) / 10.0,
+		roundf(rad_to_deg(twist_angle) * 10.0) / 10.0)
