@@ -20,6 +20,7 @@ if (-not $Image) { $Image = "$repo\Reference\AssetGen\$Name.png" }
 if (-not (Test-Path $Image)) { throw "Concept image not found: $Image" }
 $w = "$Work\$Name"; New-Item -ItemType Directory -Force $w | Out-Null
 $raw = "$w\raw.glb"
+$ErrorActionPreference = "Continue"  # PS 5.1: native stderr under 2>&1 would otherwise throw; failures are caught by the Test-Path checks
 
 if (-not (Test-Path $raw)) {  # delete raw.glb to regenerate; otherwise only the cheap prep step reruns
     $env:HY3DGEN_MODELS = "D:\AI\hy3dgen_models"; $env:HF_HOME = "D:\AI\hf_cache"; $env:OCTREE = "$Octree"
