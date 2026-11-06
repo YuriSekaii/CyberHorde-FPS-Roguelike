@@ -126,6 +126,16 @@ func _do_spawn_minion(pos: Vector3, launch_dir: Vector3, minion_name: String) ->
 	minion.velocity = launch_dir * 10.0 + Vector3.UP * 1.5
 	active_minions.append(minion)
 
+	var side = launch_dir.cross(Vector3.UP).normalized() * 0.9
+	# Derived from the RPC'd name so host and clients agree on the node name
+	var second_name = minion_name + "b"
+	var second = SPAWNLING_SCENE.instantiate()
+	second.name = second_name
+	get_parent().add_child(second)
+	second.global_position = pos + side
+	second.velocity = launch_dir * 10.0 + Vector3.UP * 1.5
+	active_minions.append(second)
+
 func _clean_minions() -> void:
 	var valid: Array[Node] = []
 	for m in active_minions:

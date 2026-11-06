@@ -21,6 +21,10 @@ func _ready() -> void:
 	attack_timer = 0.05 / attack_speed_mult
 	if contact_sparks:
 		contact_sparks.emitting = false
+	for p in get_tree().get_nodes_in_group("player"):
+		if is_instance_valid(p) and p is CharacterBody3D:
+			p.add_collision_exception_with(self)
+			self.add_collision_exception_with(p)
 
 func _behave(delta: float) -> void:
 	var aim_target = target_player.global_position + Vector3(0, 1.1, 0)
