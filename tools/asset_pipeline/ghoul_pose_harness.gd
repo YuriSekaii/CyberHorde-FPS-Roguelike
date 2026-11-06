@@ -52,9 +52,11 @@ func _process(delta: float) -> bool:
 		return true
 	if idx < 0 or frames > 90:
 		if idx >= 0:
+			var shot: String = shots[idx][0]
+			_print_arm_angles(shot)
 			var img := root.get_texture().get_image()
-			img.save_png(OUT + shots[idx][0] + ".png")
-			print("SHOT ", shots[idx][0])
+			img.save_png(OUT + shot + ".png")
+			print("SHOT ", shot)
 		idx += 1; frames = 0
 		if idx >= shots.size():
 			print("HARNESS DONE"); quit(); return true
@@ -71,3 +73,32 @@ func _process(delta: float) -> bool:
 		cam.look_at(ghoul.get_pin_focus_point())
 	frames += 1
 	return false
+
+func _print_arm_angles(shot: String) -> void:
+	var skel: Skeleton3D = ghoul.skeleton
+	if skel == null or ghoul.arm_pivots.size() < 2 or ghoul.arm_elbows.size() < 2:
+		return
+	var pivots: Array[Node3D] = ghoul.arm_pivots as Array[Node3D]
+	var elbows: Array[Node3D] = ghoul.arm_elbows as Array[Node3D]
+	for i in range(2):
+		var side: String = "L" if i == 0 else "R"
+		var u_bone: String = "UpperArm." + side
+		var f_bone: String = "Forearm." + side
+		var h_bone: String = "Hand." + side
+		var u_i: int = skel.find_bone(u_bone)
+		var f_i: int = skel.find_bone(f_bone)
+		var h_i: int = skel.find_bone(h_bone)
+		var upper_deg: float = 0.0
+		var fore_deg: float = 0.0
+		if u_i >= 0 and f_i >= 0 and h_i >= 0:
+			var sg: Transform3D = skel.global_transform # bone poses are skeleton-local; pivots are world
+			var pose_u: Transform3D = sg * skel.get_bone_global_pose(u_i)
+			var pose_f: Transform3D = sg * skel.get_bone_global_pose(f_i)
+			var pose_h: Transform3D = sg * skel.get_bone_global_pose(h_i)
+			var upper_dir: Vector3 = (pose_f.origin - pose_u.origin).normalized()
+			var fore_dir: Vector3 = (pose_h.origin - pose_f.origin).normalized()
+			var pivot_down: Vector3 = -pivots[i].global_transform.basis.y
+			var elbow_down: Vector3 = -elbows[i].global_transform.basis.y
+			upper_deg = rad_to_deg(upper_dir.angle_to(pivot_down))
+			fore_deg = rad_to_deg(fore_dir.angle_to(elbow_down))
+		print("ARM %s %s upper=%.2f fore=%.2f" % [shot, side, upper_deg, fore_deg])

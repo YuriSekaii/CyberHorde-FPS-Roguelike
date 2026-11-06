@@ -44,7 +44,7 @@ Scripts are in `D:\AI\BloodGhoul_work\scripts`. Run with `blender -b --python X.
 3. Optional: `merge_head.py` swaps in a separately generated high-detail head.
 4. `export.py`: adds claw-tip leaf bones, scales, turns the model to face −Z, puts the feet at 0, validates all meshes, exports glb.
 5. Godot: keep the old procedural joints as **invisible drivers**. Each frame, copy their MeshRoot-space rotation deltas onto the matching bones; see `_retarget_skeleton()` in `scripts/enemies/blood_ghoul.gd`, which includes leg IK. This leaves the gameplay and animation code untouched.
-6. Visual test: `tools/asset_pipeline/ghoul_pose_harness.gd` forces each animation state and saves screenshots. Copy and adapt it for other creatures.
+6. Visual test: `tools/asset_pipeline/ghoul_pose_harness.gd` forces each animation state and saves screenshots, and prints `ARM <shot> <L|R> upper=… fore=…` (degrees between each arm bone and its driver joint's −Y; should be ~0). Copy and adapt it for other creatures.
 
 ## Lessons (don't relearn these)
 
@@ -64,8 +64,4 @@ Many enemies can be on screen at once (Fever S: 80), so keep swarm units at 2–
 
 ## Known issues / next tasks
 
-- **Blood Ghoul pin pose: the boss's right hand** (the one on screen-left from the victim's view) is posed wrong. Reproduce with `ghoul_pose_harness.gd` (shots `pin_a`, `pin_b`, `pin_pov`). Suspects:
-  - the `.R` arm's rest delta against the old `ArmPivotR` rest, since the A-pose and procedural rest differ by about 25°;
-  - the mirrored `raised` / `drag` aim in `_animate_claw_attack`.
-  Compare `UpperArm.R`'s global direction with `ArmPivotR`'s −Y each frame.
 - The old procedural Ghoul meshes are still in `blood_ghoul.tscn` (hidden). Deleting them shrinks the scene but needs rewiring of `skin_mat`, `ClawL00` (drip material) and the `PupilL` references.

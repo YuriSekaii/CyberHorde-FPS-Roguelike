@@ -139,6 +139,7 @@ var skeleton: Skeleton3D = null
 var rest_d: Dictionary = {} # Driver Node3D -> MeshRoot-space basis at rest
 var rest_local: Dictionary = {} # Driver Node3D -> local basis at rest
 var rest_b: Dictionary = {} # Bone name -> skeleton-space global rest basis
+var rest_align: Dictionary = {} # Bone name -> one-off arm rest alignment (UpperArm/Forearm only)
 var bone_index: Dictionary = {} # Bone name -> skeleton index
 var drivers: Dictionary = {} # Bone name -> driver Node3D
 var second_drivers: Dictionary = {} # Second-joint bone name -> its first-joint driver Node3D
@@ -767,6 +768,7 @@ func _build_retarget() -> void:
 	rest_d.clear()
 	rest_local.clear()
 	rest_b.clear()
+	rest_align.clear()
 	bone_index.clear()
 	drivers.clear()
 	second_drivers.clear()
@@ -794,6 +796,24 @@ func _build_retarget() -> void:
 	_add_driver("Head", "Head")
 	_add_driver("Jaw", "Head/Jaw")
 	body_root.transform = saved
+	for side in ["L", "R"]:
+		var u_bone: String = "UpperArm." + side
+		var f_bone: String = "Forearm." + side
+		var h_bone: String = "Hand." + side
+		var u_driver: Node3D = drivers.get(u_bone, null)
+		if u_driver != null and bone_index.has(u_bone) and bone_index.has(f_bone):
+			var u_i: int = bone_index[u_bone]
+			var f_i: int = bone_index[f_bone]
+			var bone_dir: Vector3 = (skeleton.get_bone_global_rest(f_i).origin - skeleton.get_bone_global_rest(u_i).origin).normalized()
+			var driver_down: Vector3 = -(rest_d.get(u_driver) as Basis).y
+			rest_align[u_bone] = Basis(Quaternion(bone_dir, driver_down))
+		var f_driver: Node3D = drivers.get(f_bone, null)
+		if f_driver != null and bone_index.has(f_bone) and bone_index.has(h_bone):
+			var f_i: int = bone_index[f_bone]
+			var h_i: int = bone_index[h_bone]
+			var bone_dir: Vector3 = (skeleton.get_bone_global_rest(h_i).origin - skeleton.get_bone_global_rest(f_i).origin).normalized()
+			var driver_down: Vector3 = -(rest_d.get(f_driver) as Basis).y
+			rest_align[f_bone] = Basis(Quaternion(bone_dir, driver_down))
 	for side in ["L", "R"]:
 		var ti := int(bone_index.get("Thigh." + side, -1))
 		var si := int(bone_index.get("Shin." + side, -1))
@@ -856,7 +876,8 @@ func _retarget_skeleton() -> void:
 				var head_node := node.get_parent() as Node3D
 				var half_open := Quaternion.IDENTITY.slerp((node.basis * (rest_local[node] as Basis).inverse()).get_rotation_quaternion(), 0.5)
 				delta = _model_basis(head_node) * Basis(half_open) * (rest_d[head_node] as Basis).inverse()
-			target_basis = delta * _bone_rest_basis(bone)
+			var align: Basis = rest_align.get(bone, Basis.IDENTITY)
+			target_basis = delta * align * _bone_rest_basis(bone)
 			has_target = true
 		elif second_drivers.has(bone):
 			var node: Node3D = second_drivers[bone]
