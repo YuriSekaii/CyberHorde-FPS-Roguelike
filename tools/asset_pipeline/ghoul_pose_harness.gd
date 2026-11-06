@@ -91,9 +91,16 @@ func _print_arm_angles(shot: String) -> void:
 		var upper_deg: float = 0.0
 		var fore_deg: float = 0.0
 		var roll_deg: float = 0.0
+		var back: float = 0.0
+		var across: float = 0.0
 		var elbow_angles: Vector3 = Vector3.ZERO
 		var wrist_angles: Vector3 = Vector3.ZERO
 		if u_i >= 0 and f_i >= 0 and h_i >= 0:
+			var body_root_node: Node3D = ghoul.body_root
+			var br_inv: Basis = body_root_node.global_transform.basis.inverse()
+			var d: Vector3 = (br_inv * -pivots[i].global_transform.basis.y).normalized()
+			back = rad_to_deg(asin(clampf(d.z, -1.0, 1.0)))
+			across = rad_to_deg(asin(clampf(-d.x * signf(pivots[i].position.x), -1.0, 1.0)))
 			var sg: Transform3D = skel.global_transform # bone poses are skeleton-local; pivots are world
 			var pose_u: Transform3D = sg * skel.get_bone_global_pose(u_i)
 			var pose_f: Transform3D = sg * skel.get_bone_global_pose(f_i)
@@ -110,7 +117,7 @@ func _print_arm_angles(shot: String) -> void:
 			roll_deg = rad_to_deg(ref.signed_angle_to(pivots[i].global_transform.basis.x, pivot_down))
 			elbow_angles = _bone_swing_twist_deg(skel, f_i)
 			wrist_angles = _bone_swing_twist_deg(skel, h_i)
-		print("ARM %s %s upper=%.2f fore=%.2f roll=%.1f elbow=(%.1f,%.1f,%.1f) wrist=(%.1f,%.1f,%.1f)" % [shot, side, upper_deg, fore_deg, roll_deg, elbow_angles.x, elbow_angles.y, elbow_angles.z, wrist_angles.x, wrist_angles.y, wrist_angles.z])
+		print("ARM %s %s upper=%.2f fore=%.2f roll=%.1f back=%.1f across=%.1f elbow=(%.1f,%.1f,%.1f) wrist=(%.1f,%.1f,%.1f)" % [shot, side, upper_deg, fore_deg, roll_deg, back, across, elbow_angles.x, elbow_angles.y, elbow_angles.z, wrist_angles.x, wrist_angles.y, wrist_angles.z])
 
 ## Swing-twist of a bone's pose rotation vs its rest rotation, twist about local Y.
 ## Returns (flex_deg, side_deg, twist_deg), rounded to 1 decimal.

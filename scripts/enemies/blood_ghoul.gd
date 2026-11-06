@@ -1015,8 +1015,21 @@ func _collect_arm_joints() -> void:
 
 ## Shoulder rotation that points the arm (rest axis -Y) along a world direction, with the roll pinned
 ## so the elbow/wrist hinge (local X) stays near the body's left-right axis (shortest arc twisted it up to 120°)
+## Unit dir with its component along unit axis capped at max_dot, keeping its direction around that axis
+func _clamp_dir_component(dir: Vector3, axis: Vector3, max_dot: float) -> Vector3:
+	var d: float = dir.dot(axis)
+	if d <= max_dot:
+		return dir
+	var perp: Vector3 = dir - axis * d
+	if perp.length_squared() < 0.000001:
+		perp = Vector3.UP - axis * axis.dot(Vector3.UP)
+	return axis * max_dot + perp.normalized() * sqrt(1.0 - max_dot * max_dot)
+
 func _arm_aim(pivot: Node3D, world_dir: Vector3) -> Quaternion:
 	var local_dir: Vector3 = (pivot.get_parent().global_transform.basis.inverse() * world_dir).normalized()
+	# Shoulder range: at most ~25° behind the shoulder, ~45° across the chest past the other shoulder
+	local_dir = _clamp_dir_component(local_dir, Vector3(0.0, 0.0, 1.0), 0.42)
+	local_dir = _clamp_dir_component(local_dir, Vector3(-signf(pivot.position.x), 0.0, 0.0), 0.71)
 	var y: Vector3 = -local_dir
 	# Skewed off pure left-right so an arm reaching straight across the body doesn't hit the reference's flip point
 	var ref := Vector3(1.0, 0.0, -0.6 * signf(pivot.position.x))
@@ -1079,7 +1092,8 @@ func _animate_claw_attack(i: int, side: float) -> void:
 	var rake = _arm_aim(pivot, rake_point - pivot.global_position)
 	# After connecting the claws keep raking across the face toward the other side
 	var drag = _arm_aim(pivot, rake_point - outward * 0.45 + Vector3.DOWN * 0.25 - pivot.global_position)
-	var raised = _arm_aim(pivot, Vector3.UP + outward + pin_dir * 0.15)
+	var tb := body_root.global_transform.basis
+	var raised = _arm_aim(pivot, tb.y + tb.x * side * 0.8 - tb.z * 0.25)
 	var shoulder: Quaternion
 	var elbow_bend: float
 	var wrist: float
