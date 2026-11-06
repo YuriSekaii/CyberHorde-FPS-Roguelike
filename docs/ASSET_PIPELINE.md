@@ -17,7 +17,7 @@ Asset list, sizes and targets: [`tools/asset_pipeline/assets_manifest.csv`](../t
 
 ## What prep_prop.py does
 
-It welds the UV-split Hunyuan mesh, removes floaters smaller than 0.5% of the vertices, and decimates to `max_tris`. Edges sharper than 35° stay hard; the rest is smooth-shaded. It scales the model so its height (Z) is `height_m`, puts the origin at the bottom centre, and turns it to face Godot −Z. Weapons drawn in side profile use `yaw 90`. Finally it resizes the texture to `tex_px` and builds an **emission map from bright, saturated texels**, so neon parts and eyes glow in Godot.
+It welds the UV-split Hunyuan mesh, removes floaters smaller than 0.5% of the vertices, and decimates to `max_tris`. Edges sharper than 35° stay hard; the rest is smooth-shaded. It scales the model so its height (Z) is `height_m`, puts the origin at the bottom centre, and turns it to face Godot −Z. Weapons drawn in side profile use `yaw 90`. With `yaw 90` a barrel-right image comes out with the muzzle on +Z (backwards), so rotate the weapon's `Model` node 180° about Y in the scene (Pulse Carbine: `Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.1, -0.12)`). Finally it resizes the texture to `tex_px` and builds an **emission map from bright, saturated texels**, so neon parts and eyes glow in Godot.
 
 ## Tiers (manifest column `tier`)
 
@@ -57,6 +57,9 @@ Scripts are in `D:\AI\BloodGhoul_work\scripts`. Run with `blender -b --python X.
 - Thin dripping things (blood strands, hair) become solid geometry. Prompt them away, or cut them in Blender.
 - Godot glb import: on Windows, a headless `--import` sometimes logs "invalid UID" warnings for extracted textures. Re-running the import clears them.
 - Python venv pins: `transformers==4.48.3`, `diffusers==0.32.2`, torch 2.7.1+cu128. Newer `transformers` breaks weight loading.
+- Real-gun words in a prompt (bullpup, rail, holographic sight, magazine) make Gemini draw a real-world gun. Describe sci-fi parts instead and say it must not look like a real firearm.
+- If Gemini's image has ink outlines, reply asking for the same design as a photo of a physical 3D model with no outlines; check the edges before generating.
+- `make_asset.ps1` must run native tools with `$ErrorActionPreference = "Continue"`: under Windows PowerShell 5.1, `2>&1` with `Stop` aborts on the first stderr log line.
 
 ## Budgets
 

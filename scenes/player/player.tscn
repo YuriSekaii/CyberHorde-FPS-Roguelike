@@ -1,6 +1,7 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/models/pulse_carbine/pulse_carbine.glb" id="pulse_carbine_glb"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.45
@@ -26,14 +27,6 @@ albedo_color = Color(0.9, 0.1, 1, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_rifle_body"]
 material = SubResource("StandardMaterial3D_gunmetal")
 size = Vector3(0.08, 0.14, 0.45)
-
-[sub_resource type="BoxMesh" id="BoxMesh_rifle_barrel"]
-material = SubResource("StandardMaterial3D_gunmetal")
-size = Vector3(0.05, 0.05, 0.3)
-
-[sub_resource type="BoxMesh" id="BoxMesh_rifle_stripe"]
-material = SubResource("StandardMaterial3D_neon_cyan")
-size = Vector3(0.084, 0.02, 0.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_shotgun_body"]
 material = SubResource("StandardMaterial3D_gunmetal")
@@ -118,16 +111,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, -0.22, -0.45)
 
 [node name="Rifle" type="Node3D" parent="Head/Camera3D/WeaponRig"]
 
-[node name="RifleBody" type="MeshInstance3D" parent="Head/Camera3D/WeaponRig/Rifle"]
-mesh = SubResource("BoxMesh_rifle_body")
-
-[node name="RifleBarrel" type="MeshInstance3D" parent="Head/Camera3D/WeaponRig/Rifle"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.32)
-mesh = SubResource("BoxMesh_rifle_barrel")
-
-[node name="RifleStripe" type="MeshInstance3D" parent="Head/Camera3D/WeaponRig/Rifle"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.05)
-mesh = SubResource("BoxMesh_rifle_stripe")
+[node name="Model" parent="Head/Camera3D/WeaponRig/Rifle" instance=ExtResource("pulse_carbine_glb")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.1, -0.12)
 
 [node name="Shotgun" type="Node3D" parent="Head/Camera3D/WeaponRig"]
 visible = false

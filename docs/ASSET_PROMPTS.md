@@ -27,7 +27,7 @@ Reply "ready".
 
 ### pulse_carbine
 ```
-Pulse Carbine: a sleek high-velocity automatic kinetic rifle for a first-person shooter. Compact bullpup body, long slim barrel with cooling rings, top rail with a small holographic sight, curved magazine. Gunmetal with glowing cyan energy lines along the barrel and a cyan ammo counter strip.
+Pulse Carbine: a sleek futuristic cyberpunk energy rifle for a first-person shooter. It must NOT look like a real-world firearm: no picatinny rails, no realistic magazine, no red-dot or holographic sight box, no stock tube, no real gun parts. Shape: one smooth, aerodynamic, wedge-shaped armored body that tapers forward into a long slim barrel shroud, like a compact railgun. Four thick ring-shaped accelerator coils wrap the front half of the barrel, evenly spaced, each glowing cyan. The muzzle is a split twin-prong emitter with a glowing cyan energy core between the prongs. A low angular sight is sculpted into the top of the body as one piece, with a glowing cyan lens. Instead of a magazine, a chunky angled power cell slots in behind the pistol grip, with a glowing cyan window showing its charge. A large glowing cyan ammo-counter display panel on the side of the body, shown as a row of glowing bars with no numbers or text. Materials: matte dark graphite and gunmetal armor plates with clean panel seams, and bold, bright, saturated neon cyan light strips running the full length of the body into the coils. The cyan glow must be strong and clearly visible. Render it as a photo of a physical 3D game model: no ink outlines, no cel shading. Camera: exact side profile, barrel pointing right, only slightly tilted toward the camera so the top is visible. Not a three-quarter view.
 ```
 ### scatter_cannon
 ```
