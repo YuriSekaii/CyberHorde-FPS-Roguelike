@@ -49,6 +49,7 @@ var boss_target_select: OptionButton = null
 # true while the host/join panels are driving an online (lobby code) session instead of LAN
 var online_mode: bool = false
 var lan_join_ip: String = "127.0.0.1"
+var _force_armed: bool = false
 
 @onready var update_btn: Button = $Panel/VBoxContainer/MainButtons/UpdateBtn
 @onready var window_mode_btn: Button = $Panel/VBoxContainer/MainButtons/WindowModeBtn
@@ -57,6 +58,7 @@ var lan_join_ip: String = "127.0.0.1"
 @onready var changelog_box: PanelContainer = $Panel/VBoxContainer/UpdateContainer/ChangelogBox
 @onready var changelog_label: Label = $Panel/VBoxContainer/UpdateContainer/ChangelogBox/Margin/ChangelogLabel
 @onready var pull_update_btn: Button = $Panel/VBoxContainer/UpdateContainer/ActionButtons/PullUpdateBtn
+@onready var force_update_btn: Button = $Panel/VBoxContainer/UpdateContainer/ActionButtons/ForceUpdateBtn
 @onready var restart_btn: Button = $Panel/VBoxContainer/UpdateContainer/ActionButtons/RestartBtn
 @onready var check_again_btn: Button = $Panel/VBoxContainer/UpdateContainer/ActionButtons/CheckAgainBtn
 @onready var version_footer: Label = $Panel/VBoxContainer/VersionFooter
@@ -242,6 +244,7 @@ func _on_update_menu_pressed() -> void:
 	update_container.visible = true
 	
 	pull_update_btn.visible = false
+	force_update_btn.visible = false
 	restart_btn.visible = false
 	check_again_btn.visible = false
 	changelog_box.visible = false
@@ -262,6 +265,7 @@ func _on_update_check_completed(up_to_date: bool, behind_count: int, changelog: 
 		update_status_label.text = "⚠ %s" % error_msg
 		update_status_label.set("theme_override_colors/font_color", Color(1.0, 0.4, 0.4))
 		pull_update_btn.visible = false
+		force_update_btn.visible = false
 		changelog_box.visible = false
 		status_label.text = "Update check failed."
 		return
@@ -270,6 +274,7 @@ func _on_update_check_completed(up_to_date: bool, behind_count: int, changelog: 
 		update_status_label.text = "✓ GAME IS UP TO DATE!\nYou are running the latest version (%s)." % UpdateManager.current_commit_hash
 		update_status_label.set("theme_override_colors/font_color", Color(0.3, 1.0, 0.5))
 		pull_update_btn.visible = false
+		force_update_btn.visible = false
 		changelog_box.visible = false
 		status_label.text = "System is up to date."
 		update_btn.text = "🔄  CHECK FOR UPDATES"
@@ -280,6 +285,10 @@ func _on_update_check_completed(up_to_date: bool, behind_count: int, changelog: 
 		pull_update_btn.disabled = false
 		pull_update_btn.text = "⬇  UPDATE GAME NOW (GIT PULL)"
 		update_btn.text = "⚡  UPDATE AVAILABLE (%d NEW)" % behind_count
+		force_update_btn.visible = false
+		force_update_btn.disabled = false
+		force_update_btn.text = "⚠  FORCE UPDATE (DISCARD LOCAL CHANGES)"
+		_force_armed = false
 		status_label.text = "New update available! Click 'Update Game Now'."
 		
 		if changelog.size() > 0:
@@ -294,6 +303,7 @@ func _on_update_check_completed(up_to_date: bool, behind_count: int, changelog: 
 func _on_pull_update_pressed() -> void:
 	pull_update_btn.disabled = true
 	pull_update_btn.text = "UPDATING... (GIT PULL)"
+	force_update_btn.visible = false
 	check_again_btn.visible = false
 	update_status_label.text = "Downloading & applying update via git pull... Please wait."
 	update_status_label.set("theme_override_colors/font_color", Color(0, 0.9, 1.0))
@@ -301,12 +311,29 @@ func _on_pull_update_pressed() -> void:
 	
 	UpdateManager.pull_updates()
 
+func _on_force_update_pressed() -> void:
+	if not _force_armed:
+		_force_armed = true
+		force_update_btn.text = "⚠  CLICK AGAIN TO CONFIRM: LOCAL CHANGES WILL BE LOST"
+		return
+	
+	_force_armed = false
+	pull_update_btn.disabled = true
+	force_update_btn.disabled = true
+	check_again_btn.visible = false
+	update_status_label.text = "Force updating via git fetch + reset --hard... Please wait."
+	update_status_label.set("theme_override_colors/font_color", Color(0, 0.9, 1.0))
+	status_label.text = "Executing force update in progress..."
+	
+	UpdateManager.pull_updates(true)
+
 func _on_update_completed(success: bool, message: String) -> void:
 	_update_footer_version()
 	if success:
 		update_status_label.text = "✓ UPDATE COMPLETED SUCCESSFULLY!\nGame files updated to commit %s.\nRestart the game to apply changes." % UpdateManager.current_commit_hash
 		update_status_label.set("theme_override_colors/font_color", Color(0.3, 1.0, 0.5))
 		pull_update_btn.visible = false
+		force_update_btn.visible = false
 		restart_btn.visible = true
 		check_again_btn.visible = false
 		changelog_box.visible = false
@@ -318,6 +345,10 @@ func _on_update_completed(success: bool, message: String) -> void:
 		pull_update_btn.visible = true
 		pull_update_btn.disabled = false
 		pull_update_btn.text = "🔄  RETRY UPDATE (GIT PULL)"
+		force_update_btn.visible = true
+		force_update_btn.disabled = false
+		force_update_btn.text = "⚠  FORCE UPDATE (DISCARD LOCAL CHANGES)"
+		_force_armed = false
 		restart_btn.visible = false
 		check_again_btn.visible = true
 		status_label.text = "Update encountered an error."

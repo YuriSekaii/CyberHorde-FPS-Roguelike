@@ -162,13 +162,16 @@ func _finish_check(up_to_date: bool, behind: int, cl: Array, err_msg: String, br
 	
 	check_completed.emit(up_to_date, behind, cl, err_msg)
 
-func pull_updates() -> void:
+var _force_pull: bool = false
+
+func pull_updates(force: bool = false) -> void:
 	if is_updating or is_checking:
 		return
 	
 	if _thread and _thread.is_alive():
 		_thread.wait_to_finish()
 	
+	_force_pull = force
 	is_updating = true
 	update_started.emit()
 	
@@ -180,15 +183,36 @@ func _worker_pull_updates() -> void:
 	var branch = current_branch_name if not current_branch_name.is_empty() else "main"
 	var out: Array = []
 	
-	# Execute git pull origin <branch>
-	_purge_desktop_ini(proj_dir)
-	var err = OS.execute("git", ["-C", proj_dir, "pull", "origin", branch], out, true)
-	if err != 0:
-		out.clear()
-		err = OS.execute("git", ["-C", proj_dir, "pull"], out, true)
+	var pull_msg: String = ""
+	var success: bool = false
 	
-	var pull_msg = out[0].strip_edges() if out.size() > 0 else ""
-	var success = (err == 0)
+	if _force_pull:
+		# Force update: fetch + hard reset instead of pull, because `git pull`
+		# aborts when local tracked files have unstaged edits (e.g. .import
+		# files) and a reset --hard overwrites them so the update can proceed.
+		_purge_desktop_ini(proj_dir)
+		var err = OS.execute("git", ["-C", proj_dir, "fetch", "origin", branch], out, true)
+		if err != 0:
+			out.clear()
+			err = OS.execute("git", ["-C", proj_dir, "fetch", "origin"], out, true)
+		if err != 0:
+			pull_msg = out[0].strip_edges() if out.size() > 0 else ""
+			_finish_pull.call_deferred(false, pull_msg, "")
+			return
+		out.clear()
+		err = OS.execute("git", ["-C", proj_dir, "reset", "--hard", "origin/" + branch], out, true)
+		pull_msg = out[0].strip_edges() if out.size() > 0 else "Successfully updated (force reset)."
+		success = (err == 0)
+	else:
+		# Execute git pull origin <branch>
+		_purge_desktop_ini(proj_dir)
+		var err = OS.execute("git", ["-C", proj_dir, "pull", "origin", branch], out, true)
+		if err != 0:
+			out.clear()
+			err = OS.execute("git", ["-C", proj_dir, "pull"], out, true)
+		
+		pull_msg = out[0].strip_edges() if out.size() > 0 else ""
+		success = (err == 0)
 	
 	var new_commit = ""
 	if success:

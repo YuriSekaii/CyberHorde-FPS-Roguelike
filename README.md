@@ -41,6 +41,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 * **Status**: Confirms current commit hash (`✓ GAME IS UP TO DATE!`) or shows available commit count and recent commit messages.
 * **1-Click Pull & Restart**: Click `⬇ UPDATE GAME NOW (GIT PULL)` to pull changes, then `🚀 RESTART GAME NOW` to relaunch. Automatically re-imports new assets headlessly before restarting.
 * **desktop.ini Cleanup**: Before every fetch/pull, stray Windows `desktop.ini` files inside `.git` are deleted (they break git with `fatal: bad object refs/desktop.ini`).
+* **Force Update**: If a pull fails because of local file changes, a two-click **Force Update** button runs `git fetch` + `git reset --hard origin/<branch>`, discarding local edits to tracked files while keeping untracked files (e.g. saves).
 
 ---
 

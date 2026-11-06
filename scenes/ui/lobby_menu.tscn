@@ -551,6 +551,16 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_update")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_update_hover")
 text = "⬇  UPDATE GAME NOW (GIT PULL)"
 
+[node name="ForceUpdateBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
+visible = false
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75, 0.6, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_update")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_update_hover")
+text = "⚠  FORCE UPDATE (DISCARD LOCAL CHANGES)"
+
 [node name="RestartBtn" type="Button" parent="Panel/VBoxContainer/UpdateContainer/ActionButtons"]
 visible = false
 custom_minimum_size = Vector2(0, 44)
@@ -937,6 +947,7 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ConnectBtn" to="." method="_on_connect_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/JoinBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/PullUpdateBtn" to="." method="_on_pull_update_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/ForceUpdateBtn" to="." method="_on_force_update_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/RestartBtn" to="." method="_on_restart_game_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/CheckAgainBtn" to="." method="_on_check_again_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/UpdateBackBtn" to="." method="_on_back_pressed"]
