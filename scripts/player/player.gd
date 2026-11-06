@@ -31,6 +31,8 @@ var mouse_sensitivity: float = 0.0022
 const HIP_POSITION: Vector3 = Vector3(0.24, -0.22, -0.45)
 const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
 const RIFLE_ADS_POSITION: Vector3 = Vector3(0.0, -0.086, -0.319)  # Pulse Carbine holo sight sits ~12 cm from the eye
+const RIFLE_HIP_POSITION: Vector3 = Vector3(0.22, -0.15, -0.5)
+const RIFLE_HIP_ROTATION_DEG: Vector3 = Vector3(-6.0, 15.0, 0.0)  # Apex-style: big, bottom-right, side showing, muzzle toward the centre
 var is_aiming: bool = false
 var target_sway_pos: Vector3 = Vector3.ZERO
 var target_sway_rot: Vector3 = Vector3.ZERO
@@ -899,7 +901,7 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	var target_fov = 65.0 if is_aiming else (98.0 if is_dashing else 85.0)
 	camera.fov = lerpf(camera.fov, target_fov, 14.0 * delta)
 
-	var base_pos = RIFLE_ADS_POSITION if is_aiming and gun_model_rifle.visible else (ADS_POSITION if is_aiming else HIP_POSITION)
+	var base_pos = RIFLE_ADS_POSITION if is_aiming and gun_model_rifle.visible else (RIFLE_HIP_POSITION if gun_model_rifle.visible else (ADS_POSITION if is_aiming else HIP_POSITION))
 	var is_moving = is_on_floor() and velocity.length_squared() > 1.0
 	var is_sprinting = Input.is_action_pressed("sprint") and is_moving
 	
@@ -933,7 +935,8 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	if weapon_rig:
 		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
 		final_target_pos += PIN_WEAPON_OFFSET * smoothstep(0.0, 1.0, pin_view_blend)
-		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
+		var base_rot := target_sway_rot + (RIFLE_HIP_ROTATION_DEG * (PI / 180.0) if not is_aiming and gun_model_rifle.visible else Vector3.ZERO)
+		var final_target_rot = base_rot + Vector3(weapon_kick_rot_x, 0, 0)
 		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
 		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
 
