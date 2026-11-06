@@ -28,11 +28,9 @@ const GRAVITY: float = 20.0
 var mouse_sensitivity: float = 0.0022
 
 # Weapon Positioning (Hip vs Aim Down Sights)
-const HIP_POSITION: Vector3 = Vector3(0.22, -0.24, -0.62)
+const HIP_POSITION: Vector3 = Vector3(0.24, -0.22, -0.45)
 const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
 const RIFLE_ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.11)  # Pulse Carbine holo sight sits ~12 cm from the eye
-const HIP_ROTATION_DEG: Vector3 = Vector3(0.0, 0.0, -15.0)  # roll only: shows the gun's side while the barrel still points at the crosshair (a yaw would point it off to the side)
-const VIEWMODEL_FOV: float = 55.0
 var is_aiming: bool = false
 var target_sway_pos: Vector3 = Vector3.ZERO
 var target_sway_rot: Vector3 = Vector3.ZERO
@@ -199,7 +197,6 @@ var plasma_core_mat: StandardMaterial3D = null
 var _plasma_was_ready: bool = true
 @onready var muzzle_flash_light: OmniLight3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/MuzzleFlashLight
 @onready var muzzle_particles: CPUParticles3D = $Head/Camera3D/ViewmodelRoot/WeaponRig/MuzzleParticles
-@onready var viewmodel_root: Node3D = $Head/Camera3D/ViewmodelRoot
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
 @onready var drone_companion: Node3D = $DroneCompanion
 
@@ -901,11 +898,7 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	is_aiming = Input.is_action_pressed("aim")
 	var target_fov = 65.0 if is_aiming else (98.0 if is_dashing else 85.0)
 	camera.fov = lerpf(camera.fov, target_fov, 14.0 * delta)
-	# Scaling the gun's screen-space X/Y (not depth) by tan(fov/2)/tan(vm_fov/2) renders it exactly as a 55° camera would, so world FOV changes (ADS 65°, dash 98°) don't warp the gun.
-	if viewmodel_root:
-		var k := tan(deg_to_rad(camera.fov) * 0.5) / tan(deg_to_rad(VIEWMODEL_FOV) * 0.5)
-		viewmodel_root.scale = Vector3(k, k, 1.0)
-	
+
 	var base_pos = RIFLE_ADS_POSITION if is_aiming and gun_model_rifle.visible else (ADS_POSITION if is_aiming else HIP_POSITION)
 	var is_moving = is_on_floor() and velocity.length_squared() > 1.0
 	var is_sprinting = Input.is_action_pressed("sprint") and is_moving
@@ -940,8 +933,7 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 	if weapon_rig:
 		var final_target_pos = base_pos + gun_bob + target_sway_pos + Vector3(0, 0, weapon_kick_z)
 		final_target_pos += PIN_WEAPON_OFFSET * smoothstep(0.0, 1.0, pin_view_blend)
-		var base_rot = Vector3.ZERO if is_aiming else HIP_ROTATION_DEG * (PI / 180.0)
-		var final_target_rot = base_rot + target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
+		var final_target_rot = target_sway_rot + Vector3(weapon_kick_rot_x, 0, 0)
 		weapon_rig.position = weapon_rig.position.lerp(final_target_pos, 16.0 * delta)
 		weapon_rig.rotation = weapon_rig.rotation.lerp(final_target_rot, 16.0 * delta)
 
