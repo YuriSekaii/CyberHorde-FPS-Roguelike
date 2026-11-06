@@ -15,3 +15,4 @@ godot*.exe
 Thumbs.db
 relay_runtime.log
 Reference/
+*.blend1
