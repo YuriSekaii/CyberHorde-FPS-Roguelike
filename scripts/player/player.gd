@@ -30,7 +30,7 @@ var mouse_sensitivity: float = 0.0022
 # Weapon Positioning (Hip vs Aim Down Sights)
 const HIP_POSITION: Vector3 = Vector3(0.24, -0.22, -0.45)
 const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
-const RIFLE_ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.11)  # Pulse Carbine holo sight sits ~12 cm from the eye
+const RIFLE_ADS_POSITION: Vector3 = Vector3(0.0, -0.086, -0.319)  # Pulse Carbine holo sight sits ~12 cm from the eye
 var is_aiming: bool = false
 var target_sway_pos: Vector3 = Vector3.ZERO
 var target_sway_rot: Vector3 = Vector3.ZERO
