@@ -513,7 +513,7 @@ func _ricochet_from(pos: Vector3, surface_normal: Vector3, ignore_target: Node) 
 	var now = Time.get_ticks_msec()
 	if now - last_ricochet_sound_msec >= 35:
 		last_ricochet_sound_msec = now
-		SoundManager.play("hitmarker", 0.25, -8.0)
+		SoundManager.play_bullet_fx("hitmarker", 0.25, -8.0)
 
 func _find_smart_ricochet_target(from_pos: Vector3, forward_dir: Vector3, ignore_target: Node) -> Node3D:
 	# Direct access to static cache: 0 heap allocations, 0 SceneTree queries
@@ -752,7 +752,7 @@ func _play_chain_sound() -> void:
 	var now = Time.get_ticks_msec()
 	if now - last_chain_sound_msec >= 35:
 		last_chain_sound_msec = now
-		SoundManager.play("hitmarker", 0.15, 6.0)
+		SoundManager.play_bullet_fx("hitmarker", 0.15, 6.0)
 
 func _create_lightning_beam(start_pos: Vector3, end_pos: Vector3) -> void:
 	var dist = start_pos.distance_to(end_pos)

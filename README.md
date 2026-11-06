@@ -73,7 +73,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Escape Trap** | Mash `A` / `D` | Breaks a Bog Slime engulf (−0.5s per press) or a Blood Ghoul pin (10 presses). Quantum Dash can't break traps |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
 | **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
-| **Pause Menu** | `Escape` | Audio volume, mouse sensitivity, display options |
+| **Pause Menu** | `Escape` | Master volume, **Bullet Effect** volume (explosion, ricochet and chain-lightning sounds only; default 50%), mouse sensitivity, display options |
 | **Toggle Window / Fullscreen**| `F11`, `Alt + Enter`, `M` (menus) | Cycles Windowed and Borderless Fullscreen |
 | **Toggle Damage Numbers** | `F8` or Pause Menu | Toggles floating damage labels ON/OFF |
 | **FPS Limit** | Pause Menu | Cycles 30 / 60 (default) / Unlimited; saved to settings |

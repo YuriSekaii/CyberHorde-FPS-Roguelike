@@ -20,9 +20,9 @@ func _ready() -> void:
 		master_slider.value_changed.connect(_on_master_volume_changed)
 	
 	if sfx_slider:
-		sfx_slider.value = SoundManager.sfx_volume * 100.0
+		sfx_slider.value = SoundManager.bullet_fx_volume * 100.0
 		sfx_val_label.text = "%d%%" % int(sfx_slider.value)
-		sfx_slider.value_changed.connect(_on_sfx_volume_changed)
+		sfx_slider.value_changed.connect(_on_bullet_fx_volume_changed)
 	
 	if sensitivity_slider:
 		sensitivity_slider.value = 2.2
@@ -74,11 +74,11 @@ func _on_master_volume_changed(value: float) -> void:
 		master_val_label.text = "%d%%" % int(value)
 	SoundManager.set_master_volume(value / 100.0)
 
-func _on_sfx_volume_changed(value: float) -> void:
+func _on_bullet_fx_volume_changed(value: float) -> void:
 	if sfx_val_label:
 		sfx_val_label.text = "%d%%" % int(value)
-	SoundManager.set_sfx_volume(value / 100.0)
-	SoundManager.play("hitmarker", 0.0, 0.0)
+	SoundManager.set_bullet_fx_volume(value / 100.0)
+	SoundManager.play_bullet_fx("hitmarker", 0.0, 0.0)
 
 func _on_sensitivity_changed(value: float) -> void:
 	sens_label.text = "%.1f" % value

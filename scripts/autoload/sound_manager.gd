@@ -11,14 +11,14 @@ const MIN_REPLAY_MSEC: int = 15
 var _last_play_msec: Dictionary = {}
 
 var master_volume: float = 0.8
-var sfx_volume: float = 0.8
+var bullet_fx_volume: float = 0.5
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_init_sfx_pool()
 	_generate_all_sounds()
 	set_master_volume(0.8)
-	set_sfx_volume(0.8)
+	set_bullet_fx_volume(0.5)
 
 func set_master_volume(val: float) -> void:
 	master_volume = clampf(val, 0.0, 1.0)
@@ -28,8 +28,8 @@ func set_master_volume(val: float) -> void:
 		AudioServer.set_bus_mute(0, false)
 		AudioServer.set_bus_volume_db(0, linear_to_db(master_volume))
 
-func set_sfx_volume(val: float) -> void:
-	sfx_volume = clampf(val, 0.0, 1.0)
+func set_bullet_fx_volume(val: float) -> void:
+	bullet_fx_volume = clampf(val, 0.0, 1.0)
 
 func _init_sfx_pool() -> void:
 	for i in range(MAX_SFX_PLAYERS):
@@ -39,7 +39,7 @@ func _init_sfx_pool() -> void:
 		sfx_pool.append(player)
 
 func play(sound_name: String, pitch_range: float = 0.05, volume_db: float = 0.0) -> void:
-	if not sounds.has(sound_name) or sfx_volume <= 0.01 or not _can_replay(sound_name):
+	if not sounds.has(sound_name) or not _can_replay(sound_name):
 		return
 	var target_player: AudioStreamPlayer = null
 	for p in sfx_pool:
@@ -48,15 +48,15 @@ func play(sound_name: String, pitch_range: float = 0.05, volume_db: float = 0.0)
 			break
 	if target_player == null:
 		target_player = sfx_pool[0]
-	
+
 	target_player.stream = sounds[sound_name]
 	var pitch = 1.0 + (randf() * 2.0 - 1.0) * pitch_range
 	target_player.pitch_scale = maxf(0.1, pitch)
-	target_player.volume_db = volume_db + linear_to_db(sfx_volume)
+	target_player.volume_db = volume_db
 	target_player.play()
 
 func play_pitch(sound_name: String, pitch: float, volume_db: float = 0.0) -> void:
-	if not sounds.has(sound_name) or sfx_volume <= 0.01 or not _can_replay(sound_name):
+	if not sounds.has(sound_name) or not _can_replay(sound_name):
 		return
 	var target_player: AudioStreamPlayer = null
 	for p in sfx_pool:
@@ -65,11 +65,16 @@ func play_pitch(sound_name: String, pitch: float, volume_db: float = 0.0) -> voi
 			break
 	if target_player == null:
 		target_player = sfx_pool[0]
-	
+
 	target_player.stream = sounds[sound_name]
 	target_player.pitch_scale = maxf(0.1, pitch)
-	target_player.volume_db = volume_db + linear_to_db(sfx_volume)
+	target_player.volume_db = volume_db
 	target_player.play()
+
+func play_bullet_fx(sound_name: String, pitch_range: float = 0.05, volume_db: float = 0.0) -> void:
+	if bullet_fx_volume <= 0.01:
+		return
+	play(sound_name, pitch_range, volume_db + linear_to_db(bullet_fx_volume))
 
 func _can_replay(sound_name: String) -> bool:
 	var now = Time.get_ticks_msec()

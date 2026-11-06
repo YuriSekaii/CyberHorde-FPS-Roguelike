@@ -113,7 +113,7 @@ alignment = 1
 [node name="Label" type="Label" parent="Panel/VBoxContainer/SfxVolContainer"]
 custom_minimum_size = Vector2(115, 0)
 layout_mode = 2
-text = "Sound Effect:"
+text = "Bullet Effect:"
 
 [node name="SfxSlider" type="HSlider" parent="Panel/VBoxContainer/SfxVolContainer"]
 custom_minimum_size = Vector2(150, 0)
@@ -122,12 +122,12 @@ size_flags_vertical = 4
 min_value = 0.0
 max_value = 100.0
 step = 1.0
-value = 80.0
+value = 50.0
 
 [node name="SfxValLabel" type="Label" parent="Panel/VBoxContainer/SfxVolContainer"]
 custom_minimum_size = Vector2(45, 0)
 layout_mode = 2
-text = "80%"
+text = "50%"
 horizontal_alignment = 2
 
 [node name="SensContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]

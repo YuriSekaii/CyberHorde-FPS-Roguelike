@@ -54,7 +54,7 @@ func setup(dmg: float, rad: float) -> void:
 	var now = Time.get_ticks_msec()
 	if now - last_sound_msec >= 45:
 		last_sound_msec = now
-		SoundManager.play("explosion", 0.1, 2.0)
+		SoundManager.play_bullet_fx("explosion", 0.1, 2.0)
 	
 	# Light capping
 	if light:
