@@ -308,7 +308,7 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 
 ## 🎨 3D Asset Pipeline
 
-New 3D art is made as: Gemini concept image → **Hunyuan3D-2** on the local GPU → Blender cleanup (`tools/asset_pipeline/prep_prop.py`) → `assets/models/<name>/<name>.glb`. Drop images in `Reference/AssetGen/<name>.png` and run `tools\asset_pipeline\batch.ps1`. The pipeline, rules, tiers and integration recipe are in [`docs/ASSET_PIPELINE.md`](docs/ASSET_PIPELINE.md); prompts for every asset are in [`docs/ASSET_PROMPTS.md`](docs/ASSET_PROMPTS.md). Integrated so far: **Pulse Carbine** first-person model (`assets/models/pulse_carbine/pulse_carbine.glb`, under `WeaponRig/Rifle/Model` in `scenes/player/player.tscn`; the third-person held rifle is still a box).
+New 3D art is made as: Gemini concept image → **Hunyuan3D-2** on the local GPU → Blender cleanup (`tools/asset_pipeline/prep_prop.py`) → `assets/models/<name>/<name>.glb`. Drop images in `Reference/AssetGen/<name>.png` and run `tools\asset_pipeline\batch.ps1`. The pipeline, rules, tiers and integration recipe are in [`docs/ASSET_PIPELINE.md`](docs/ASSET_PIPELINE.md); prompts for every asset are in [`docs/ASSET_PROMPTS.md`](docs/ASSET_PROMPTS.md). Weapons are hand-modelled in Blender instead (the AI meshes were too soft up close): the **Pulse Carbine** first-person model is built by `tools/blender/pulse_carbine/build.py` from the v4 concept (`Reference/Pulse Carbine/Pulse Carbine_4_v4.png`) into `assets/models/pulse_carbine_hand/pulse_carbine.glb` (~6k tris, armour veins in the emission texture), under `WeaponRig/Rifle/Model` in `scenes/player/player.tscn`; the third-person held rifle is still a box. The AI pipeline is for enemies and props.
 
 ---
 

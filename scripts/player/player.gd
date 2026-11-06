@@ -30,6 +30,7 @@ var mouse_sensitivity: float = 0.0022
 # Weapon Positioning (Hip vs Aim Down Sights)
 const HIP_POSITION: Vector3 = Vector3(0.22, -0.24, -0.62)
 const ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.38)
+const RIFLE_ADS_POSITION: Vector3 = Vector3(0.0, -0.16, -0.11)  # Pulse Carbine holo sight sits ~12 cm from the eye
 const HIP_ROTATION_DEG: Vector3 = Vector3(0.0, 14.0, -3.0)  # inward yaw + slight cant so the gun's side and barrel show at the hip
 const VIEWMODEL_FOV: float = 55.0
 var is_aiming: bool = false
@@ -905,7 +906,7 @@ func _handle_head_bob_and_shake(delta: float) -> void:
 		var k := tan(deg_to_rad(camera.fov) * 0.5) / tan(deg_to_rad(VIEWMODEL_FOV) * 0.5)
 		viewmodel_root.scale = Vector3(k, k, 1.0)
 	
-	var base_pos = ADS_POSITION if is_aiming else HIP_POSITION
+	var base_pos = RIFLE_ADS_POSITION if is_aiming and gun_model_rifle.visible else (ADS_POSITION if is_aiming else HIP_POSITION)
 	var is_moving = is_on_floor() and velocity.length_squared() > 1.0
 	var is_sprinting = Input.is_action_pressed("sprint") and is_moving
 	
