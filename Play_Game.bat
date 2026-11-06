@@ -63,13 +63,18 @@ if not exist "%~dp0assets\icons\skills\medic_restore.svg.import" set "NEED_IMPOR
 if not exist "%~dp0assets\icons\skills\rogue_dash.svg.import" set "NEED_IMPORT=1"
 if not exist "%~dp0assets\icons\skills\gunner_berserk.svg.import" set "NEED_IMPORT=1"
 
+for /f %%c in ('git -C "%~dp0." rev-parse HEAD 2^>nul') do set "CUR_COMMIT=%%c"
+if exist "%~dp0.godot\last_import_commit.txt" set /p LAST_COMMIT=<"%~dp0.godot\last_import_commit.txt"
+if defined CUR_COMMIT if not "%CUR_COMMIT%"=="%LAST_COMMIT%" set "NEED_IMPORT=1"
+
 if "%NEED_IMPORT%"=="1" (
     echo ========================================================
-    echo  First-Time Setup: Importing / Rendering game assets...
+    echo  Importing / Rendering game assets...
     echo ========================================================
-    "%GODOT_IMPORT_EXE%" --headless --editor --quit --path "%~dp0."
+    "%GODOT_IMPORT_EXE%" --headless --path "%~dp0." --import
     echo  Asset import completed!
     echo ========================================================
+    if defined CUR_COMMIT if exist "%~dp0.godot\" >"%~dp0.godot\last_import_commit.txt" echo %CUR_COMMIT%
 )
 
 echo Starting CyberHorde: Rogue Protocol using: "%GODOT_EXE%"...

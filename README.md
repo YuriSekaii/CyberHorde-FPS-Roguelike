@@ -11,7 +11,7 @@ A fast-paced 3D First-Person Horde Roguelike Shooter with online co-op multiplay
 
 ## 🎮 Quick Start & Launchers
 
-The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks and imports assets on first run with zero external setup.
+The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks and imports assets on first run with zero external setup. Play_Game.bat re-imports assets automatically when the git commit changed since the last import (stamp in `.godot/last_import_commit.txt`), so manual pulls don't leave stale models.
 
 | Launcher Script | Description |
 | :--- | :--- |
