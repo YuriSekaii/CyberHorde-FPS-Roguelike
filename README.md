@@ -395,7 +395,7 @@ CyberHorde-FPS-Roguelike/
 
 ### 3. How to Add a Weapon
 1. In [`scripts/player/player.gd`](scripts/player/player.gd): Add a new `Weapon.new()` instance in `_setup_weapons()` and append to `weapons`.
-2. In [`scenes/player/player.tscn`](scenes/player/player.tscn): Add visual mesh under `Head/Camera3D/ViewmodelRoot/WeaponRig`. First-person weapons use a fixed 55° viewmodel FOV (ViewmodelRoot scales the rig by tan(camera fov/2)/tan(55°/2)), so ADS/dash FOV changes don't warp the gun; the hip pose has no yaw, so barrels point at the crosshair.
+2. In [`scenes/player/player.tscn`](scenes/player/player.tscn): Add visual mesh under `Head/Camera3D/ViewmodelRoot/WeaponRig`. First-person weapons use a fixed 55° viewmodel FOV (ViewmodelRoot scales the rig by tan(camera fov/2)/tan(55°/2)), so ADS/dash FOV changes don't warp the gun; the hip pose has no yaw (only a 15° roll to show the gun's side), so barrels point at the crosshair.
 3. Update `_switch_weapon()` and `_update_third_person_weapon()` in `player.gd` for model visibility.
 
 ### 4. How to Add an Enemy Type

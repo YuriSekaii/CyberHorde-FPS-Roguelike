@@ -29,7 +29,7 @@ def mat(name, base, metal, rough, emis=None, strength=0.0, tex=None):
     return m
 
 M = {
-  "armor": mat("Armor", (0.004, 0.017, 0.028), 0.45, 0.42, strength=4.0, tex=VEINS),
+  "armor": mat("Armor", (0.0025, 0.010, 0.017), 0.2, 0.5, strength=8.0, tex=VEINS),
   "metal": mat("Gunmetal", (0.011, 0.012, 0.014), 0.85, 0.42),
   "glow":  mat("Glow", (0.5, 0.9, 1.0), 0.0, 0.3, (0.55, 0.95, 1.0), 8.0),
 }
