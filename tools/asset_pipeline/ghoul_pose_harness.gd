@@ -90,6 +90,7 @@ func _print_arm_angles(shot: String) -> void:
 		var h_i: int = skel.find_bone(h_bone)
 		var upper_deg: float = 0.0
 		var fore_deg: float = 0.0
+		var roll_deg: float = 0.0
 		if u_i >= 0 and f_i >= 0 and h_i >= 0:
 			var sg: Transform3D = skel.global_transform # bone poses are skeleton-local; pivots are world
 			var pose_u: Transform3D = sg * skel.get_bone_global_pose(u_i)
@@ -101,4 +102,8 @@ func _print_arm_angles(shot: String) -> void:
 			var elbow_down: Vector3 = -elbows[i].global_transform.basis.y
 			upper_deg = rad_to_deg(upper_dir.angle_to(pivot_down))
 			fore_deg = rad_to_deg(fore_dir.angle_to(elbow_down))
-		print("ARM %s %s upper=%.2f fore=%.2f" % [shot, side, upper_deg, fore_deg])
+			# Roll of the elbow hinge around the arm, from the body's left-right axis (natural: near 0)
+			var right: Vector3 = ghoul.global_transform.basis.x
+			var ref: Vector3 = (right - pivot_down * right.dot(pivot_down)).normalized()
+			roll_deg = rad_to_deg(ref.signed_angle_to(pivots[i].global_transform.basis.x, pivot_down))
+		print("ARM %s %s upper=%.2f fore=%.2f roll=%.1f" % [shot, side, upper_deg, fore_deg, roll_deg])

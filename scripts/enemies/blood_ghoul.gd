@@ -950,10 +950,15 @@ func _collect_arm_joints() -> void:
 				fingers.append(child)
 		arm_fingers.append(fingers)
 
-## Shoulder rotation that points the arm (rest axis -Y) along a world direction
+## Shoulder rotation that points the arm (rest axis -Y) along a world direction, with the roll pinned
+## so the elbow/wrist hinge (local X) stays near the body's left-right axis (shortest arc twisted it up to 120°)
 func _arm_aim(pivot: Node3D, world_dir: Vector3) -> Quaternion:
-	var local_dir = (pivot.get_parent().global_transform.basis.inverse() * world_dir).normalized()
-	return Quaternion(Vector3.DOWN, local_dir)
+	var local_dir: Vector3 = (pivot.get_parent().global_transform.basis.inverse() * world_dir).normalized()
+	var y: Vector3 = -local_dir
+	# Skewed off pure left-right so an arm reaching straight across the body doesn't hit the reference's flip point
+	var ref := Vector3(1.0, 0.0, -0.6 * signf(pivot.position.x))
+	var x: Vector3 = (ref - y * ref.dot(y)).normalized()
+	return Basis(x, y, x.cross(y)).orthonormalized().get_rotation_quaternion()
 
 func _animate_arms(delta: float) -> void:
 	var pinning = state == GhoulState.PINNING and is_instance_valid(pinned_player)
