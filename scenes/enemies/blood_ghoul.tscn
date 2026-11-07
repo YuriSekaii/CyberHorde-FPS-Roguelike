@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" path="res://assets/models/blood_ghoul/blood_ghoul.glb" id="3_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_shape"]
-radius = 0.55
-height = 2.2
+radius = 0.6875
+height = 2.75
 
 [sub_resource type="ShaderMaterial" id="Mat_flesh"]
 shader = ExtResource("2_skin")
@@ -1488,10 +1488,11 @@ xp_reward = 0
 scrap_reward = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.375, 0)
 shape = SubResource("CapsuleShape3D_shape")
 
 [node name="MeshRoot" type="Node3D" parent="."]
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 0, 0, 0)
 
 [node name="Model" parent="MeshRoot" instance=ExtResource("3_model")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)

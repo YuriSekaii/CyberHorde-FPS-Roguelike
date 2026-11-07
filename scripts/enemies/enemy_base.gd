@@ -19,6 +19,7 @@ var wave_speed_mult: float = 1.0
 var damage_reduction: float = 0.0
 var last_hit_by_rogue: bool = false
 var _is_flashing: bool = false
+var _mesh_base_scale: Vector3 = Vector3.ONE
 static var _last_hit_sound_msec: int = 0
 static var all_enemies: Array[Node] = []
 
@@ -56,6 +57,8 @@ func _ready() -> void:
 	add_to_group("enemies")
 	_apply_wave_scaling()
 	_find_player()
+	if mesh_root:
+		_mesh_base_scale = mesh_root.scale
 
 func _exit_tree() -> void:
 	all_enemies.erase(self)
@@ -266,8 +269,8 @@ func _flash_hit() -> void:
 		return
 	_is_flashing = true
 	var tw = create_tween()
-	mesh_root.scale = Vector3(1.15, 0.85, 1.15)
-	tw.tween_property(mesh_root, "scale", Vector3.ONE, 0.12)
+	mesh_root.scale = _mesh_base_scale * Vector3(1.15, 0.85, 1.15)
+	tw.tween_property(mesh_root, "scale", _mesh_base_scale, 0.12)
 	tw.tween_callback(func(): _is_flashing = false)
 
 func die() -> void:

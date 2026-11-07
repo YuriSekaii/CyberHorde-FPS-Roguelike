@@ -40,7 +40,7 @@ const LOCK_TIME: float = 2.0
 const LOCK_LEAP_DELAY: float = 0.1
 const LEAP_SPEED: float = 42.0
 const LEAP_GRAVITY: float = 40.0
-const LEAP_PIN_RANGE: float = 1.9
+const LEAP_PIN_RANGE: float = 2.375 # 1.9 * 1.25 (boss is 1.25x scale)
 const LEAP_TIMEOUT: float = 1.6
 const OVERSHOOT_DISTANCE: float = 5.0
 const FALL_STUN_TIME: float = 5.0
@@ -606,7 +606,7 @@ func _blood_rain_duration() -> float:
 # ----------------- PIN -----------------
 
 func _try_pin_nearby() -> bool:
-	var chest = global_position + Vector3(0, 0.9, 0)
+	var chest = global_position + Vector3(0, 1.125, 0) # 0.9 * 1.25 (boss is 1.25x scale)
 	for p in get_tree().get_nodes_in_group("player"):
 		if not is_instance_valid(p) or p.get("is_downed") == true or not p.has_method("apply_trap"):
 			continue
