@@ -79,7 +79,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Interact / Cache** | `E` | Opens floating Loot Caches |
 | **Revive Ally** | `E` (hold 5s) | Within 3m of downed squadmate (4.0s for Medics) |
 | **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
-| **Escape Trap** | Alternate `A` / `D` | Breaks a Bog Slime engulf (−0.5s per press) or a Blood Ghoul pin (10 presses). Presses must alternate A→D→A… (or D→A→D…); holding or repeating one key doesn't count. No class skill or weapon fire while trapped |
+| **Escape Trap** | Alternate `A` / `D` | Breaks a Bog Slime engulf (−0.5s per press) or a Blood Ghoul pin (10 presses). Presses must alternate A→D→A… (or D→A→D…); holding or repeating one key doesn't count. No class skill, weapon fire, or reloading while trapped (a reload in progress is cancelled) |
 | **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
 | **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
 | **Pause Menu** | `Escape` | Master volume, **Bullet Effect** volume (explosion, ricochet and chain-lightning sounds only; default 50%), mouse sensitivity, display options |
@@ -272,8 +272,8 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | Effect | Source | Effect | Stacking |
 | :--- | :--- | :--- | :--- |
 | **Poison** | Venom Wyvern glob hit; standing in a Spore Pit puddle | −25% move speed and 5 dmg/s for 3s (× the wave damage factor $1.05^{\text{ScalingWave}-1}$). Hits shield first | Doesn't stack: a new hit refreshes the duration |
-| **Engulf (Trap)** | Bog Slime touch | Can't move, jump, shoot, or use your class skill for 3s while taking 10 dmg/s (× wave damage factor). Other enemies and projectiles still hit you. Each alternating `A`/`D` press removes 0.5s (holding or repeating one key doesn't count) | 3s trap immunity after release |
-| **Pin (Trap)** | Blood Ghoul leap | Knocked flat on your back, camera locked looking up at the Ghoul (no mouse look). Can't shoot or use your class skill. Held until you press alternating `A`/`D` **10 times** (A→D→A…; holding or repeating one key doesn't count). The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
+| **Engulf (Trap)** | Bog Slime touch | Can't move, jump, shoot, reload, or use your class skill for 3s while taking 10 dmg/s (× wave damage factor). Other enemies and projectiles still hit you. Each alternating `A`/`D` press removes 0.5s (holding or repeating one key doesn't count) | 3s trap immunity after release |
+| **Pin (Trap)** | Blood Ghoul leap | Knocked flat on your back, camera locked looking up at the Ghoul (no mouse look). Can't shoot, reload, or use your class skill. Held until you press alternating `A`/`D` **10 times** (A→D→A…; holding or repeating one key doesn't count). The Ghoul strikes every 0.3s meanwhile | 3s trap immunity after release |
 | **Bleed** | Every Blood Ghoul attack | Lose 1% Max HP/s, **5% Max HP/s while moving**. Drains HP directly, bypassing shield and damage reduction. | Each hit **adds 1.5s** (base 1.5s, no cap): a long pin builds a long bleed |
 | **Corrupted Blood** | Blood Ghoul Blood Rain & pin strikes | Drain **2% Max HP/s** straight to HP (bypasses shield) and cut all healing received by **75%** (stims, Vampiric, Medic skill & regen). Tree canopies' moon shadows block the rain | Each hit **adds 2s** (base 2s, no cap, stacks like Bleed) |
 

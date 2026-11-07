@@ -706,6 +706,15 @@ func _handle_weapons(delta: float) -> void:
 	var w = weapons[active_weapon_idx]
 	_update_plasma_core_visual()
 	
+	if is_trapped:
+		if is_charging:
+			_cancel_charge()
+		if is_reloading:
+			is_reloading = false
+			reload_timer = 0.0
+			ammo_changed.emit(w.current_ammo, w.max_ammo, false)
+		return # Can't fire or reload while pinned / engulfed
+	
 	if is_reloading:
 		if is_charging:
 			_cancel_charge()
@@ -722,11 +731,6 @@ func _handle_weapons(delta: float) -> void:
 		_start_reload()
 		return
 	
-	if is_trapped:
-		if is_charging:
-			_cancel_charge()
-		return # Can't fire weapons while pinned / engulfed
-
 	# Process active charge delay (Slot 3: Plasma Core)
 	# Requires player to hold LMB for at least the charge delay time.
 	# If held longer without release, the weapon will not shoot until released.
