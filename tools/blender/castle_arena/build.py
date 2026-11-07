@@ -154,6 +154,91 @@ def tex_flagstone(n=2048, tile=4.0, rows=8, seed=51):
     col = col * (0.72 + 0.28 * smooth(d, 0.004, 0.06))[..., None]
     return save("castle_flagstone", col), save("castle_flagstone_n", normal_from(h, 5.0), True)
 
+def tex_temple(n=1024, seed=61, moss=False):
+    """Ancient temple limestone (2 m tile): worn, rain-grimed, cracked. The moss variant goes low and on ledges."""
+    mott = pnoise(n, 5, seed=seed, octaves=5)
+    grain = pnoise(n, 220, seed=seed + 1, octaves=3)
+    streak = pnoise(n, 25, 5, seed=seed + 2, octaves=3)
+    crack = 1 - smooth(np.abs(pnoise(n, 7, seed=seed + 3, octaves=4) - 0.5), 0.0, 0.008)
+    crack *= smooth(pnoise(n, 3, seed=seed + 4, octaves=2), 0.45, 0.6)      # cracks only in some areas
+    pits = smooth(pnoise(n, 140, seed=seed + 5, octaves=2), 0.72, 0.8)
+    col = lerp((0.68, 0.62, 0.51), (0.50, 0.46, 0.38), mott) * (0.85 + 0.25 * grain)[..., None]
+    col = lerp(col, (0.34, 0.32, 0.27), smooth(streak, 0.6, 0.9) * 0.35)  # rain grime
+    col = lerp(col, (0.47, 0.50, 0.36), smooth(mott, 0.7, 0.9) * 0.5)      # lichen
+    if moss:
+        m = smooth(pnoise(n, 8, seed=seed + 6, octaves=4), 0.4, 0.68)
+        col = lerp(col, lerp((0.20, 0.25, 0.12), (0.31, 0.35, 0.18), grain), m * 0.7)
+    col = col * (1 - 0.6 * crack)[..., None] * (1 - 0.35 * pits)[..., None]
+    h = (grain - 0.5) * 0.15 - crack * 0.8 - pits * 0.4 + mott * 0.2
+    name = "temple_moss" if moss else "temple_stone"
+    return save(name, col), save(name + "_n", normal_from(h, 4.0), True)
+
+def seg_dist(px, py, a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    t = np.clip(((px - a[0]) * dx + (py - a[1]) * dy) / (dx * dx + dy * dy), 0, 1)
+    return np.hypot(px - a[0] - t * dx, py - a[1] - t * dy)
+
+def rune_mask(n=1024, glyphs=12, seed=71):
+    """Jump-pad sigil in pad UV space (0..1 spans the 3.56 m pad): rings, a band of runes, a hexagram.
+    Returns (line mask, glow mask with soft halo)."""
+    r = np.random.default_rng(seed)
+    u, v = grid(n)
+    x, y = u * 2 - 1, v * 2 - 1
+    R, T = np.hypot(x, y), np.arctan2(y, x)
+    w = 0.011
+    line = lambda d, wd=w: 1 - smooth(d, wd * 0.5, wd)
+    m = np.maximum.reduce([line(np.abs(R - 0.82)), line(np.abs(R - 0.76), 0.007), line(np.abs(R - 0.53)),
+                           line(np.abs(R - 0.16), 0.009), 1 - smooth(R, 0.03, 0.045)])
+    pts = [(0.48 * math.cos(math.pi / 2 + k * math.pi / 3), 0.48 * math.sin(math.pi / 2 + k * math.pi / 3)) for k in range(6)]
+    d = np.full(R.shape, 9.0)
+    for k in range(6):
+        d = np.minimum(d, seg_dist(x, y, pts[k], pts[(k + 2) % 6]))
+    m = np.maximum(m, line(d))
+    span = 2 * math.pi / glyphs
+    gi = np.floor((T + math.pi) / span)
+    px, py = (T - (-math.pi + (gi + 0.5) * span)) * R, R - 0.655
+    d = np.full(R.shape, 9.0)
+    grid3 = (-0.05, 0.0, 0.05)
+    for g in range(glyphs):
+        sel = (np.abs(py) < 0.09) & (gi == g)
+        segs = [((0.0, -0.06), (0.0, 0.06))]                     # every rune has a stem
+        while len(segs) < 3 + r.integers(0, 2):
+            a = (float(r.choice(grid3)), float(r.choice(grid3)) * 1.2)
+            b = (float(r.choice(grid3)), float(r.choice(grid3)) * 1.2)
+            if a != b:
+                segs.append((a, b))
+        dd = np.full(int(sel.sum()), 9.0)
+        for a, b in segs:
+            dd = np.minimum(dd, seg_dist(px[sel], py[sel], a, b))
+        d[sel] = dd
+    m = np.maximum(m, line(d))
+    f2 = np.fft.fftfreq(n)[:, None] ** 2 + np.fft.fftfreq(n)[None, :] ** 2
+    halo = np.real(np.fft.ifft2(np.fft.fft2(m) * np.exp(-2 * math.pi ** 2 * 36 * f2)))   # gaussian, sigma 6 px
+    return m, np.maximum(m, np.clip(halo * 1.5, 0, 1) * 0.45)
+
+def tex_pad(mask, n=1024, seed=81):
+    """Dark round stone: inner disc + ring of 12 wedge blocks, with the sigil carved in."""
+    u, v = grid(n)
+    x, y = u * 2 - 1, v * 2 - 1
+    R, T = np.hypot(x, y), np.arctan2(y, x)
+    grain = pnoise(n, 200, seed=seed, octaves=3)
+    mott = pnoise(n, 6, seed=seed + 1, octaves=4)
+    fw = ((T + math.pi) / (2 * math.pi) * 12) % 1.0
+    jd = np.where(R > 0.62, np.minimum(fw, 1 - fw) * 2 * math.pi / 12 * R, 9.0)
+    joint = smooth(np.minimum(jd, np.abs(R - 0.62)), 0.004, 0.012)
+    col = lerp((0.31, 0.32, 0.34), (0.22, 0.23, 0.25), mott) * (0.85 + 0.3 * grain)[..., None]
+    col = col * (0.5 + 0.5 * joint)[..., None]
+    col = lerp(col, (0.07, 0.08, 0.09), mask * 0.9)                      # carved grooves
+    h = joint * 0.6 + (grain - 0.5) * 0.1 - mask * 0.8
+    return save("jump_pad_stone", col), save("jump_pad_stone_n", normal_from(h, 4.0), True)
+
+def save_alpha(name, alpha, path):
+    n = alpha.shape[0]
+    img = bpy.data.images.new(name, n, n, alpha=True)
+    a = np.ones((n, n, 4), np.float32); a[..., 3] = np.clip(alpha, 0, 1)
+    img.pixels.foreach_set(a.ravel())
+    img.filepath_raw = path; img.file_format = "PNG"; img.save()
+
 # ---------------------------------------------------------------- materials
 def mat(name, tex=None, base=(0.5, 0.5, 0.5), rough=0.9, metal=0.0):
     m = bpy.data.materials.new(name); m.use_nodes = True
@@ -171,7 +256,9 @@ def mat(name, tex=None, base=(0.5, 0.5, 0.5), rough=0.9, metal=0.0):
     return m
 
 TEX = {"stone": tex_stone(), "roof": tex_roof(), "column": tex_column(), "wood": tex_wood(),
-       "flagstone": tex_flagstone()}
+       "flagstone": tex_flagstone(), "temple": tex_temple(), "templemoss": tex_temple(moss=True)}
+RUNES, RUNE_GLOW = rune_mask()
+TEX["pad"] = tex_pad(RUNES)
 MATS = {
     "stone": mat("CastleStone", TEX["stone"], rough=0.92),
     "roof": mat("CastleRoof", TEX["roof"], rough=0.85),
@@ -179,8 +266,13 @@ MATS = {
     "wood": mat("CastleWood", TEX["wood"], rough=0.8),
     "iron": mat("CastleIron", base=(0.06, 0.06, 0.065), rough=0.45, metal=0.7),
     "dark": mat("CastleSlit", base=(0.015, 0.014, 0.012), rough=1.0),
+    "temple": mat("TempleStone", TEX["temple"], rough=0.88),
+    "templemoss": mat("TempleMoss", TEX["templemoss"], rough=0.95),
+    "pad": mat("JumpPadStone", TEX["pad"], rough=0.8),
 }
-TILE = {"stone": 6.0, "roof": 2.0, "column": 2.0, "wood": 1.0, "iron": 1.0, "dark": 1.0}
+TILE = {"stone": 6.0, "roof": 2.0, "column": 2.0, "wood": 1.0, "iron": 1.0, "dark": 1.0,
+        "temple": 2.0, "templemoss": 2.0, "pad": 3.56}
+OFF = {"pad": 0.5}   # pad UVs are centred so the sigil texture sits on the disc
 
 # ---------------------------------------------------------------- geometry
 class Part:
@@ -188,24 +280,29 @@ class Part:
         self.name, self.keys = name, keys
         self.bm = bmesh.new(); self.uv = self.bm.loops.layers.uv.new("UVMap")
 
-def planar_uv(p, f, tile):
+def planar_uv(p, f, key):
     n = f.normal; ax = max(range(3), key=lambda i: abs(n[i]))
+    tile, off = TILE[key], OFF.get(key, 0.0)
     for l in f.loops:
         c = l.vert.co
         uv = (c.y, c.z) if ax == 0 else (c.x, c.z) if ax == 1 else (c.x, c.y)
-        l[p.uv].uv = (uv[0] / tile, uv[1] / tile)
+        l[p.uv].uv = (uv[0] / tile + off, uv[1] / tile + off)
 
-def box(p, key, lo, hi, rot=0.0):
-    """Axis-aligned box in a local frame, then rotated about world Z (used for radial pieces)."""
+def box(p, key, lo, hi, rot=0.0, cuts=0):
+    """Axis-aligned box in a local frame, then rotated about world Z (used for radial pieces).
+    cuts > 0 grid-subdivides it so it can be eroded."""
+    before = set(p.bm.faces)
     vs = bmesh.ops.create_cube(p.bm, size=1.0)["verts"]
     R = Matrix.Rotation(rot, 3, "Z")
     for v in vs:
         loc = Vector([lo[i] + (v.co[i] + 0.5) * (hi[i] - lo[i]) for i in range(3)])
         v.co = R @ loc
-    for f in {f for v in vs for f in v.link_faces}:
-        f.material_index = p.keys.index(key); f.normal_update(); planar_uv(p, f, TILE[key])
+    if cuts:
+        bmesh.ops.subdivide_edges(p.bm, edges=list({e for v in vs for e in v.link_edges}), cuts=cuts, use_grid_fill=True)
+    for f in set(p.bm.faces) - before:
+        f.material_index = p.keys.index(key); f.normal_update(); planar_uv(p, f, key)
 
-def lathe(p, key, prof, seg=64, U=None, mod=None, keyfn=None):
+def lathe(p, key, prof, seg=64, U=None, mod=None, keyfn=None, phase=0.0):
     """Revolve (r, z) profile. Walk the profile with the solid on the left so normals face out."""
     tile = TILE[key]
     U = U or max(1, round(2 * math.pi * max(r for r, z in prof) / tile))
@@ -220,6 +317,7 @@ def lathe(p, key, prof, seg=64, U=None, mod=None, keyfn=None):
             ring = []
             for j in range(seg):
                 t = 2 * math.pi * j / seg; m = mod(t) if mod else 1.0
+                t += phase
                 ring.append(p.bm.verts.new((r * m * math.cos(t), r * m * math.sin(t), z)))
             rings.append(ring)
     for i in range(len(prof) - 1):
@@ -237,10 +335,11 @@ def lathe(p, key, prof, seg=64, U=None, mod=None, keyfn=None):
             k = keyfn(f) if keyfn else key
             f.material_index = p.keys.index(k)
             if abs(f.normal.z) > 0.75:
-                planar_uv(p, f, TILE[k])
+                planar_uv(p, f, k)
             else:
                 for l, (_, uv) in zip(f.loops, pts):
                     l[p.uv].uv = (uv[0], uv[1] / tile)
+    return {v for ring in rings for v in ring}
 
 def finish(p):
     me = bpy.data.meshes.new(p.name); p.bm.to_mesh(me); p.bm.free()
@@ -274,21 +373,68 @@ def build_tower():
                       (0.035, 33.6), (0, 33.8)], seg=16)
     return finish(t)
 
-# ---- column: square plinth, Attic base, fluted shaft with entasis, Doric capital + abacus
+# ---- ancient temple column: square plinth, Attic base, five re-stacked fluted drums slightly out of line,
+#      Doric capital + abacus; everything eroded inward (never outward, so the colliders stay outside the mesh),
+#      chipped edges and corners, moss low down and on ledges
 def build_pillar():
-    p = Part("castle_pillar", ["column"])
-    box(p, "column", (-1.25, -1.25, 0), (1.25, 1.25, 0.6))
-    box(p, "column", (-1.15, -1.15, 0.6), (1.15, 1.15, 0.85))
-    lathe(p, "column", [(1.12, 0.85), (1.12, 1.0), (1.02, 1.1), (0.97, 1.22), (1.04, 1.32), (1.04, 1.4),
-                        (0.93, 1.48)], seg=64)
+    from mathutils import noise
+    rng = np.random.default_rng(5)
+    p = Part("castle_pillar", ["temple", "templemoss"])
+    box(p, "temple", (-1.25, -1.25, 0), (1.25, 1.25, 0.6), cuts=10)
+    box(p, "temple", (-1.15, -1.15, 0.6), (1.15, 1.15, 0.85), cuts=10)
+    lathe(p, "temple", [(1.12, 0.85), (1.12, 1.0), (1.02, 1.1), (0.97, 1.22), (1.04, 1.32), (1.04, 1.4),
+                        (0.93, 1.48)], seg=96)
     fl = 20
-    lathe(p, "column", [(0.93, 1.45), (0.925, 4.0), (0.895, 7.0), (0.845, 10.45)], seg=fl * 8,
-          mod=lambda t: 1 - 0.07 * math.sin(math.pi * ((fl * t / (2 * math.pi)) % 1.0)))
-    lathe(p, "column", [(0.84, 10.4), (0.9, 10.45), (0.9, 10.58), (0.86, 10.62), (0.88, 10.7), (1.02, 10.84),
-                        (1.15, 10.97), (1.23, 11.08), (1.25, 11.16)], seg=64)
-    box(p, "column", (-1.25, -1.25, 11.15), (1.25, 1.25, 11.62))
-    box(p, "column", (-1.1, -1.1, 11.62), (1.1, 1.1, 12.0))
+    flute = lambda t: 1 - 0.07 * math.sin(math.pi * ((fl * t / (2 * math.pi)) % 1.0))
+    rad = lambda z: float(np.interp(z, [1.45, 4.0, 7.0, 10.45], [0.93, 0.925, 0.895, 0.845]))
+    for k in range(5):
+        z0, z1 = 1.45 + 1.8 * k, 1.45 + 1.8 * (k + 1)
+        prof = ([(0, z0), (rad(z0) - 0.035, z0), (rad(z0 + 0.05), z0 + 0.05)]
+                + [(rad(z), z) for z in np.linspace(z0 + 0.2, z1 - 0.2, 8)]
+                + [(rad(z1 - 0.05), z1 - 0.05), (rad(z1) - 0.035, z1), (0, z1)])
+        vs = lathe(p, "temple", prof, seg=fl * 6, mod=flute, phase=float(rng.uniform(-0.06, 0.06)))
+        off = Vector((rng.uniform(-0.02, 0.02), rng.uniform(-0.02, 0.02), 0))
+        for v in vs:
+            v.co += off
+    lathe(p, "temple", [(0.84, 10.4), (0.9, 10.45), (0.9, 10.58), (0.86, 10.62), (0.88, 10.7), (1.02, 10.84),
+                        (1.15, 10.97), (1.23, 11.08), (1.25, 11.16)], seg=96)
+    box(p, "temple", (-1.25, -1.25, 11.15), (1.25, 1.25, 11.62), cuts=10)
+    box(p, "temple", (-1.1, -1.1, 11.62), (1.1, 1.1, 12.0), cuts=8)
+
+    bm = p.bm; bm.normal_update()
+    allv = list(bm.verts)
+    chips = [(allv[int(rng.integers(len(allv)))].co.copy(), float(rng.uniform(0.08, 0.3))) for _ in range(45)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for zc in (0.6, 0.85, 11.15, 11.62, 12.0):
+                if rng.random() < 0.6:
+                    chips.append((Vector((sx * 1.2, sy * 1.2, zc)), float(rng.uniform(0.15, 0.42))))
+    disp = []
+    for v in allv:
+        c = v.co
+        e = 0.04 * max(0.0, noise.noise(c * 1.3)) + 0.012 * noise.noise(c * 7.0)
+        for cc, r in chips:
+            d = (c - cc).length
+            if d < r:
+                e += (r - d) * 0.7
+        disp.append(v.normal * max(e, 0.0) if c.z > 0.02 else Vector())   # keep the footprint on the floor
+    for v, d in zip(allv, disp):
+        v.co -= d
+    mi = p.keys.index("templemoss")
+    for f in bm.faces:
+        f.normal_update(); c = f.calc_center_median()
+        low = c.z < 0.7 + 0.9 * (noise.noise(c * 0.8) + 1) / 2
+        ledge = f.normal.z > 0.6 and noise.noise(c * 2.0) > -0.2
+        if low or ledge:
+            f.material_index = mi
     return finish(p)
+
+# ---- jump pad: dark round rune-stone (sigil carved in; the glow overlay lives in jump_pad.tscn)
+def build_jump_pad():
+    j = Part("jump_pad", ["pad", "stone"])
+    lathe(j, "pad", [(1.78, 0), (1.78, 0.06), (1.72, 0.1), (1.62, 0.1), (1.62, 0.17), (1.57, 0.21), (0, 0.21)],
+          seg=64, keyfn=lambda f: "pad" if f.normal.z > 0.75 else "stone")
+    return finish(j)
 
 # ---- wall: 82 m long (ends hide inside the corner towers), 2 m thick, crenellated both sides
 def build_wall():
@@ -310,7 +456,7 @@ def build_wall():
             box(w, "stone", (x - 0.8, a0, 0), (x + 0.8, a1, 0.95))
     return finish(w)
 
-objs = [build_tower(), build_pillar(), build_wall()]
+objs = [build_tower(), build_pillar(), build_wall(), build_jump_pad()]
 
 def export(o):
     d = os.path.join(OUT, o.name); os.makedirs(d, exist_ok=True)
@@ -329,16 +475,18 @@ TEXOUT = os.path.join(OUT, "..", "textures", "castle"); os.makedirs(TEXOUT, exis
 for key in ("stone", "column", "wood", "flagstone"):
     for img in TEX[key]:
         img.file_format = "JPEG"; img.filepath_raw = os.path.join(TEXOUT, img.name + ".jpg"); img.save()
+save_alpha("jump_pad_runes", RUNE_GLOW, os.path.join(TEXOUT, "jump_pad_runes.png"))   # white sigil, glow in alpha
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "castle_arena.blend"))
 
 # ---------------------------------------------------------------- preview (NE corner of the arena)
 if PREV:
-    tower, pillar, wall = objs
+    tower, pillar, wall, pad = objs
     def place(o, loc, rz=0.0):
         c = o.copy(); scn.collection.objects.link(c); c.location = loc; c.rotation_euler = (0, 0, rz); return c
     place(tower, (40, 40, 0)); place(tower, (-40, 40, 0)); place(tower, (40, -40, 0))
     place(wall, (0, 40, 0)); place(wall, (40, 0, 0), -math.pi / 2)
     place(pillar, (17.5, 17.5, 0)); place(pillar, (-17.5, 17.5, 0)); place(pillar, (17.5, -17.5, 0))
+    place(pad, (22.5, 22.5, 0))
     bpy.ops.mesh.primitive_plane_add(size=90, location=(0, 0, 0))
     fm = bpy.data.materials.new("Floor"); fm.use_nodes = True
     fm.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.03, 0.035, 0.045, 1)
@@ -353,8 +501,8 @@ if PREV:
     scn.render.engine = "BLENDER_EEVEE"
     scn.render.resolution_x, scn.render.resolution_y = 1280, 720
     scn.view_settings.view_transform = "AgX"
-    shots = {"corner": ((-6, -8, 2.0), (34, 36, 10)), "tower": ((24, 22, 1.8), (40, 40, 14)),
-             "pillar": ((12, 10, 1.8), (17.5, 17.5, 6)), "overview": ((-10, -25, 22), (22, 30, 6))}
+    shots = {"pillar": ((13, 11, 1.8), (17.5, 17.5, 5.5)), "pillar_base": ((15, 15.5, 1.2), (17.5, 17.5, 0.8)),
+             "pillar_top": ((15, 15.5, 9.5), (17.5, 17.5, 11.3)), "pad": ((20.5, 20.5, 2.2), (22.5, 22.5, 0))}
     for name, (eye, at) in shots.items():
         cam.location = eye
         cam.rotation_euler = (Vector(at) - Vector(eye)).to_track_quat("-Z", "Y").to_euler()
