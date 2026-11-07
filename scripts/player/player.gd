@@ -638,8 +638,8 @@ func _handle_movement(delta: float) -> void:
 	# Check Class Active Skill activation (Skill: Q)
 	if not is_downed:
 		if Input.is_action_just_pressed("skill_dash") or Input.is_action_just_pressed("skill_active"):
-			if is_trapped and player_class == "rogue":
-				SoundManager.play("empty_ammo", 0.1, -6.0) # Quantum Dash can't break a trap
+			if is_trapped:
+				SoundManager.play("empty_ammo", 0.1, -6.0) # Can't use class skill while pinned / engulfed
 			elif skill_charges > 0 and not is_dashing and not is_slayer_active and not is_medic_active and not is_gunner_active:
 				_activate_class_skill()
 				return
@@ -722,6 +722,11 @@ func _handle_weapons(delta: float) -> void:
 		_start_reload()
 		return
 	
+	if is_trapped:
+		if is_charging:
+			_cancel_charge()
+		return # Can't fire weapons while pinned / engulfed
+
 	# Process active charge delay (Slot 3: Plasma Core)
 	# Requires player to hold LMB for at least the charge delay time.
 	# If held longer without release, the weapon will not shoot until released.
@@ -1620,10 +1625,7 @@ func _activate_gunner_skill() -> void:
 	_begin_skill_cooldown(cd)
 	# Invulnerable and Suppression Immune for the full active duration
 	trigger_invulnerability(GUNNER_ACTIVE_DURATION)
-	# Breaking out counts as an escape: the source reacts as if mashed free (Ghoul knocked down, Slime pauses)
-	if is_trapped:
-		release_trap(true)
-	
+
 	if is_reloading:
 		is_reloading = false
 		reload_timer = 0.0

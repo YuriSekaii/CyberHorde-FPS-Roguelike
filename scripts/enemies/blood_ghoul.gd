@@ -8,7 +8,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   LEAP      and jumps at it extremely fast. Touching an operative mid-jump pins them down.
 ##   PIN       Knocks the operative flat on their back and straddles them, raking with alternating claws every 0.3s
 ##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
-##             up at it, until they press alternating A / D 10 times to escape (holding or repeating one key doesn't count). Then it's knocked down for 1s and flees REALLY
+##             up at it, until they press alternating A / D 10 times to escape (holding or repeating one key doesn't count). Takes 90% less damage while pinning (stacks with the wave reduction). Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (3s in phase 4), then flees.
 ##   BLOOD RAIN After a missed leap's stun ends it roars and pours blood from the sky over the whole arena: 5s in phase 1,
@@ -28,8 +28,8 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   1  > 2/3    As above.
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
-##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on
-##               the instant an operative is within 25m (then leaps 0.1s later); knockdown 1.5s, miss stun 3s.
+##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction while exposed. Locks on
+##               the instant an operative is within 25m (then leaps 0.1s later); knockdown 1.5s, miss stun 3s. Immune to all damage while pinning.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
@@ -67,6 +67,7 @@ const HIDE_MIN_PLAYER_DIST: float = 14.0
 const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding that makes it switch trees
 const ENGAGE_IDLE_TIME: float = 10.0 # Nobody within reach this long: Engage mode
 const ENGAGED_DAMAGE_REDUCTION: float = 0.9 # While hiding in Engage mode; multiplies with the wave reduction
+const PIN_DAMAGE_REDUCTION: float = 0.9 # While pinning (phases 1-3); multiplies with the wave reduction
 const ENGAGED_EYE_GLOW: float = 4.0 # Visible from across the jungle, as bright as the full hunting blaze
 const HOP_UNWATCHED_TIME: float = 2.0 # Unwatched this long: hop to the next tree
 const HOP_STARE_RESET_TIME: float = 2.0 # Stared at this long: the unwatched count resets
@@ -195,7 +196,9 @@ func _apply_wave_scaling() -> void:
 	damage_reduction = clampf(floorf(GameManager.get_scaling_wave() / 10.0) * 0.10, 0.0, 0.50)
 
 func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: int = EnemyBase.DAMAGE_TYPE_DIRECT, killer_source: Variant = null) -> void:
-	if engaged and state == GhoulState.HIDING:
+	if state == GhoulState.PINNING:
+		amount *= (1.0 - PIN_DAMAGE_REDUCTION)
+	elif engaged and state == GhoulState.HIDING:
 		amount *= (1.0 - ENGAGED_DAMAGE_REDUCTION)
 	elif phase >= 4:
 		amount *= (1.0 - PHASE_4_DAMAGE_REDUCTION)
@@ -213,9 +216,11 @@ func take_damage(amount: float, is_crit: bool, from_pos: Vector3, damage_type: i
 			_start_flee()
 
 ## Fleeing to a tree it can't be hurt at all; hidden in the shadows it can only be hurt by direct bullet hits
-## (no AoE, ricochet or chain lightning)
+## (no AoE, ricochet or chain lightning); pinning in phase 4 makes it fully immune
 func is_immune_to(damage_type: int) -> bool:
 	if state == GhoulState.FLEEING:
+		return true
+	if state == GhoulState.PINNING and phase >= 4:
 		return true
 	return state == GhoulState.HIDING and damage_type != DAMAGE_TYPE_DIRECT and damage_type != DAMAGE_TYPE_WEAKPOINT
 
