@@ -22,6 +22,7 @@ var last_sent_rot_y: float = 0.0
 var last_sent_head_pitch: float = 0.0
 var last_sent_weapon_idx: int = -1
 var last_sent_vel: Vector3 = Vector3.ZERO
+var last_sent_hp: float = -1.0
 var last_net_send_msec: int = 0
 var last_net_packet_msec: int = 0
 
@@ -542,13 +543,15 @@ func _physics_process(delta: float) -> void:
 			var moved = global_position.distance_to(last_sent_pos) >= 0.01
 			var turned = absf(rotation.y - last_sent_rot_y) >= 0.01 or absf(head.rotation.x - last_sent_head_pitch) >= 0.01
 			var vel_changed = velocity.distance_to(last_sent_vel) >= 0.1 # so peers stop extrapolating when we stop
-			if moved or turned or vel_changed or active_weapon_idx != last_sent_weapon_idx or now_msec - last_net_send_msec >= 250:
-				rpc_sync_state.rpc(global_position, rotation.y, head.rotation.x, velocity, active_weapon_idx)
+			var hp_changed = absf(current_health - last_sent_hp) >= 0.5
+			if moved or turned or vel_changed or hp_changed or active_weapon_idx != last_sent_weapon_idx or now_msec - last_net_send_msec >= 250:
+				rpc_sync_state.rpc(global_position, rotation.y, head.rotation.x, velocity, active_weapon_idx, current_health)
 				last_sent_pos = global_position
 				last_sent_rot_y = rotation.y
 				last_sent_head_pitch = head.rotation.x
 				last_sent_weapon_idx = active_weapon_idx
 				last_sent_vel = velocity
+				last_sent_hp = current_health
 				last_net_send_msec = now_msec
 	
 	# Abyss out-of-bounds safety recovery
@@ -1040,6 +1043,8 @@ func trigger_invulnerability(duration: float) -> void:
 ## Returns true when the damage landed (not blocked by invulnerability / dash / Null Barrier).
 ## is_dot: damage-over-time ticks (poison, slime trap) skip Null Barrier, the fever hit penalty, hit feedback and Phase-Shield.
 func take_damage(amount: float, is_dot: bool = false) -> bool:
+	if NetworkManager.is_multiplayer and not is_local_player:
+		return false
 	if is_invulnerable or is_dashing:
 		return false
 
@@ -1101,6 +1106,8 @@ func take_damage(amount: float, is_dot: bool = false) -> bool:
 
 ## Bleed: drains HP directly, bypassing shield and damage reduction
 func _lose_health_direct(amount: float) -> void:
+	if NetworkManager.is_multiplayer and not is_local_player:
+		return
 	if is_invulnerable or is_dashing or is_downed or amount <= 0.0:
 		return
 	current_health -= amount
@@ -1363,7 +1370,7 @@ func die() -> void:
 # ==============================================================================
 
 @rpc("any_peer", "unreliable_ordered")
-func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3, wep_idx: int) -> void:
+func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3, wep_idx: int, hp: float) -> void:
 	if is_local_player:
 		return
 	last_net_packet_msec = Time.get_ticks_msec()
@@ -1374,6 +1381,11 @@ func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3,
 	if active_weapon_idx != wep_idx:
 		active_weapon_idx = wep_idx
 		_update_third_person_weapon(wep_idx)
+	if hp != current_health:
+		current_health = hp
+		health_changed.emit(current_health, max_health)
+		if status_label:
+			status_label.text = "HP: %d/%d" % [int(current_health), int(max_health)]
 
 @rpc("any_peer", "call_local", "reliable")
 func rpc_fire_weapon(wep_idx: int, origin: Vector3, dir: Vector3) -> void:

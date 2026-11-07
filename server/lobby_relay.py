@@ -12,6 +12,7 @@ Wire protocol (one WebSocket per player):
     -> {"op":"join","code":"ABCDE"}          <- {"op":"joined","code":..,"id":N,"peers":[1,..]}
     -> {"op":"lock","locked":true}           (host only: refuse new joins)
     -> {"op":"kick","id":N}                  (host only)
+    -> {"op":"signal","to":N,"data":{..}}    <- {"op":"signal","from":N,"data":{..}}
                                              <- {"op":"peer_connected","id":N}
                                              <- {"op":"peer_disconnected","id":N}
                                              <- {"op":"error","msg":".."}  (then closed, reason = msg)
@@ -165,6 +166,11 @@ async def handler(ws):
                 route(lobby, me, target, message[4:])
                 continue
             msg = json.loads(message)
+            if msg.get("op") == "signal":
+                dest = lobby.members.get(int(msg.get("to", 0)))
+                if dest and dest is not me:
+                    dest.push_json({"op": "signal", "from": me.id, "data": msg.get("data")})
+                continue
             if me.id != 1:
                 continue
             if msg.get("op") == "lock":

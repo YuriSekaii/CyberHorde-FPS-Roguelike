@@ -51,7 +51,10 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 * **LAN Networking**: High-level ENet multiplayer (`ENetMultiplayerPeer`) over UDP port `7777`.
 * **Online Networking**: The same high-level RPCs, sent through the CyberHorde lobby relay at `wss://phu-ai-lab.tailbca584.ts.net/cyberhorde` (Tailscale Funnel → [`server/lobby_relay.py`](server/lobby_relay.py) on port `8095`). The lobby creator is the authoritative host (peer 1). Joiners get ids 2–4, and a lobby holds max 4 players. When the host leaves, the lobby closes.
-* **Player Sync**: Each player sends its own position, yaw, head pitch, velocity and weapon slot up to 30×/s, but only when something changed (plus a 0.25s keepalive), so idle players cost almost nothing. Remote players are predicted forward with their horizontal velocity (max 0.1s) and smoothed, so they don't lag behind or stutter between packets.
+* **Direct WebRTC Links**: After joining, players also open direct UDP links to each other (WebRTC, Google STUN), using the relay to exchange connection info. Fast-changing data (positions) is sent unreliable so a lost packet never stalls the rest. Any pair that can't connect directly (strict university/office/mobile networks, no TURN server) keeps using the relay automatically. Uses the official `webrtc-native` 1.2.2 add-on, bundled in `addons/webrtc_native/` (Windows x86_64 only).
+* **Player Sync**: Each player sends its own position, yaw, head pitch, velocity, weapon slot and HP up to 30×/s, but only when something changed (plus a 0.25s keepalive), so idle players cost almost nothing. Remote players are predicted forward with their horizontal velocity (max 0.1s) and smoothed, so they don't lag behind or stutter between packets.
+* **Damage Ownership**: Each player's HP is decided only on their own machine (enemy hits, DoTs, downed state); teammates just display the synced HP.
+* **Enemy Sync**: The host sends every live enemy's position and yaw 10×/s in one compact unreliable packet (11 bytes per enemy, keyed by the hash of its shared node name). Clients slide each enemy toward the latest host position over 0.1s; their local AI still runs for attacks, animations and projectiles.
 * **Shot Sync**: Only the shooter's client deals damage (one `rpc_take_damage` per hit). Teammates' shots are replayed as visual-only bullets (impact + explosion visuals, no damage).
 * **Squad Avatars**: Host (Player 1) has Neon Cyan accents; Client (Player 2) has Neon Amber accents. Overhead tags show name and live HP bar.
 * **Shared Economy**: XP and Scrap are squad-shared. Upgrade card selection is simultaneous; choosing cards activates an **Aegis Stasis** protective shield.
@@ -331,6 +334,7 @@ CyberHorde-FPS-Roguelike/
 ├── assets/models/<name>/            # AI-generated .glb assets (see docs/ASSET_PIPELINE.md)
 ├── docs/ASSET_PIPELINE.md / ASSET_PROMPTS.md  # Image → Hunyuan3D-2 → Blender → Godot pipeline + Gemini prompts
 ├── tools/asset_pipeline/            # make_asset.ps1, batch.ps1, prep_prop.py, assets_manifest.csv, ghoul_pose_harness.gd
+├── addons/webrtc_native/            # Official webrtc-native GDExtension (direct UDP links for online co-op)
 ├── server/
 │   ├── lobby_relay.py                # Online lobby relay (WebSocket, lobby codes, max 4 players)
 │   └── run_relay.bat                 # Starts the relay hidden in the background (port 8095)
@@ -383,7 +387,7 @@ CyberHorde-FPS-Roguelike/
 
 ### 1. Multiplayer Networking Architecture
 * **Autoload**: [`scripts/autoload/network_manager.gd`](scripts/autoload/network_manager.gd) manages `ENetMultiplayerPeer` (LAN) or the relay peer (online), peer connections, and lobby events.
-* **Online Relay**: [`scripts/network/relay_peer.gd`](scripts/network/relay_peer.gd) connects one WebSocket to the relay. Binary frames carry an int32 LE header: the target peer when sending (`0` = all, `<0` = all except), the source peer when receiving. Text frames carry JSON control messages (`create`, `join`, `peer_connected`, `peer_disconnected`, `error`). The relay is TCP, so every packet arrives reliable and ordered.
+* **Online Relay**: [`scripts/network/relay_peer.gd`](scripts/network/relay_peer.gd) connects one WebSocket to the relay. Binary frames carry an int32 LE header: the target peer when sending (`0` = all, `<0` = all except), the source peer when receiving. Text frames carry JSON control messages (`create`, `join`, `peer_connected`, `peer_disconnected`, `error`). Relay frames are TCP (reliable, ordered). When a direct WebRTC link to a peer is open, packets to that peer go over its data channels instead (`rel` = reliable, `unrel` = unreliable ordered, negotiated ids 1/2). Signaling uses the `signal` text op (`{"op":"signal","to":N,"data":..}`), forwarded by the relay. The relay must run the current `lobby_relay.py` for direct links; an older relay still works, but relay-only.
 * **Running the Relay** (only on the Funnel PC): run `server/run_relay.bat`. On startup it adds the route `tailscale funnel --bg --set-path=/cyberhorde http://127.0.0.1:8095`. Health check: `https://phu-ai-lab.tailbca584.ts.net/cyberhorde` returns `CyberHorde lobby relay OK`.
 * **Player Ownership**: Each player node is named `"Player_%d" % peer_id`. `set_multiplayer_authority(id)` controls authority. Local players run first-person rigs; remote peers show third-person models and overhead HP tags.
 * **RPC Rule**: Any RPC sent from client to server must specify `@rpc("any_peer", ...)` to prevent authority rejection in Godot 4.

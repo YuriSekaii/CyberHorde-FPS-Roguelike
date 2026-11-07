@@ -51,6 +51,7 @@ var spawn_timer: float = 0.0
 var spawn_interval: float = 1.2
 var enemy_counter: int = 0
 var last_sent_tick: int = -1
+var snapshot_timer: float = 0.0
 
 var active_enemies: Array[Node] = []
 var pending_spawns: Array[Dictionary] = []
@@ -86,6 +87,12 @@ func _process(delta: float) -> void:
 		return
 	if GameManager.state != GameManager.GameState.PLAYING:
 		return
+	
+	if NetworkManager.is_multiplayer and NetworkManager.is_server:
+		snapshot_timer -= delta
+		if snapshot_timer <= 0.0:
+			snapshot_timer = 0.1
+			_send_enemy_snapshot()
 	
 	# Only server (or singleplayer) calculates wave logic
 	if NetworkManager.is_multiplayer and not NetworkManager.is_server:
@@ -146,6 +153,37 @@ func _process(delta: float) -> void:
 		if current_wave < FINAL_WAVE:
 			if alive_count <= 0 and enemies_left_to_spawn <= 0 and pending_spawns.is_empty():
 				_complete_wave()
+
+# shortcut: every snapshot carries all enemies (fine below ~500 enemies; send only movers if hordes grow).
+func _send_enemy_snapshot() -> void:
+	var data := PackedByteArray()
+	var live: Array[Node] = []
+	for e in EnemyBase.all_enemies:
+		if is_instance_valid(e) and not e.is_dead:
+			live.append(e)
+	data.resize(live.size() * 11)
+	var o := 0
+	for e in live:
+		data.encode_s32(o, String(e.name).hash())
+		data.encode_half(o + 4, e.global_position.x)
+		data.encode_half(o + 6, e.global_position.y)
+		data.encode_half(o + 8, e.global_position.z)
+		data.encode_u8(o + 10, int(roundf(wrapf(e.rotation.y, 0.0, TAU) / TAU * 256.0)) & 255)
+		o += 11
+	rpc_enemy_snapshot.rpc(data)
+
+@rpc("authority", "unreliable_ordered")
+func rpc_enemy_snapshot(data: PackedByteArray) -> void:
+	var by_hash := {}
+	for e in EnemyBase.all_enemies:
+		if is_instance_valid(e) and not e.is_dead:
+			by_hash[String(e.name).hash()] = e
+	var o := 0
+	while o + 11 <= data.size():
+		var e = by_hash.get(data.decode_s32(o))
+		if e:
+			e.apply_net_state(Vector3(data.decode_half(o + 4), data.decode_half(o + 6), data.decode_half(o + 8)), data.decode_u8(o + 10) * TAU / 256.0)
+		o += 11
 
 func start_intermission(duration: float = 4.0) -> void:
 	is_intermission = true

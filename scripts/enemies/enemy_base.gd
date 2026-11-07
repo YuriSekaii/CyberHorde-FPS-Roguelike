@@ -43,6 +43,11 @@ var _detour_timer: float = 0.0
 var _nav_path: PackedVector3Array = PackedVector3Array()
 var _nav_index: int = 0
 var _nav_repath_timer: float = 0.0
+var _net_from: Vector3 = Vector3.ZERO
+var _net_to: Vector3 = Vector3.ZERO
+var _net_yaw: float = 0.0
+var _net_t: float = 0.0
+var _has_net_state: bool = false
 const NAV_REPATH_INTERVAL: float = 0.3
 
 func _ready() -> void:
@@ -123,10 +128,23 @@ func _physics_process(delta: float) -> void:
 	
 	_behave(delta)
 	
+	# Clients only render the host's transform; _behave still runs for attacks/animations.
+	if NetworkManager.is_multiplayer and not NetworkManager.is_server and _has_net_state:
+		_net_t += delta
+		global_position = _net_from.lerp(_net_to, clampf(_net_t / 0.1, 0.0, 1.0))
+		rotation.y = lerp_angle(rotation.y, _net_yaw, 1.0 - exp(-15.0 * delta))
+	
 	# Re-check out-of-bounds after movement: eliminate immediately if pushed or moved out of the arena
 	if is_out_of_arena():
 		die()
 		return
+
+func apply_net_state(pos: Vector3, yaw: float) -> void:
+	_net_from = global_position
+	_net_to = pos
+	_net_yaw = yaw
+	_net_t = 0.0
+	_has_net_state = true
 
 func is_out_of_arena() -> bool:
 	# Arena floor is 80x80 (X: [-40, 40], Z: [-40, 40]), enclosed by 4 perimeter walls (inner faces at |X, Z| = 39.0).
