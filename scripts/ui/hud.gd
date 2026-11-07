@@ -699,6 +699,7 @@ func _update_status_effects(delta: float) -> void:
 	var trapped = p != null and p.get("is_trapped") == true
 	var poison_t: float = float(p.get("poison_timer")) if p else 0.0
 	var bleed_t: float = float(p.get("bleed_timer")) if p else 0.0
+	var corrupted_t: float = float(p.get("corrupted_blood_timer")) if p else 0.0
 	var immune_t: float = float(p.get("trap_immunity_timer")) if p else 0.0
 	var status_immune_t: float = float(p.get("status_immunity_timer")) if p else 0.0
 	var suppression_t: float = float(p.get("gunner_timer")) if p and p.get("is_gunner_active") == true else 0.0
@@ -717,6 +718,8 @@ func _update_status_effects(delta: float) -> void:
 			trap_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.3))
 			tint = Color(0.15, 0.6, 0.08, 0.3 + pulse * 0.06)
 		trap_bar.value = p.get_trap_progress()
+	elif corrupted_t > 0.0:
+		tint = Color(0.5, 0.0, 0.1, 0.08 + 0.05 * sin(status_pulse * 6.0))
 	elif bleed_t > 0.0:
 		tint = Color(0.4, 0.0, 0.0, 0.08 + 0.05 * sin(status_pulse * 6.0))
 	elif poison_t > 0.0:
@@ -724,8 +727,10 @@ func _update_status_effects(delta: float) -> void:
 	status_tint.color = tint
 
 	var lines: PackedStringArray = []
+	if corrupted_t > 0.0:
+		lines.append("CORRUPTED BLOOD %.1fs — 2%% HP/s DRAIN, -75%% HEALING" % corrupted_t)
 	if bleed_t > 0.0:
-		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING), -75%% HEALING" % bleed_t)
+		lines.append("BLEEDING %.1fs — HP DRAIN (x5 WHILE MOVING)" % bleed_t)
 	if poison_t > 0.0:
 		lines.append("POISONED %.1fs — SLOWED 25%%" % poison_t)
 	if status_immune_t > 0.0:
@@ -735,7 +740,9 @@ func _update_status_effects(delta: float) -> void:
 	elif immune_t > 0.0 and not trapped:
 		lines.append("TRAP IMMUNE %.1fs" % immune_t)
 	status_effects_label.text = "\n".join(lines)
-	if bleed_t > 0.0:
+	if corrupted_t > 0.0:
+		status_effects_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.35))
+	elif bleed_t > 0.0:
 		status_effects_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.25))
 	elif poison_t > 0.0:
 		status_effects_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.3))

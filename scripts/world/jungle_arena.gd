@@ -59,9 +59,10 @@ void fragment() {
 }
 """
 
-## Per tree: { "pos": Vector3 (trunk base), "trunk_radius": float, "canopy_center": Vector3, "canopy_radius": float, "hide_spot": Vector3 }
+## Per tree: { "pos": Vector3 (trunk base), "trunk_radius": float, "canopy_center": Vector3, "canopy_radius": float, "hide_spot": Vector3, "shadow_center": Vector3 (canopy moon-shadow pool center on the ground, y = 0) }
 var trees: Array[Dictionary] = []
 var is_blood_moon: bool = false
+var blood_rain_particles: CPUParticles3D = null # Lazily created full-arena "Blood Rain" particle effect
 
 var environment: Environment
 var sky_material: ProceduralSkyMaterial
@@ -100,6 +101,14 @@ func get_hide_spots() -> Array[Vector3]:
 		spots.append(t["hide_spot"])
 	return spots
 
+## True if pos is under a tree canopy's moon shadow (canopies block the Blood Ghoul's Blood Rain)
+func is_in_tree_shadow(pos: Vector3) -> bool:
+	var flat = Vector2(pos.x, pos.z)
+	for t in trees:
+		if flat.distance_to(Vector2(t["shadow_center"].x, t["shadow_center"].z)) <= t["canopy_radius"]:
+			return true
+	return false
+
 ## Final wave: the Moon turns blood red
 func set_blood_moon(enabled: bool, animate: bool = true) -> void:
 	is_blood_moon = enabled
@@ -131,6 +140,34 @@ func set_blood_moon(enabled: bool, animate: bool = true) -> void:
 	tw.tween_property(sky_material, "ground_horizon_color", sky_hor, 4.0)
 	tw.tween_property(environment, "fog_light_color", fog_col, 4.0)
 	tw.tween_property(environment, "ambient_light_color", amb_col, 4.0)
+
+## Toggle the full-arena "Blood Rain" particle effect (lazily created; unshaded since the arena is lit only by the moon)
+func set_blood_rain(enabled: bool) -> void:
+	if blood_rain_particles == null:
+		var p := CPUParticles3D.new()
+		p.name = "BloodRain"
+		p.position = Vector3(0.0, 30.0, 0.0)
+		p.amount = 3000
+		p.lifetime = 1.1
+		p.local_coords = false
+		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		p.emission_box_extents = Vector3(38.0, 0.5, 38.0)
+		p.direction = Vector3.DOWN
+		p.spread = 2.0
+		p.initial_velocity_min = 28.0
+		p.initial_velocity_max = 34.0
+		p.gravity = Vector3(0.0, -10.0, 0.0)
+		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var mat := StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.albedo_color = Color(0.55, 0.02, 0.04)
+		var drop := BoxMesh.new()
+		drop.size = Vector3(0.03, 0.6, 0.03)
+		drop.material = mat
+		p.mesh = drop
+		add_child(p)
+		blood_rain_particles = p
+	blood_rain_particles.emitting = enabled
 
 # ----------------- BUILDERS -----------------
 
@@ -348,6 +385,7 @@ func _build_trees() -> void:
 		hide.x = clampf(hide.x, -36.0, 36.0)
 		hide.z = clampf(hide.z, -36.0, 36.0)
 		hide.y = 0.0
+		shadow_center.y = 0.0
 
 		trees.append({
 			"pos": p,
@@ -355,6 +393,7 @@ func _build_trees() -> void:
 			"canopy_center": canopy_center,
 			"canopy_radius": canopy_r,
 			"hide_spot": hide,
+			"shadow_center": shadow_center,
 		})
 
 func _build_grass() -> void:

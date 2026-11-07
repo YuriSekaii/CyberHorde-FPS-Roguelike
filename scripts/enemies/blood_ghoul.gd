@@ -11,12 +11,15 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             up at it, until they press alternating A / D 10 times to escape (holding or repeating one key doesn't count). Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (3s in phase 4), then flees.
+##   BLOOD RAIN After a missed leap's stun ends it roars and pours blood from the sky over the whole arena: 5s in phase 1,
+##              7s in phase 2, 10s in phase 3, ticking Corrupted Blood every second on every operative not standing in a
+##              tree's moon shadow (canopies block it). From phase 4 the rain is permanent (infinite duration).
 ##   ENGAGE    After 10s total hiding with nobody in its 25m reach (the count only restarts after a leap), its eyes
 ##             glow red and it takes 90% less damage while hiding. Whenever no operative has looked at it for 2s
 ##             (staring pauses the count, 2s of staring resets it) it hops to another tree closer to the nearest
 ##             operative, then waits for another 2s unwatched. No closer tree left: it leaps straight at them from
 ##             any range. Leaping at someone ends Engage mode.
-## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield).
+## Every Ghoul attack inflicts Bleed (1% Max HP/s, 5% while moving, +1.5s per hit and stacking, bypasses shield) and Corrupted Blood (2% Max HP/s drain, -75% healing, +2s per hit and stacking).
 ## While hiding it only takes direct bullet hits (like a Spawnling) and drones ignore it; after losing 1% Max HP
 ## while hidden it relocates to another random tree and drops Engage mode.
 ## Fleeing to a tree it's immune to all damage; knocked down or fallen after a miss it's fully vulnerable.
@@ -79,6 +82,10 @@ const PHASE_2_HOP_SPEED_MULT: float = 1.5
 const PHASE_4_DAMAGE_REDUCTION: float = 0.9 # While exposed; multiplies with the wave reduction
 const PHASE_4_FALL_STUN_TIME: float = 3.0
 const PHASE_4_KNOCKDOWN_TIME: float = 1.5
+const BLOOD_RAIN_DURATION_PHASE_1: float = 5.0
+const BLOOD_RAIN_DURATION_PHASE_2: float = 7.0
+const BLOOD_RAIN_DURATION_PHASE_3: float = 10.0
+const BLOOD_RAIN_TICK: float = 1.0
 const HUNT_SPEED: float = 24.0
 const HUNT_HOLD_DIST: float = 12.0 # Closes to this range, then crouches for the lock
 const VIEW_CONE_DOT: float = 0.8 # ~37 degrees off the look direction (same as the Mantis Stalker)
@@ -139,6 +146,8 @@ var is_watched: bool = false
 var watch_check_timer: float = 0.0
 var eye_engage: float = 0.0 # Engage-mode eye glow, 0..1 of ENGAGED_EYE_GLOW
 var claw_drips: Array[Dictionary] = [] # Per drop: tip node, mesh, age, hang time, fall speed
+var blood_rain_timer: float = 0.0
+var blood_rain_tick_timer: float = 0.0
 
 @onready var body_root: Node3D = $MeshRoot/Body
 @onready var head_mesh: Node3D = $MeshRoot/Body/Head
@@ -217,6 +226,7 @@ func _is_lurking() -> bool:
 func _behave(delta: float) -> void:
 	state_timer += delta
 	anim_time += delta
+	_process_blood_rain(delta)
 	if lock_delay > 0.0:
 		lock_delay -= delta
 		_hold_still(delta)
@@ -235,6 +245,7 @@ func _behave(delta: float) -> void:
 		GhoulState.FALLEN:
 			_hold_still(delta)
 			if state_timer >= (PHASE_4_FALL_STUN_TIME if phase >= 4 else FALL_STUN_TIME):
+				_start_blood_rain(_blood_rain_duration())
 				_start_flee()
 		GhoulState.PINNING:
 			_process_pinning(delta)
@@ -250,6 +261,30 @@ func _behave(delta: float) -> void:
 			_process_hunting(delta)
 	_animate_pose(delta)
 
+## Blood Rain: while the timer runs, every second every standing, non-downed player not under a tree canopy
+## gets Corrupted Blood. INF timer = permanent (phase 4) and never turns the rain off.
+func _process_blood_rain(delta: float) -> void:
+	if blood_rain_timer <= 0.0:
+		return
+	var arena = _get_arena()
+	if not is_inf(blood_rain_timer):
+		blood_rain_timer = maxf(0.0, blood_rain_timer - delta)
+		if blood_rain_timer <= 0.0:
+			if arena:
+				arena.set_blood_rain(false)
+			return
+	blood_rain_tick_timer -= delta
+	if blood_rain_tick_timer > 0.0:
+		return
+	blood_rain_tick_timer = BLOOD_RAIN_TICK
+	for p in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(p) or p.get("is_downed") == true:
+			continue
+		if arena and arena.is_in_tree_shadow(p.global_position):
+			continue
+		if p.has_method("apply_corrupted_blood"):
+			p.apply_corrupted_blood()
+
 # ----------------- PHASES -----------------
 
 ## Phases only escalate: healing back over a threshold (pin lifesteal) doesn't calm it down
@@ -262,6 +297,8 @@ func _update_phase() -> void:
 	SoundManager.play_pitch("charger_windup", 0.45, 0.0) # Guttural growl
 	if phase >= 3:
 		engaged = true
+	if phase == 4:
+		_start_blood_rain(INF) # Blood Rain is permanent from phase 4 on
 	# Breaks off whatever it's doing (pin, knockdown, leap...) and retreats, immune, to a tree.
 	# In phase 4 it starts hunting once it gets there.
 	if is_instance_valid(pinned_player) and pinned_player.get("trap_source") == self:
@@ -544,6 +581,23 @@ func _fall_down() -> void:
 	SoundManager.play_pitch("charger_crash", 0.7, -4.0)
 	_set_state(GhoulState.FALLEN)
 
+## Roar and start (or extend) Blood Rain: ticks immediately, runs for duration (INF = permanent, phase 4)
+func _start_blood_rain(duration: float) -> void:
+	SoundManager.play_pitch("charger_windup", 0.45, 0.0) # guttural roar
+	blood_rain_timer = maxf(blood_rain_timer, duration)
+	blood_rain_tick_timer = 0.0 # tick immediately
+	var arena = _get_arena()
+	if arena:
+		arena.set_blood_rain(true)
+
+## Blood Rain duration for the current phase; INF from phase 4
+func _blood_rain_duration() -> float:
+	match phase:
+		1: return BLOOD_RAIN_DURATION_PHASE_1
+		2: return BLOOD_RAIN_DURATION_PHASE_2
+		3: return BLOOD_RAIN_DURATION_PHASE_3
+		_: return INF
+
 # ----------------- PIN -----------------
 
 func _try_pin_nearby() -> bool:
@@ -602,6 +656,8 @@ func _strike(dmg_mult: float, lifesteal: bool) -> void:
 		return
 	if victim.get("is_downed") != true and victim.has_method("apply_bleed"):
 		victim.apply_bleed()
+	if victim.get("is_downed") != true and victim.has_method("apply_corrupted_blood"):
+		victim.apply_corrupted_blood()
 	SoundManager.play("flesh_tear", 0.12, 0.0)
 	# Strikes alternate left / right claw (matching _animate_arms); jolt the victim's view with the swing
 	if victim.has_method("pin_strike_jolt"):
@@ -1285,6 +1341,9 @@ func die() -> void:
 		pinned_player.release_trap(false)
 	_release_pin()
 	is_dead = true
+	var arena = _get_arena()
+	if is_instance_valid(arena) and arena.has_method("set_blood_rain"):
+		arena.set_blood_rain(false)
 	GameManager.boss_defeated.emit()
 	SoundManager.play("explosion", 0.3, -3.0)
 
@@ -1306,3 +1365,10 @@ func die() -> void:
 		hp.position = global_position + Vector3(randf_range(-2.5, 2.5), 0.5, randf_range(-2.5, 2.5))
 		hp.setup(1, 50)
 	queue_free()
+
+func _exit_tree() -> void:
+	super._exit_tree()
+	# Make sure the rain stops if the Ghoul leaves the tree for any reason
+	var arena = _get_arena()
+	if is_instance_valid(arena) and arena.has_method("set_blood_rain"):
+		arena.set_blood_rain(false)

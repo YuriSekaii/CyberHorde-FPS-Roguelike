@@ -128,7 +128,9 @@ const POISON_SLOW: float = 0.25
 const BLEED_DURATION: float = 1.5 # Added per application; stacks with no cap
 const BLEED_RATE_IDLE: float = 0.01 # Fraction of Max HP lost per second
 const BLEED_RATE_MOVING: float = 0.05
-const BLEED_HEAL_REDUCTION: float = 0.75 # All healing received is cut by 75% while bleeding
+const CORRUPTED_BLOOD_DURATION: float = 2.0 # Added per application; stacks with no cap (same as Bleed)
+const CORRUPTED_BLOOD_RATE: float = 0.02 # Fraction of Max HP drained per second, bypasses shield
+const CORRUPTED_BLOOD_HEAL_REDUCTION: float = 0.75 # All healing received is cut by 75% while corrupted
 const TRAP_IMMUNITY_DURATION: float = 3.0
 const STATUS_IMMUNITY_DURATION: float = 2.0 # Medic Cellular Restore: blocks new Poison / Bleed (not traps)
 const TRAP_PRESS_REDUCTION: float = 0.5 # Seconds removed from a timed trap per A/D press
@@ -136,6 +138,7 @@ const REMOTE_TRAP_HOLD: float = 2.0 # Remote copies can't read their owner's key
 var poison_timer: float = 0.0
 var poison_dps: float = 0.0
 var bleed_timer: float = 0.0
+var corrupted_blood_timer: float = 0.0
 var is_trapped: bool = false
 var trap_timer: float = 0.0 # Remaining hold time (INF for press-only traps)
 var trap_max_time: float = 0.0
@@ -1160,12 +1163,19 @@ func apply_poison(dps: float) -> void:
 	poison_dps = dps if poison_timer <= 0.0 else maxf(poison_dps, dps)
 	poison_timer = POISON_DURATION
 
-## Bleed: lose 1% Max HP/s (5% while moving), straight to HP, and healing is cut by 75%.
+## Bleed: lose 1% Max HP/s (5% while moving), straight to HP, bypassing shield.
 ## Each application adds 1.5s to the remaining duration (no cap). Invulnerability nullifies the drain but the timer keeps running.
 func apply_bleed() -> void:
 	if is_downed or status_immunity_timer > 0.0:
 		return
 	bleed_timer += BLEED_DURATION
+
+## Corrupted Blood: drain 2% of Max HP/s straight to HP (bypasses shield) and cut all healing received by 75%.
+## Each application adds 2s to the remaining duration (no cap, stacks like Bleed). Going down clears it.
+func apply_corrupted_blood() -> void:
+	if is_downed or status_immunity_timer > 0.0:
+		return
+	corrupted_blood_timer += CORRUPTED_BLOOD_DURATION
 
 ## Traps the player in place. duration: hold time (INF = until escaped), dps: damage-over-time while held,
 ## presses_needed: >0 escapes after that many A/D presses, otherwise each press shaves TRAP_PRESS_REDUCTION off the timer.
@@ -1257,11 +1267,12 @@ func _reset_pin_view() -> void:
 	pin_roll = 0.0
 	head.rotation.z = 0.0
 
-## Removes Poison and Bleed (traps are not status effects and stay)
+## Removes Poison, Bleed and Corrupted Blood (traps are not status effects and stay)
 func cleanse_status_effects() -> void:
 	poison_timer = 0.0
 	poison_dps = 0.0
 	bleed_timer = 0.0
+	corrupted_blood_timer = 0.0
 
 func clear_status_effects() -> void:
 	cleanse_status_effects()
@@ -1275,7 +1286,7 @@ func _process_status_effects(delta: float) -> void:
 	if status_immunity_timer > 0.0:
 		status_immunity_timer = maxf(0.0, status_immunity_timer - delta)
 	if is_downed:
-		if is_trapped or poison_timer > 0.0 or bleed_timer > 0.0:
+		if is_trapped or poison_timer > 0.0 or bleed_timer > 0.0 or corrupted_blood_timer > 0.0:
 			clear_status_effects()
 		return
 
@@ -1321,6 +1332,10 @@ func _process_status_effects(delta: float) -> void:
 		var moving = not is_trapped and Vector2(velocity.x, velocity.z).length() > 1.0
 		_lose_health_direct(max_health * (BLEED_RATE_MOVING if moving else BLEED_RATE_IDLE) * delta)
 
+	if corrupted_blood_timer > 0.0:
+		corrupted_blood_timer = maxf(0.0, corrupted_blood_timer - delta)
+		_lose_health_direct(max_health * CORRUPTED_BLOOD_RATE * delta)
+
 ## Look direction from yaw + head pitch (remote copies use the synced pitch)
 func get_look_direction() -> Vector3:
 	var pitch = head.rotation.x if is_local_player else target_net_head_pitch
@@ -1354,8 +1369,8 @@ func _trigger_second_wind() -> void:
 
 ## Every heal source (stims, Vampiric, Medic skills & regen) goes through here
 func heal(amount: float) -> void:
-	if bleed_timer > 0.0:
-		amount *= 1.0 - BLEED_HEAL_REDUCTION
+	if corrupted_blood_timer > 0.0:
+		amount *= 1.0 - CORRUPTED_BLOOD_HEAL_REDUCTION
 	current_health = minf(max_health, current_health + amount)
 	health_changed.emit(current_health, max_health)
 	if status_label:
@@ -1524,7 +1539,7 @@ func _apply_medic_heal_all() -> void:
 			if p.get("is_downed") == true:
 				continue
 			var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
-			p.heal(max_hp * 0.25) # Bleed still cuts this heal; the cleanse comes after
+			p.heal(max_hp * 0.25) # Corrupted Blood still cuts this heal; the cleanse comes after
 			if p.has_method("cleanse_status_effects"):
 				p.cleanse_status_effects()
 				p.status_immunity_timer = STATUS_IMMUNITY_DURATION
