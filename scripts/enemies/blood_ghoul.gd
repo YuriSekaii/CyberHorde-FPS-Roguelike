@@ -4,7 +4,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## A pitch-black abyss beast splattered with its victims' blood that hunts from the shadows under the trees.
 ## Loop:
 ##   HIDE      Crouches in a tree's moon shadow (almost invisible). Waits until an operative is within 25m.
-##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator), then leaps 0.25s later
+##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator), then leaps 0.1s later
 ##   LEAP      and jumps at it extremely fast. Touching an operative mid-jump pins them down.
 ##   PIN       Knocks the operative flat on their back and straddles them, raking with alternating claws every 0.3s
 ##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
@@ -26,7 +26,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
 ##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on
-##               the instant an operative is within 25m (then leaps 0.25s later); knockdown 1.5s, miss stun 3s.
+##               the instant an operative is within 25m (then leaps 0.1s later); knockdown 1.5s, miss stun 3s.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
@@ -34,7 +34,7 @@ const BOSS_MAX_HP: float = 1000000.0
 const BOSS_DAMAGE: float = 200.0 # Fixed, no wave scaling
 const ATTACK_RANGE: float = 25.0
 const LOCK_TIME: float = 2.0
-const LOCK_LEAP_DELAY: float = 0.25
+const LOCK_LEAP_DELAY: float = 0.1
 const LEAP_SPEED: float = 42.0
 const LEAP_GRAVITY: float = 40.0
 const LEAP_PIN_RANGE: float = 1.9
@@ -64,7 +64,7 @@ const HIDE_MIN_PLAYER_DIST: float = 14.0
 const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding that makes it switch trees
 const ENGAGE_IDLE_TIME: float = 10.0 # Nobody within reach this long: Engage mode
 const ENGAGED_DAMAGE_REDUCTION: float = 0.9 # While hiding in Engage mode; multiplies with the wave reduction
-const ENGAGED_EYE_GLOW: float = 1.6 # Visible from across the jungle, well short of the full hunting blaze
+const ENGAGED_EYE_GLOW: float = 4.0 # Visible from across the jungle, as bright as the full hunting blaze
 const HOP_UNWATCHED_TIME: float = 2.0 # Unwatched this long: hop to the next tree
 const HOP_STARE_RESET_TIME: float = 2.0 # Stared at this long: the unwatched count resets
 const HOP_SPEED: float = 30.0
@@ -438,7 +438,7 @@ func _start_hunt() -> void:
 	range_timer = 0.0
 	_set_state(GhoulState.HUNTING)
 
-## Sprints at the nearest operative, crouches once close, then locks on instantly and leaps 0.25s later
+## Sprints at the nearest operative, crouches once close, then locks on instantly and leaps 0.1s later
 func _process_hunting(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
