@@ -48,6 +48,16 @@ var _punch := {}
 var _no_webrtc: bool = OS.get_environment("CYBERHORDE_NO_WEBRTC") == "1"
 var _punch_test: String = OS.get_environment("CYBERHORDE_PUNCH_TEST")
 
+# UDP bridge through the relay PC for unreliable packets when no direct path exists
+# (both sides on random NATs). Reliable packets always stay on the WebSocket.
+# stage: "" / "stun" / "wait_open" / "punch" / "up" / "failed".
+# shortcut: the bridge is tried once per session; add retry if real players need it.
+var _bridge := {"stage": "", "begun": false, "stun": null, "punch": null, "sock": null, "local": {}, "lab": {},
+	"seq": 0, "last_seq": {}, "seen": {}, "last_rx": 0, "last_ka": 0}
+const BRIDGE_MAX_PAYLOAD: int = 1200
+const BRIDGE_KEEPALIVE_MSEC: int = 5000
+const BRIDGE_LOST_MSEC: int = 20000
+
 # Incoming packet queue: each entry is [source_peer_id, payload, transfer_mode]
 var _incoming: Array = []
 var _current_packet: Array = [1, PackedByteArray(), TRANSFER_MODE_RELIABLE]
@@ -89,6 +99,7 @@ func _poll() -> void:
 			_incoming.append([data.decode_s32(0), data.slice(4), TRANSFER_MODE_RELIABLE])
 	_poll_rtc()
 	_poll_punch()
+	_poll_bridge()
 	if state == WebSocketPeer.STATE_CLOSED:
 		if _status == CONNECTION_CONNECTING:
 			if _last_error.is_empty():
@@ -113,6 +124,8 @@ func _handle_control(text: String) -> void:
 				if is_join:
 					_link_begin(pid, true)
 			lobby_ready.emit(lobby_code, _unique_id)
+			if OS.get_environment("CYBERHORDE_FORCE_BRIDGE") == "1":
+				_bridge_begin()
 		"peer_connected":
 			var pid := int(msg.get("id", 0))
 			_add_peer(pid)
@@ -137,6 +150,8 @@ func _handle_control(text: String) -> void:
 				if not _rtc.has(from):
 					_rtc_create(from, false)
 				_rtc_handle_signal(from, data)
+		"bridge_open":
+			_bridge_open(msg)
 		"error":
 			# The relay closes the socket right after; reported once the close lands.
 			_last_error = str(msg.get("msg", "Lobby error."))
@@ -149,6 +164,7 @@ func _add_peer(pid: int) -> void:
 func _shutdown() -> void:
 	_status = CONNECTION_DISCONNECTED
 	_rtc_clear()
+	_bridge_close()
 	for pid in _punch.keys():
 		_punch_drop(int(pid), true)
 	for pid in _peers.duplicate():
@@ -315,6 +331,7 @@ func _punch_fail(pid: int, text: String) -> void:
 	_punch_drop(pid, false)
 	_punch[pid]["done"] = true
 	print("[net] peer %d: %s" % [pid, text])
+	_bridge_begin()
 
 func _poll_punch() -> void:
 	for pid in _punch.keys():
@@ -429,6 +446,125 @@ func _punch_drop(pid: int, erase: bool) -> void:
 	if erase:
 		_punch.erase(pid)
 
+func _bridge_begin() -> void:
+	if _bridge["begun"] or _status != CONNECTION_CONNECTED:
+		return
+	_bridge["begun"] = true
+	_bridge["stage"] = "stun"
+	var stun = StunProbe.new()
+	stun.start()
+	if _punch_test != "":
+		stun.done = true
+		stun.kind = _punch_test
+	_bridge["stun"] = stun
+
+func _bridge_fail(text: String) -> void:
+	_bridge_close()
+	_bridge["stage"] = "failed"
+	print("[net] " + text)
+
+func _bridge_close() -> void:
+	for k in ["stun", "punch", "sock"]:
+		if _bridge[k] != null:
+			_bridge[k].close()
+			_bridge[k] = null
+	_bridge["last_seq"] = {}
+	_bridge["seen"] = {}
+	if _bridge["stage"] != "":
+		_bridge["stage"] = "failed"
+
+func _bridge_up() -> bool:
+	return _bridge["stage"] == "up"
+
+func _bridge_open(msg: Dictionary) -> void:
+	if _bridge["stage"] != "wait_open":
+		return
+	var tok := int(msg.get("token", 0))
+	var ip := str(msg.get("ip", ""))
+	var port := int(msg.get("port", 0))
+	var punch = UdpPunch.new()
+	var stun = _bridge["stun"]
+	if _bridge["local"]["kind"] == "random":
+		stun.close()
+		punch.start_random(ip, port, tok)
+	else:
+		punch.start_direct(stun.take_socket(), ip, port, tok)
+	_bridge["punch"] = punch
+	_bridge["lab"] = {"ip": ip, "token": tok}
+	_bridge["stage"] = "punch"
+	ws.send_text(JSON.stringify({"op": "bridge_go"}))
+
+func _poll_bridge() -> void:
+	var stage: String = _bridge["stage"]
+	var now := Time.get_ticks_msec()
+	if stage == "stun":
+		var stun = _bridge["stun"]
+		stun.poll()
+		if not stun.done:
+			return
+		var local := {"kind": stun.kind, "ip": stun.public_ip, "port": stun.mapped_ports[0] if not stun.mapped_ports.is_empty() else 0}
+		if _punch_test != "":
+			local = {"kind": _punch_test, "ip": "127.0.0.1", "port": stun.local_port}
+		if (local["kind"] != "random" and local["kind"] != "fixed") or str(local["ip"]).is_empty():
+			_bridge_fail("UDP bridge failed, unreliable stays on relay")
+			return
+		_bridge["local"] = local
+		_bridge["stage"] = "wait_open"
+		_bridge["since"] = now
+		ws.send_text(JSON.stringify({"op": "bridge", "kind": local["kind"], "ip": local["ip"], "port": local["port"]}))
+	elif stage == "wait_open":
+		if now - int(_bridge["since"]) > 10000:
+			_bridge_fail("UDP bridge failed, unreliable stays on relay")
+	elif stage == "punch":
+		var punch = _bridge["punch"]
+		punch.poll()
+		if punch.state == "failed":
+			_bridge_fail("UDP bridge failed, unreliable stays on relay")
+		elif punch.state == "done":
+			_bridge["sock"] = punch.take_hit_socket()
+			punch.close()
+			_bridge["punch"] = null
+			if _bridge["sock"] == null:
+				_bridge_fail("UDP bridge failed, unreliable stays on relay")
+				return
+			_bridge["stage"] = "up"
+			_bridge["last_rx"] = now
+			_bridge["last_ka"] = now
+			print("[net] UDP bridge up via relay")
+	elif stage == "up":
+		var sock: PacketPeerUDP = _bridge["sock"]
+		while sock.get_available_packet_count() > 0:
+			var pkt := sock.get_packet()
+			if sock.get_packet_error() != OK or sock.get_packet_ip() != _bridge["lab"]["ip"]:
+				continue
+			_bridge["last_rx"] = now
+			if pkt.size() >= 9 and pkt[0] == 0xFE:
+				var src := pkt.decode_s32(1)
+				var seq := pkt.decode_u32(5)
+				if seq <= int(_bridge["last_seq"].get(src, 0)):
+					continue
+				_bridge["last_seq"][src] = seq
+				if not _bridge["seen"].has(src):
+					_bridge["seen"][src] = true
+					print("[net] first bridged packet from peer %d" % src)
+				_incoming.append([src, pkt.slice(9), TRANSFER_MODE_UNRELIABLE_ORDERED])
+		if now - int(_bridge["last_ka"]) >= BRIDGE_KEEPALIVE_MSEC:
+			_bridge["last_ka"] = now
+			var ka := PackedByteArray([0xFF, 0x43, 0x48, 4, 0, 0, 0, 0])
+			ka.encode_u32(4, int(_bridge["lab"]["token"]))
+			sock.put_packet(ka)
+		if now - int(_bridge["last_rx"]) > BRIDGE_LOST_MSEC:
+			_bridge_fail("UDP bridge lost")
+
+## Unreliable packet to the relay PC over UDP: 0xFE + s32 target + u32 seq + payload.
+func _bridge_send(target: int, payload: PackedByteArray) -> void:
+	_bridge["seq"] += 1
+	var frame := PackedByteArray([0xFE, 0, 0, 0, 0, 0, 0, 0, 0])
+	frame.encode_s32(1, target)
+	frame.encode_u32(5, int(_bridge["seq"]))
+	frame.append_array(payload)
+	_bridge["sock"].put_packet(frame)
+
 func _send_relay(target: int, payload: PackedByteArray) -> void:
 	var frame := PackedByteArray()
 	frame.resize(4)
@@ -474,11 +610,20 @@ func _put_packet_script(p_buffer: PackedByteArray) -> Error:
 				peer.send(1, p_buffer, 0)
 		else:
 			relayed.append(pid)
+	if relayed.is_empty():
+		return OK
+	var via_udp := _transfer_mode != TRANSFER_MODE_RELIABLE and _bridge_up() and p_buffer.size() <= BRIDGE_MAX_PAYLOAD
 	if relayed.size() == targets.size():
-		_send_relay(_target_peer, p_buffer)
+		if via_udp:
+			_bridge_send(_target_peer, p_buffer)
+		else:
+			_send_relay(_target_peer, p_buffer)
 	else:
 		for pid in relayed:
-			_send_relay(pid, p_buffer)
+			if via_udp:
+				_bridge_send(pid, p_buffer)
+			else:
+				_send_relay(pid, p_buffer)
 	return OK
 
 func _get_packet_peer() -> int:

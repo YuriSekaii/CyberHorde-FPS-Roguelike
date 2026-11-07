@@ -25,6 +25,7 @@ var _sent: int = 0
 var _last_direct: int = 0
 var _direct_port: int = 0
 var _hit_at: int = 0
+var _hit_sock: PacketPeerUDP = null
 var probes_sent: int = 0
 
 func _packet(type: int) -> PackedByteArray:
@@ -92,6 +93,7 @@ func poll() -> void:
 					_send(s, s.get_packet_ip(), s.get_packet_port(), 3)
 			if (type == 2 or type == 3) and _hit_at == 0:
 				_hit_at = now
+				_hit_sock = s
 				local_port = s.get_local_port()
 				remote_ip = s.get_packet_ip()
 				remote_port = s.get_packet_port()
@@ -106,3 +108,16 @@ func close() -> void:
 	for s in _socks:
 		s.close()
 	_socks.clear()
+
+## After state "done": closes every other socket, returns the one that got the hit
+## (destination already set to the remote), or null.
+func take_hit_socket() -> PacketPeerUDP:
+	var hit := _hit_sock
+	for s in _socks:
+		if s != hit:
+			s.close()
+	_socks.clear()
+	_hit_sock = null
+	if hit != null:
+		hit.set_dest_address(remote_ip, remote_port)
+	return hit
