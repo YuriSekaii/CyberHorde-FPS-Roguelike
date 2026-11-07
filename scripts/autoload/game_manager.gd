@@ -98,6 +98,7 @@ var second_wind_available: bool = false
 var second_wind_cooldown_waves: int = 0
 var dash_unlocked: bool = false
 var cooldown_reduction: bool = false
+var dual_capacitor: bool = false
 var player_class: String = "medic"
 var greed_mult: float = 1.0
 
@@ -238,6 +239,14 @@ var upgrade_database: Dictionary = {
 		"id": "cooldown_reduction",
 		"name": "Cooldown Reduction",
 		"desc": "Reduce your class skill cooldown by 50%. (Max 1 stack).",
+		"rarity": "Legendary",
+		"color": Color(1.0, 0.9, 0.2),
+		"max_stacks": 1
+	},
+	"dual_capacitor": {
+		"id": "dual_capacitor",
+		"name": "Dual Capacitor",
+		"desc": "Your class active skill holds 2 charges. Charges recharge one at a time. (Max 1 stack).",
 		"rarity": "Legendary",
 		"color": Color(1.0, 0.9, 0.2),
 		"max_stacks": 1
@@ -523,6 +532,7 @@ func _reset_progression() -> void:
 	second_wind_cooldown_waves = 0
 	dash_unlocked = false
 	cooldown_reduction = false
+	dual_capacitor = false
 	greed_mult = 1.0
 	
 	fever_tier_index = 0
@@ -859,6 +869,8 @@ func _apply_upgrade_internal(upgrade_id: String) -> void:
 			second_wind_cooldown_waves = 0
 		"cooldown_reduction":
 			cooldown_reduction = true
+		"dual_capacitor":
+			dual_capacitor = true
 		"vital_plating":
 			max_health_bonus += 25.0
 		"hardened_alloy":
@@ -888,6 +900,9 @@ func set_stage(stage: int) -> void:
 
 func get_skill_cooldown_mult() -> float:
 	return 0.5 if cooldown_reduction else 1.0
+
+func get_skill_max_charges() -> int:
+	return 2 if dual_capacitor else 1
 
 func trigger_second_wind() -> void:
 	second_wind_available = false

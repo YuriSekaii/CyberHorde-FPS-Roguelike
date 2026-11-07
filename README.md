@@ -109,7 +109,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | Weapon | Key | Fire Mode | Base Damage | Pellets | Fire Rate | Mag | Reload | Base Crit | Key Mechanics |
 | :--- | :---: | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :--- |
 | **Pulse Carbine** | `1` | Automatic | 22.0 | 1 | 0.12s (8.33/s) | 32 | 1.2s | 10% | High-velocity kinetic rifle |
-| **Scatter Cannon** | `2` | Semi-Auto | 16.0 / pellet (192 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters spread (0.10828125 cone) |
+| **Scatter Cannon** | `2` | Semi-Auto | 18.0 / pellet (216 total) | 12 | 0.65s (1.54/s) | 8 | 1.6s | 5% | Wide close-quarters spread (0.10828125 cone) |
 | **Plasma Core** | `3` | Hold-to-Charge, Release-to-Fire | 150 direct + 150 AoE | 1 | 0.15 shot/s (~6.67s cd + 0.18s charge) | 5 | 2.0s | 25% | Slow heavy orb (~23.3 m/s), ~2.5m effective capture width, 5.0m AoE (6.25m with *Explosive Payload*), Tesla Arc radial synergy |
 
 ### Weapon Mechanics Notes
@@ -130,7 +130,7 @@ When deploying into a mission (Solo, Co-op, or Boss Battle), each player chooses
 | **Gunner** | Neon Crimson | Heavy Assault DPS | **Reckless Assault**: **+25% Critical Strike Chance** across all weapons and companion drones, but take **10% more damage** from all incoming sources. | **Berserk Protocol** (30s cd): For 5s, gain **invulnerability**, **Suppression Immune** (can't be pinned or trapped; casting it while pinned/engulfed breaks free instantly and counts as an escape, so the Blood Ghoul is knocked down and the Bog Slime pauses), **+500% MORE fire rate** and **unlimited magazine** across player weapons and companion drones. All weapons become fully automatic (hold to fire), and Plasma Core fires instantly without charging. All weapons and companion drones reload to full magazine when the skill ends. |
 
 > [!NOTE]
-> The Legendary perk **Cooldown Reduction** reduces your class active skill cooldown by **50%** (Medic: 10.0s, Rogue: 5.0s, Gunner: 15.0s). In co-op, players can pick identical or complementary classes; multiple Medics stack %Max HP/s aura regeneration for the entire squad.
+> The Legendary perk **Cooldown Reduction** reduces your class active skill cooldown by **50%** (Medic: 10.0s, Rogue: 5.0s, Gunner: 15.0s). The Legendary perk **Dual Capacitor** gives your class active skill **2 charges that recharge one at a time**; it stacks with Cooldown Reduction (affecting each charge's recharge time). In co-op, players can pick identical or complementary classes; multiple Medics stack %Max HP/s aura regeneration for the entire squad.
 
 ### 🎯 Active Skill HUD & Cooldown System
 The HUD features custom cyberpunk vector icons positioned at the bottom-left directly below the health bar:
@@ -201,6 +201,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, Gunner Berserk Protocol active, and Rogue passive reload speed). Drones never target Spawnlings | 3 |
 | **Emergency Defibrillator**| `Legendary`| Prevents fatal damage, fully restores HP & Shield + 5s invulnerability. Recharges every 10 waves. Co-op: only fires once the whole squad is down (a downed holder gets back up the moment the last teammate falls) | 1 |
 | **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
+| **Dual Capacitor** | `Legendary`| Your class active skill holds 2 charges. Charges recharge one at a time. | 1 |
 
 ---
 

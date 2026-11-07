@@ -71,6 +71,7 @@ const GUNNER_ACTIVE_DURATION: float = 5.0
 
 var skill_cooldown_timer: float = 0.0
 var skill_max_cooldown: float = 10.0
+var skill_charges: int = 1
 var skill_ready: bool = true
 
 # Medic Active: Cellular Restore
@@ -88,6 +89,13 @@ func get_skill_max_cooldown() -> float:
 		"rogue": return DASH_COOLDOWN * mult
 		"gunner", "slayer": return GUNNER_COOLDOWN * mult
 		_: return 10.0 * mult
+
+func _begin_skill_cooldown(cd: float) -> void:
+	skill_max_cooldown = cd
+	skill_charges -= 1
+	if skill_cooldown_timer <= 0.0:
+		skill_cooldown_timer = cd
+	skill_ready = skill_charges > 0
 
 # Rogue Active: Quantum Dash
 const DASH_TOTAL_DISTANCE: float = 15.0
@@ -338,7 +346,7 @@ func _setup_weapons() -> void:
 	var shotgun = Weapon.new()
 	shotgun.name = "Scatter Cannon"
 	shotgun.fire_rate = 0.65
-	shotgun.damage = 16.0
+	shotgun.damage = 18.0
 	shotgun.base_max_ammo = 8
 	shotgun.max_ammo = 8
 	shotgun.current_ammo = 8
@@ -404,8 +412,8 @@ func _update_stats() -> void:
 	if GameManager.null_barrier_unlocked and null_barrier_timer <= 0.0:
 		null_barrier_ready = true
 	
-	if skill_cooldown_timer <= 0.0:
-		skill_ready = true
+	skill_charges = mini(skill_charges, GameManager.get_skill_max_charges())
+	skill_ready = skill_charges > 0
 	
 	health_changed.emit(current_health, max_health)
 	shield_changed.emit(current_shield, GameManager.shield_max)
@@ -477,14 +485,24 @@ func _physics_process(delta: float) -> void:
 			if is_local_player:
 				SoundManager.play("upgrade_select", 0.05, 1.8)
 	
-	# Class Skill cooldown timer
+	# Class Skill cooldown / charge-recharge timer
 	if skill_cooldown_timer > 0.0:
 		skill_cooldown_timer -= delta
 		if skill_cooldown_timer <= 0.0:
 			skill_cooldown_timer = 0.0
-			skill_ready = true
+			var max_charges: int = GameManager.get_skill_max_charges()
+			skill_charges = clampi(skill_charges + 1, 0, max_charges)
+			if skill_charges < max_charges:
+				skill_max_cooldown = get_skill_max_cooldown()
+				skill_cooldown_timer = skill_max_cooldown
+			skill_ready = skill_charges > 0
 			if is_local_player:
 				SoundManager.play("upgrade_select", 0.05, 1.8)
+
+	# Recharge the next charge when idle and below capacity
+	if skill_cooldown_timer <= 0.0 and skill_charges < GameManager.get_skill_max_charges():
+		skill_max_cooldown = get_skill_max_cooldown()
+		skill_cooldown_timer = skill_max_cooldown
 	
 	# Slayer active duration timer (5s)
 	if is_slayer_active:
@@ -619,7 +637,7 @@ func _handle_movement(delta: float) -> void:
 		if Input.is_action_just_pressed("skill_dash") or Input.is_action_just_pressed("skill_active"):
 			if is_trapped and player_class == "rogue":
 				SoundManager.play("empty_ammo", 0.1, -6.0) # Quantum Dash can't break a trap
-			elif skill_ready and skill_cooldown_timer <= 0.0 and not is_dashing and not is_slayer_active:
+			elif skill_charges > 0 and not is_dashing and not is_slayer_active and not is_medic_active and not is_gunner_active:
 				_activate_class_skill()
 				return
 			elif not is_dashing and not is_slayer_active:
@@ -1484,9 +1502,7 @@ func _activate_medic_skill() -> void:
 	is_medic_active = true
 	medic_timer = MEDIC_ACTIVE_DURATION
 	var cd = MEDIC_COOLDOWN * GameManager.get_skill_cooldown_mult()
-	skill_max_cooldown = cd
-	skill_cooldown_timer = cd
-	skill_ready = false
+	_begin_skill_cooldown(cd)
 	if NetworkManager.is_multiplayer:
 		rpc_medic_active.rpc()
 	else:
@@ -1526,11 +1542,9 @@ func _apply_medic_heal_all() -> void:
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
 	is_dashing = true
-	skill_ready = false
 	dash_timer = DASH_DURATION
 	var cd = DASH_COOLDOWN * GameManager.get_skill_cooldown_mult()
-	skill_max_cooldown = cd
-	skill_cooldown_timer = cd
+	_begin_skill_cooldown(cd)
 	
 	# Rogue Active: Instantly reload all weapons (and companion drones)
 	if is_reloading:
@@ -1588,9 +1602,7 @@ func _activate_gunner_skill() -> void:
 	is_gunner_active = true
 	gunner_timer = GUNNER_ACTIVE_DURATION
 	var cd = GUNNER_COOLDOWN * GameManager.get_skill_cooldown_mult()
-	skill_max_cooldown = cd
-	skill_cooldown_timer = cd
-	skill_ready = false
+	_begin_skill_cooldown(cd)
 	# Invulnerable and Suppression Immune for the full active duration
 	trigger_invulnerability(GUNNER_ACTIVE_DURATION)
 	# Breaking out counts as an escape: the source reacts as if mashed free (Ghoul knocked down, Slime pauses)

@@ -347,6 +347,8 @@ func _update_skill_hud() -> void:
 	var is_ready: bool = true
 	var is_active: bool = false
 	var active_dur: float = 0.0
+	var charges: int = 1
+	var max_charges: int = 1
 	
 	if local_player and is_instance_valid(local_player):
 		var p_cls_val = local_player.get("player_class")
@@ -355,7 +357,10 @@ func _update_skill_hud() -> void:
 		
 		var timer_val = local_player.get("skill_cooldown_timer")
 		sec_left = float(timer_val) if timer_val != null else 0.0
-		is_ready = (local_player.get("skill_ready") == true) and (sec_left <= 0.0)
+		var charges_val = local_player.get("skill_charges")
+		charges = int(charges_val) if charges_val != null else 1
+		var skill_ready_val = local_player.get("skill_ready")
+		is_ready = (charges > 0) if charges_val != null else ((skill_ready_val == true) and (sec_left <= 0.0))
 		
 		if local_player.has_method("get_skill_max_cooldown"):
 			max_cd = local_player.get_skill_max_cooldown()
@@ -364,7 +369,8 @@ func _update_skill_hud() -> void:
 			max_cd = float(m_cd_val) if m_cd_val != null else 10.0
 		if max_cd <= 0.01:
 			max_cd = 10.0
-		
+		max_charges = GameManager.get_skill_max_charges()
+
 		match p_class:
 			"medic":
 				if local_player.get("is_medic_active") == true:
@@ -414,7 +420,10 @@ func _update_skill_hud() -> void:
 	elif is_ready:
 		if mat:
 			mat.set_shader_parameter("is_active", false)
-			mat.set_shader_parameter("progress", 1.0)
+			var ready_progress: float = 1.0
+			if max_charges > 1 and charges < max_charges and sec_left > 0.0:
+				ready_progress = clampf(1.0 - (sec_left / max_cd), 0.0, 1.0)
+			mat.set_shader_parameter("progress", ready_progress)
 			mat.set_shader_parameter("border_color", theme_col)
 		
 		if skill_cooldown_label:
@@ -422,7 +431,10 @@ func _update_skill_hud() -> void:
 			skill_cooldown_label.text = ""
 		
 		if skill_status_label:
-			skill_status_label.text = "[READY]"
+			if max_charges > 1:
+				skill_status_label.text = "[READY x%d]" % charges
+			else:
+				skill_status_label.text = "[READY]"
 			skill_status_label.modulate = theme_col
 		
 		_set_icon_border_color(theme_col, false)
