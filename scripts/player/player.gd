@@ -76,9 +76,9 @@ var skill_ready: bool = true
 # Medic Active: Cellular Restore
 var is_medic_active: bool = false
 var medic_timer: float = 0.0
-# Cellular Restore follow-up regen: +2% Max HP & Shield per second for 10s (refreshes, no stacking)
+# Cellular Restore follow-up regen: +2.5% Max HP & Shield per second for 10s (refreshes, no stacking)
 const MEDIC_REGEN_DURATION: float = 10.0
-const MEDIC_REGEN_RATE: float = 0.02
+const MEDIC_REGEN_RATE: float = 0.025
 var medic_regen_timer: float = 0.0
 
 func get_skill_max_cooldown() -> float:
@@ -498,7 +498,7 @@ func _physics_process(delta: float) -> void:
 			is_medic_active = false
 			medic_timer = 0.0
 
-	# Medic Active follow-up: regen 2% Max HP & Shield per second for 10s
+	# Medic Active follow-up: regen 2.5% Max HP & Shield per second for 10s
 	if medic_regen_timer > 0.0:
 		medic_regen_timer = maxf(0.0, medic_regen_timer - delta)
 		if is_downed:
@@ -1499,12 +1499,12 @@ func _apply_medic_heal_all() -> void:
 			if p.get("is_downed") == true:
 				continue
 			var max_hp = float(p.get("max_health")) if "max_health" in p else 100.0
-			p.heal(max_hp * 0.20) # Bleed still cuts this heal; the cleanse comes after
+			p.heal(max_hp * 0.25) # Bleed still cuts this heal; the cleanse comes after
 			if p.has_method("cleanse_status_effects"):
 				p.cleanse_status_effects()
 				p.status_immunity_timer = STATUS_IMMUNITY_DURATION
 			if GameManager.shield_max > 0.0:
-				var s_add = GameManager.shield_max * 0.20
+				var s_add = GameManager.shield_max * 0.25
 				p.current_shield = minf(GameManager.shield_max, p.current_shield + s_add)
 				GameManager.current_shield = p.current_shield
 				p.shield_changed.emit(p.current_shield, GameManager.shield_max)
@@ -1512,7 +1512,7 @@ func _apply_medic_heal_all() -> void:
 				p.trigger_invulnerability(2.0)
 			if "medic_regen_timer" in p:
 				p.medic_regen_timer = MEDIC_REGEN_DURATION
-	_spawn_floating_text("+20% HP & SHIELD, CLEANSED (INVULN & STATUS IMMUNE 2s, +20% REGEN 10s)", Color(0.2, 1.0, 0.6))
+	_spawn_floating_text("+25% HP & SHIELD, CLEANSED (INVULN & STATUS IMMUNE 2s, +25% REGEN 10s)", Color(0.2, 1.0, 0.6))
 
 # --- ROGUE ACTIVE: QUANTUM DASH (10s cd) ---
 func _start_dash() -> void:
