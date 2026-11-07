@@ -140,19 +140,29 @@ def tex_flagstone(n=2048, tile=4.0, rows=8, seed=51):
         diff = np.abs(uu[..., None] - cuts)
         du[sl] = np.minimum(diff, 1 - diff).min(-1) * tile     # cuts wrap around, so the row tiles
         sid[sl] = k * 16 + np.searchsorted(cuts, uu) % len(cuts)
-    jit = pnoise(n, 30, seed=seed + 1, octaves=3) - 0.5
-    d = np.minimum(du, np.minimum(fy, 1 - fy) * tile / rows) + jit * 0.02
-    r1 = r.random(rows * 16)[sid]; r2 = r.random(rows * 16)[sid]
+    # centuries of wear: ragged, broken edges and corners, cracked stones, stains, dirt and moss creeping in
+    jit = pnoise(n, 30, seed=seed + 1, octaves=4) - 0.5
+    chip = smooth(pnoise(n, 60, seed=seed + 7, octaves=3), 0.6, 0.75)
+    d = np.minimum(du, np.minimum(fy, 1 - fy) * tile / rows) + jit * 0.045 - chip * 0.05
+    r1 = r.random(rows * 16)[sid]; r2 = r.random(rows * 16)[sid]; r3 = r.random(rows * 16)[sid]
     grain = pnoise(n, 220, seed=seed + 2, octaves=3)
     dirt = pnoise(n, 4, seed=seed + 3, octaves=4)
-    h = smooth(d, 0.008, 0.045) * (0.85 + 0.15 * r2) + (grain - 0.5) * 0.1
-    col = lerp((0.50, 0.48, 0.43), (0.37, 0.36, 0.33), r1)
-    col = lerp(col, (0.47, 0.42, 0.34), (r2 > 0.8).astype(float) * 0.6)
-    col = col * (0.82 + 0.3 * grain)[..., None] * (0.8 + 0.25 * dirt)[..., None]
-    joint = lerp((0.17, 0.15, 0.12), (0.22, 0.29, 0.13), smooth(pnoise(n, 25, seed=seed + 4, octaves=2), 0.4, 0.6))
-    col = lerp(joint, col, smooth(d, 0.004, 0.014))
-    col = col * (0.72 + 0.28 * smooth(d, 0.004, 0.06))[..., None]
-    return save("castle_flagstone", col), save("castle_flagstone_n", normal_from(h, 5.0), True)
+    stain = smooth(pnoise(n, 9, seed=seed + 5, octaves=4), 0.55, 0.8)
+    crack = (1 - smooth(np.abs(pnoise(n, 6, seed=seed + 6, octaves=3) - 0.5), 0.003, 0.011)) * (r3 < 0.3)
+    dips = pnoise(n, 14, seed=seed + 8, octaves=3)                          # worn hollows collect dirt
+    edge = smooth(d, 0.006, 0.08)
+    h = edge * (0.8 + 0.2 * r2) + (grain - 0.5) * 0.14 - crack * 0.6 - smooth(dips, 0.6, 0.85) * 0.15
+    col = lerp((0.40, 0.38, 0.34), (0.27, 0.26, 0.24), r1)
+    col = lerp(col, (0.38, 0.33, 0.26), (r2 > 0.8).astype(float) * 0.6)
+    col = col * (0.8 + 0.3 * grain)[..., None] * (0.72 + 0.3 * dirt)[..., None]
+    col = lerp(col, (0.16, 0.15, 0.13), stain * 0.55)                       # old water / soot stains
+    col = lerp(col, (0.21, 0.18, 0.14), smooth(dips, 0.6, 0.85) * 0.6)
+    moss = smooth(pnoise(n, 25, seed=seed + 4, octaves=2), 0.4, 0.6)
+    joint = lerp((0.12, 0.11, 0.09), (0.17, 0.22, 0.10), moss)
+    col = lerp(col, joint, (1 - smooth(d, 0.0, 0.05)) * moss * 0.5)          # moss creeping onto the edges
+    col = lerp(joint, col, smooth(d, 0.004, 0.016))
+    col = col * (0.62 + 0.38 * edge)[..., None] * (1 - 0.65 * crack)[..., None]
+    return save("castle_flagstone", col), save("castle_flagstone_n", normal_from(h, 6.0), True)
 
 def tex_temple(n=1024, seed=61, moss=False):
     """Ancient temple limestone (2 m tile): worn, rain-grimed, cracked. The moss variant goes low and on ledges."""
