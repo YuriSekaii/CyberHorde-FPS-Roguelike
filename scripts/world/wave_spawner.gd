@@ -33,6 +33,7 @@ const SLIME_AFTER_WAVE: int = 10
 const STALKER_AFTER_WAVE: int = 20
 const SPORE_PIT_AFTER_WAVE: int = 30
 const STAGE_TRANSITION_DELAY: float = 10.0
+const EnemySnapshot = preload("res://scripts/network/enemy_snapshot.gd")
 
 # Enemy type ids: 0=Swarmer, 1=Spitter, 2=Brute, 3=Apex Overlord, 4=Charger, 5=Void Spawner, 6=Bomber, 7=Hornet,
 # 8=Shadow Spider, 9=Venom Wyvern, 10=Bog Slime, 11=Mantis Stalker, 12=Spore Pit, 13=Blood Ghoul
@@ -154,23 +155,14 @@ func _process(delta: float) -> void:
 			if alive_count <= 0 and enemies_left_to_spawn <= 0 and pending_spawns.is_empty():
 				_complete_wave()
 
-# shortcut: every snapshot carries all enemies (fine below ~500 enemies; send only movers if hordes grow).
+# shortcut: every snapshot carries all enemies every tick, chunked by 96 into UDP-safe packets.
 func _send_enemy_snapshot() -> void:
-	var data := PackedByteArray()
-	var live: Array[Node] = []
+	var entries: Array = []
 	for e in EnemyBase.all_enemies:
 		if is_instance_valid(e) and not e.is_dead:
-			live.append(e)
-	data.resize(live.size() * 11)
-	var o := 0
-	for e in live:
-		data.encode_s32(o, String(e.name).hash())
-		data.encode_half(o + 4, e.global_position.x)
-		data.encode_half(o + 6, e.global_position.y)
-		data.encode_half(o + 8, e.global_position.z)
-		data.encode_u8(o + 10, int(roundf(wrapf(e.rotation.y, 0.0, TAU) / TAU * 256.0)) & 255)
-		o += 11
-	rpc_enemy_snapshot.rpc(data)
+			entries.append([String(e.name).hash(), e.global_position, wrapf(e.rotation.y, 0.0, TAU)])
+	for chunk in EnemySnapshot.encode(entries):
+		rpc_enemy_snapshot.rpc(chunk)
 
 @rpc("authority", "unreliable_ordered")
 func rpc_enemy_snapshot(data: PackedByteArray) -> void:
@@ -178,12 +170,10 @@ func rpc_enemy_snapshot(data: PackedByteArray) -> void:
 	for e in EnemyBase.all_enemies:
 		if is_instance_valid(e) and not e.is_dead:
 			by_hash[String(e.name).hash()] = e
-	var o := 0
-	while o + 11 <= data.size():
-		var e = by_hash.get(data.decode_s32(o))
+	for entry in EnemySnapshot.decode(data):
+		var e = by_hash.get(entry[0])
 		if e:
-			e.apply_net_state(Vector3(data.decode_half(o + 4), data.decode_half(o + 6), data.decode_half(o + 8)), data.decode_u8(o + 10) * TAU / 256.0)
-		o += 11
+			e.apply_net_state(entry[1], entry[2])
 
 func start_intermission(duration: float = 4.0) -> void:
 	is_intermission = true

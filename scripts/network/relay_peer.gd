@@ -61,6 +61,9 @@ const BRIDGE_LOST_MSEC: int = 20000
 # Incoming packet queue: each entry is [source_peer_id, payload, transfer_mode]
 var _incoming: Array = []
 var _current_packet: Array = [1, PackedByteArray(), TRANSFER_MODE_RELIABLE]
+# Packets appended to _incoming, keyed by path: WebSocket frames = relay, WebRTC channels = rtc,
+# punched ENet = enet, UDP bridge = bridge.
+var rx_stats := {"relay": 0, "rtc": 0, "enet": 0, "bridge": 0}
 
 func create_lobby(url: String) -> Error:
 	_want_create = true
@@ -97,6 +100,7 @@ func _poll() -> void:
 			_handle_control(data.get_string_from_utf8())
 		elif data.size() >= 4 and _status == CONNECTION_CONNECTED:
 			_incoming.append([data.decode_s32(0), data.slice(4), TRANSFER_MODE_RELIABLE])
+			rx_stats["relay"] += 1
 	_poll_rtc()
 	_poll_punch()
 	_poll_bridge()
@@ -293,9 +297,11 @@ func _poll_rtc() -> void:
 		if rel_open:
 			while rel.get_available_packet_count() > 0:
 				_incoming.append([int(pid), rel.get_packet(), TRANSFER_MODE_RELIABLE])
+				rx_stats["rtc"] += 1
 		if unrel_open:
 			while unrel.get_available_packet_count() > 0:
 				_incoming.append([int(pid), unrel.get_packet(), TRANSFER_MODE_UNRELIABLE_ORDERED])
+				rx_stats["rtc"] += 1
 		if rel_open and unrel_open and not entry.get("direct", false):
 			entry["direct"] = true
 			print("[net] direct link to peer %d" % int(pid))
@@ -421,6 +427,7 @@ func _punch_service(pid: int, e: Dictionary) -> void:
 			var peer: ENetPacketPeer = ev[1]
 			var mode := TRANSFER_MODE_RELIABLE if int(ev[3]) == 0 else TRANSFER_MODE_UNRELIABLE_ORDERED
 			_incoming.append([pid, peer.get_packet(), mode])
+			rx_stats["enet"] += 1
 		elif type == ENetConnection.EVENT_DISCONNECT:
 			_punch_fail(pid, "punched link closed, back on relay")
 			return
@@ -548,6 +555,7 @@ func _poll_bridge() -> void:
 					_bridge["seen"][src] = true
 					print("[net] first bridged packet from peer %d" % src)
 				_incoming.append([src, pkt.slice(9), TRANSFER_MODE_UNRELIABLE_ORDERED])
+				rx_stats["bridge"] += 1
 		if now - int(_bridge["last_ka"]) >= BRIDGE_KEEPALIVE_MSEC:
 			_bridge["last_ka"] = now
 			var ka := PackedByteArray([0xFF, 0x43, 0x48, 4, 0, 0, 0, 0])
