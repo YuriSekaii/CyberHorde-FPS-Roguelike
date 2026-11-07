@@ -135,6 +135,7 @@ var trap_dps: float = 0.0
 var trap_source: Node = null
 var trap_presses_needed: int = 0 # >0: escape after this many presses instead of on a timer
 var trap_presses_done: int = 0
+var trap_last_dir: int = 0 # -1 = left, 1 = right; escape presses must alternate
 var trap_immunity_timer: float = 0.0
 var status_immunity_timer: float = 0.0
 
@@ -1161,6 +1162,7 @@ func apply_trap(source: Node, duration: float, dps: float, presses_needed: int =
 	trap_dps = dps
 	trap_presses_needed = presses_needed
 	trap_presses_done = 0
+	trap_last_dir = 0
 	velocity = Vector3.ZERO
 	if is_charging:
 		_cancel_charge()
@@ -1179,6 +1181,7 @@ func release_trap(escaped: bool = true) -> void:
 	trap_dps = 0.0
 	trap_presses_needed = 0
 	trap_presses_done = 0
+	trap_last_dir = 0
 	trap_immunity_timer = TRAP_IMMUNITY_DURATION
 	if escaped and is_local_player:
 		SoundManager.play("dash", 0.1, -4.0)
@@ -1268,7 +1271,13 @@ func _process_status_effects(delta: float) -> void:
 			if trap_timer <= 0.0:
 				release_trap(true)
 		else:
-			if Input.is_action_just_pressed("move_left") or Input.is_action_just_pressed("move_right"):
+			var dir: int = 0
+			if Input.is_action_just_pressed("move_left"):
+				dir = -1
+			elif Input.is_action_just_pressed("move_right"):
+				dir = 1
+			if dir != 0 and dir != trap_last_dir:
+				trap_last_dir = dir
 				if trap_presses_needed > 0:
 					trap_presses_done += 1
 				else:

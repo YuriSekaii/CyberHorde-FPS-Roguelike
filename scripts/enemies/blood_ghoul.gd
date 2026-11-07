@@ -8,7 +8,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   LEAP      and jumps at it extremely fast. Touching an operative mid-jump pins them down.
 ##   PIN       Knocks the operative flat on their back and straddles them, raking with alternating claws every 0.3s
 ##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
-##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
+##             up at it, until they press alternating A / D 10 times to escape (holding or repeating one key doesn't count). Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
 ##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (3s in phase 4), then flees.
 ##   ENGAGE    After 10s total hiding with nobody in its 25m reach (the count only restarts after a leap), its eyes

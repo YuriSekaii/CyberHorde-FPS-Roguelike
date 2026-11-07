@@ -697,11 +697,11 @@ func _update_status_effects(delta: float) -> void:
 		var pulse = 0.5 + 0.5 * sin(status_pulse * 8.0)
 		var presses_needed: int = int(p.get("trap_presses_needed"))
 		if presses_needed > 0:
-			trap_label.text = "PINNED! MASH [A] [D] TO ESCAPE  (%d/%d)" % [int(p.get("trap_presses_done")), presses_needed]
+			trap_label.text = "PINNED! ALTERNATE [A] [D] TO ESCAPE  (%d/%d)" % [int(p.get("trap_presses_done")), presses_needed]
 			trap_label.add_theme_color_override("font_color", Color(1.0, 0.25, 0.2))
 			tint = Color(0.45, 0.0, 0.0, 0.28 + pulse * 0.1)
 		else:
-			trap_label.text = "ENGULFED! MASH [A] [D] TO ESCAPE  (%.1fs)" % maxf(0.0, float(p.get("trap_timer")))
+			trap_label.text = "ENGULFED! ALTERNATE [A] [D] TO ESCAPE  (%.1fs)" % maxf(0.0, float(p.get("trap_timer")))
 			trap_label.add_theme_color_override("font_color", Color(0.55, 1.0, 0.3))
 			tint = Color(0.15, 0.6, 0.08, 0.3 + pulse * 0.06)
 		trap_bar.value = p.get_trap_progress()
