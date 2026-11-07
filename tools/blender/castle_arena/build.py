@@ -123,8 +123,36 @@ def tex_wood(n=512, seed=41):
     u, v = grid(n)
     g = pnoise(n, 60, 1.5, seed=seed, octaves=4)
     plank = smooth(np.minimum((u * 4) % 1, 1 - (u * 4) % 1), 0.0, 0.03)
-    col = lerp((0.20, 0.13, 0.08), (0.38, 0.26, 0.15), g) * (0.4 + 0.6 * plank)[..., None]
+    col = lerp((0.30, 0.20, 0.12), (0.50, 0.36, 0.22), g) * (0.5 + 0.5 * plank)[..., None]
     return save("castle_wood", col), save("castle_wood_n", normal_from(plank * 0.6 + g * 0.2, 3.0), True)
+
+def tex_flagstone(n=2048, tile=4.0, rows=8, seed=51):
+    """Courtyard paving: rows of 0.5 m stones with random lengths, moss and dirt in the joints."""
+    r = np.random.default_rng(seed)
+    u, v = grid(n)
+    ry = v * rows; row = np.floor(ry).astype(int); fy = ry - row
+    du = np.zeros((n, n)); sid = np.zeros((n, n), int)
+    band = n // rows
+    for k in range(rows):
+        w = 0.6 + r.random(r.integers(4, 7)); w /= w.sum()        # min stone ~0.4 m, no slivers
+        cuts = np.sort((np.cumsum(w) + r.random()) % 1.0)
+        sl = slice(k * band, (k + 1) * band); uu = u[sl]
+        diff = np.abs(uu[..., None] - cuts)
+        du[sl] = np.minimum(diff, 1 - diff).min(-1) * tile     # cuts wrap around, so the row tiles
+        sid[sl] = k * 16 + np.searchsorted(cuts, uu) % len(cuts)
+    jit = pnoise(n, 30, seed=seed + 1, octaves=3) - 0.5
+    d = np.minimum(du, np.minimum(fy, 1 - fy) * tile / rows) + jit * 0.02
+    r1 = r.random(rows * 16)[sid]; r2 = r.random(rows * 16)[sid]
+    grain = pnoise(n, 220, seed=seed + 2, octaves=3)
+    dirt = pnoise(n, 4, seed=seed + 3, octaves=4)
+    h = smooth(d, 0.008, 0.045) * (0.85 + 0.15 * r2) + (grain - 0.5) * 0.1
+    col = lerp((0.50, 0.48, 0.43), (0.37, 0.36, 0.33), r1)
+    col = lerp(col, (0.47, 0.42, 0.34), (r2 > 0.8).astype(float) * 0.6)
+    col = col * (0.82 + 0.3 * grain)[..., None] * (0.8 + 0.25 * dirt)[..., None]
+    joint = lerp((0.17, 0.15, 0.12), (0.22, 0.29, 0.13), smooth(pnoise(n, 25, seed=seed + 4, octaves=2), 0.4, 0.6))
+    col = lerp(joint, col, smooth(d, 0.004, 0.014))
+    col = col * (0.72 + 0.28 * smooth(d, 0.004, 0.06))[..., None]
+    return save("castle_flagstone", col), save("castle_flagstone_n", normal_from(h, 5.0), True)
 
 # ---------------------------------------------------------------- materials
 def mat(name, tex=None, base=(0.5, 0.5, 0.5), rough=0.9, metal=0.0):
@@ -142,11 +170,13 @@ def mat(name, tex=None, base=(0.5, 0.5, 0.5), rough=0.9, metal=0.0):
         nt.links.new(nm.outputs["Normal"], b.inputs["Normal"])
     return m
 
+TEX = {"stone": tex_stone(), "roof": tex_roof(), "column": tex_column(), "wood": tex_wood(),
+       "flagstone": tex_flagstone()}
 MATS = {
-    "stone": mat("CastleStone", tex_stone(), rough=0.92),
-    "roof": mat("CastleRoof", tex_roof(), rough=0.85),
-    "column": mat("CastleColumn", tex_column(), rough=0.8),
-    "wood": mat("CastleWood", tex_wood(), rough=0.8),
+    "stone": mat("CastleStone", TEX["stone"], rough=0.92),
+    "roof": mat("CastleRoof", TEX["roof"], rough=0.85),
+    "column": mat("CastleColumn", TEX["column"], rough=0.8),
+    "wood": mat("CastleWood", TEX["wood"], rough=0.8),
     "iron": mat("CastleIron", base=(0.06, 0.06, 0.065), rough=0.45, metal=0.7),
     "dark": mat("CastleSlit", base=(0.015, 0.014, 0.012), rough=1.0),
 }
@@ -294,6 +324,11 @@ def export(o):
 
 for o in objs:
     export(o)
+# Tileable textures for the arena's Godot box meshes (floor, platform, ramps, cover; world-triplanar materials)
+TEXOUT = os.path.join(OUT, "..", "textures", "castle"); os.makedirs(TEXOUT, exist_ok=True)
+for key in ("stone", "column", "wood", "flagstone"):
+    for img in TEX[key]:
+        img.file_format = "JPEG"; img.filepath_raw = os.path.join(TEXOUT, img.name + ".jpg"); img.save()
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "castle_arena.blend"))
 
 # ---------------------------------------------------------------- preview (NE corner of the arena)

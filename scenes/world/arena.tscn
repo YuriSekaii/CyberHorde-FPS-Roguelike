@@ -1,10 +1,18 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=47 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/world/jump_pad.tscn" id="1_jpad"]
 [ext_resource type="Script" path="res://scripts/world/arena_navigation.gd" id="2_nav"]
 [ext_resource type="PackedScene" path="res://assets/models/castle_wall/castle_wall.glb" id="3_wall"]
 [ext_resource type="PackedScene" path="res://assets/models/castle_pillar/castle_pillar.glb" id="4_pillar"]
 [ext_resource type="PackedScene" path="res://assets/models/castle_tower/castle_tower.glb" id="5_tower"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_flagstone.jpg" id="flagstone_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_flagstone_n.jpg" id="flagstone_n_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_stone.jpg" id="stone_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_stone_n.jpg" id="stone_n_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_column.jpg" id="column_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_column_n.jpg" id="column_n_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_wood.jpg" id="wood_tex"]
+[ext_resource type="Texture2D" path="res://assets/textures/castle/castle_wood_n.jpg" id="wood_n_tex"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.35, 0.62, 0.94, 1)
@@ -34,8 +42,14 @@ glow_bloom = 0.12
 glow_blend_mode = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.18, 0.20, 0.24, 1)
-roughness = 0.85
+albedo_color = Color(0.55, 0.55, 0.57, 1)
+albedo_texture = ExtResource("flagstone_tex")
+roughness = 0.9
+normal_enabled = true
+normal_texture = ExtResource("flagstone_n_tex")
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_triplanar = true
+uv1_world_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
@@ -60,9 +74,13 @@ size = Vector3(2, 40, 82)
 size = Vector3(82, 2, 82)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_platform"]
-albedo_color = Color(0.23, 0.26, 0.31, 1)
-metallic = 0.1
-roughness = 0.7
+albedo_texture = ExtResource("flagstone_tex")
+roughness = 0.9
+normal_enabled = true
+normal_texture = ExtResource("flagstone_n_tex")
+uv1_scale = Vector3(0.33, 0.33, 0.33)
+uv1_triplanar = true
+uv1_world_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_platform"]
 material = SubResource("StandardMaterial3D_platform")
@@ -117,37 +135,53 @@ height = 6.15
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_tower_roof"]
 points = PackedVector3Array(6.2, 19.5, 0, 5.728053, 19.5, 2.372637, 4.384062, 19.5, 4.384062, 2.372637, 19.5, 5.728053, 0, 19.5, 6.2, -2.372637, 19.5, 5.728053, -4.384062, 19.5, 4.384062, -5.728053, 19.5, 2.372637, -6.2, 19.5, 0, -5.728053, 19.5, -2.372637, -4.384062, 19.5, -4.384062, -2.372637, 19.5, -5.728053, 0, 19.5, -6.2, 2.372637, 19.5, -5.728053, 4.384062, 19.5, -4.384062, 5.728053, 19.5, -2.372637, 0, 30.7, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cover"]
-albedo_color = Color(0.14, 0.16, 0.20, 1)
-metallic = 0.2
-roughness = 0.6
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_texture = ExtResource("stone_tex")
+roughness = 0.92
+normal_enabled = true
+normal_texture = ExtResource("stone_n_tex")
+uv1_scale = Vector3(0.1667, 0.1667, 0.1667)
+uv1_triplanar = true
+uv1_world_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trim_cyan"]
-albedo_color = Color(0.2, 0.9, 1, 1)
-emission_enabled = true
-emission = Color(0.2, 0.9, 1, 1)
-emission_energy_multiplier = 2.2
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_texture = ExtResource("wood_tex")
+roughness = 0.8
+normal_enabled = true
+normal_texture = ExtResource("wood_n_tex")
+uv1_scale = Vector3(1.0, 1.0, 1.0)
+uv1_triplanar = true
+uv1_world_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_capstone"]
+albedo_texture = ExtResource("column_tex")
+roughness = 0.8
+normal_enabled = true
+normal_texture = ExtResource("column_n_tex")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_lowwall"]
-material = SubResource("StandardMaterial3D_cover")
+material = SubResource("StandardMaterial3D_stone")
 size = Vector3(5, 1.3, 0.8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lowwall"]
 size = Vector3(5, 1.3, 0.8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_lowwall_trim"]
-material = SubResource("StandardMaterial3D_trim_cyan")
+material = SubResource("StandardMaterial3D_capstone")
 size = Vector3(5.04, 0.12, 0.84)
 
 [sub_resource type="BoxMesh" id="BoxMesh_barricade"]
-material = SubResource("StandardMaterial3D_cover")
+material = SubResource("StandardMaterial3D_wood")
 size = Vector3(4.5, 2.6, 0.9)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_barricade"]
 size = Vector3(4.5, 2.6, 0.9)
 
 [sub_resource type="BoxMesh" id="BoxMesh_barricade_trim"]
-material = SubResource("StandardMaterial3D_trim_cyan")
+material = SubResource("StandardMaterial3D_capstone")
 size = Vector3(4.54, 0.14, 0.94)
 
 [node name="Arena" type="Node3D"]
@@ -465,7 +499,6 @@ mesh = SubResource("BoxMesh_lowwall")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/LowWallEast"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/LowWallEast"]
 shape = SubResource("BoxShape3D_lowwall")
@@ -479,7 +512,6 @@ mesh = SubResource("BoxMesh_lowwall")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/LowWallWest"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 mesh = SubResource("BoxMesh_lowwall_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/LowWallWest"]
 shape = SubResource("BoxShape3D_lowwall")
@@ -493,7 +525,6 @@ mesh = SubResource("BoxMesh_barricade")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSE_Z"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeSE_Z"]
 shape = SubResource("BoxShape3D_barricade")
@@ -507,7 +538,6 @@ mesh = SubResource("BoxMesh_barricade")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNE_X"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNE_X"]
 shape = SubResource("BoxShape3D_barricade")
@@ -521,7 +551,6 @@ mesh = SubResource("BoxMesh_barricade")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeSW_X"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeSW_X"]
 shape = SubResource("BoxShape3D_barricade")
@@ -535,7 +564,6 @@ mesh = SubResource("BoxMesh_barricade")
 [node name="Trim" type="MeshInstance3D" parent="Geometry/Cover/BarricadeNW_Z"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("BoxMesh_barricade_trim")
-cast_shadow = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/Cover/BarricadeNW_Z"]
 shape = SubResource("BoxShape3D_barricade")
