@@ -4,13 +4,13 @@ extends "res://scripts/enemies/enemy_base.gd"
 ## A pitch-black abyss beast splattered with its victims' blood that hunts from the shadows under the trees.
 ## Loop:
 ##   HIDE      Crouches in a tree's moon shadow (almost invisible). Waits until an operative is within 25m.
-##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator)
+##   LOCK      After that operative stays within 25m for 2s it silently locks their position (no sound, no indicator), then leaps 0.25s later
 ##   LEAP      and jumps at it extremely fast. Touching an operative mid-jump pins them down.
 ##   PIN       Knocks the operative flat on their back and straddles them, raking with alternating claws every 0.3s
 ##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
 ##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
-##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 3s, then flees.
+##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (4s in phase 4), then flees.
 ##   ENGAGE    After 10s total hiding with nobody in its 25m reach (the count only restarts after a leap), its eyes
 ##             glow red and it takes 90% less damage while hiding. Whenever no operative has looked at it for 2s
 ##             (staring pauses the count, 2s of staring resets it) it hops to another tree closer to the nearest
@@ -25,8 +25,8 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   1  > 2/3    As above.
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
-##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on in
-##               1.5s; knockdown 1.5s, miss stun 4s.
+##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on
+##               the instant an operative is within 25m (then leaps 0.25s later); knockdown 1.5s, miss stun 4s.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
@@ -34,6 +34,7 @@ const BOSS_MAX_HP: float = 1000000.0
 const BOSS_DAMAGE: float = 200.0 # Fixed, no wave scaling
 const ATTACK_RANGE: float = 25.0
 const LOCK_TIME: float = 2.0
+const LOCK_LEAP_DELAY: float = 0.25
 const LEAP_SPEED: float = 42.0
 const LEAP_GRAVITY: float = 40.0
 const LEAP_PIN_RANGE: float = 1.9
@@ -76,7 +77,6 @@ const PHASE_4_HP: float = 0.1
 const PHASE_2_TIME_MULT: float = 0.5 # Engage trigger and hop wait from phase 2
 const PHASE_2_HOP_SPEED_MULT: float = 1.5
 const PHASE_4_DAMAGE_REDUCTION: float = 0.9 # While exposed; multiplies with the wave reduction
-const PHASE_4_LOCK_TIME: float = 1.5
 const PHASE_4_FALL_STUN_TIME: float = 4.0
 const PHASE_4_KNOCKDOWN_TIME: float = 1.5
 const HUNT_SPEED: float = 24.0
@@ -105,6 +105,8 @@ var state_timer: float = 0.0
 var hide_spot: Vector3 = Vector3.ZERO
 var hide_index: int = -1
 var range_timer: float = 0.0
+var lock_delay: float = 0.0
+var lock_pos: Vector3 = Vector3.ZERO
 var leap_dir: Vector3 = Vector3.ZERO
 var leap_dist: float = 0.0
 var leap_traveled: float = 0.0
@@ -215,6 +217,14 @@ func _is_lurking() -> bool:
 func _behave(delta: float) -> void:
 	state_timer += delta
 	anim_time += delta
+	if lock_delay > 0.0:
+		lock_delay -= delta
+		_hold_still(delta)
+		if lock_delay <= 0.0:
+			lock_delay = 0.0
+			_launch_leap()
+		_animate_pose(delta)
+		return
 	match state:
 		GhoulState.HIDING:
 			_process_hiding(delta)
@@ -269,6 +279,7 @@ func _hop_unwatched_time() -> float:
 
 func _set_state(new_state: GhoulState) -> void:
 	var was_lurking = _is_lurking()
+	lock_delay = 0.0
 	state = new_state
 	state_timer = 0.0
 	# The relocate counter covers one stay in the shadows, across tree hops
@@ -309,7 +320,7 @@ func _process_hiding(delta: float) -> void:
 	var to_p = p.global_position - global_position
 	rotation.y = lerp_angle(rotation.y, atan2(-to_p.x, -to_p.z), 3.0 * delta)
 	range_timer += delta
-	if range_timer >= (PHASE_4_LOCK_TIME if phase >= 4 else LOCK_TIME):
+	if range_timer >= LOCK_TIME:
 		# Silent lock-in: no sound, no flash, no indicator
 		_start_leap(p.global_position)
 
@@ -427,7 +438,7 @@ func _start_hunt() -> void:
 	range_timer = 0.0
 	_set_state(GhoulState.HUNTING)
 
-## Sprints at the nearest operative, crouches once close and leaps after the usual 2s lock
+## Sprints at the nearest operative, crouches once close, then locks on instantly and leaps 0.25s later
 func _process_hunting(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
@@ -443,10 +454,8 @@ func _process_hunting(delta: float) -> void:
 	if flat_d > ATTACK_RANGE:
 		range_timer = 0.0
 	else:
-		range_timer += delta
-		if range_timer >= (PHASE_4_LOCK_TIME if phase >= 4 else LOCK_TIME):
-			_start_leap(prey.global_position)
-			return
+		_start_leap(prey.global_position)
+		return
 	var move_speed = 0.0 if flat_d <= HUNT_HOLD_DIST else HUNT_SPEED * slow_multiplier
 	var dir = nav_direction_to(prey.global_position, delta)
 	if dir != Vector3.ZERO and move_speed > 0.0:
@@ -483,13 +492,17 @@ func _is_being_watched() -> bool:
 func _start_leap(locked_pos: Vector3) -> void:
 	range_timer = 0.0
 	_set_engaged(false) # The hunt paid off
-	var flat = Vector3(locked_pos.x - global_position.x, 0.0, locked_pos.z - global_position.z)
+	lock_pos = locked_pos
+	lock_delay = LOCK_LEAP_DELAY
+
+func _launch_leap() -> void:
+	var flat = Vector3(lock_pos.x - global_position.x, 0.0, lock_pos.z - global_position.z)
 	leap_dist = maxf(flat.length(), 0.5)
 	leap_dir = flat.normalized() if flat.length_squared() > 0.001 else -global_transform.basis.z
 	leap_traveled = 0.0
 	# Low, flat arc that lands exactly on the locked spot
 	var flight_time = leap_dist / LEAP_SPEED
-	leap_vy = LEAP_GRAVITY * flight_time * 0.5 + (locked_pos.y - global_position.y) / maxf(flight_time, 0.05)
+	leap_vy = LEAP_GRAVITY * flight_time * 0.5 + (lock_pos.y - global_position.y) / maxf(flight_time, 0.05)
 	rotation.y = atan2(-leap_dir.x, -leap_dir.z)
 	_set_state(GhoulState.LEAPING)
 
