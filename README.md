@@ -208,9 +208,9 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 
 ### Wave Scaling Formulas
 * **Enemy Count per Wave**: $10 + \text{Wave} \times 6$ (Wave 50 Final Boss = $\infty$).
-* **Spawn Interval**: $\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$ (Wave 50 = $0.2\text{s}$).
+* **Spawn Interval**: $\text{clamp}(2.0 - \text{Wave} \times 0.1, 0.4, 2.0)$ (Wave 50 = $0.4\text{s}$).
 * **Scaling Wave**: All per-wave formulas below use the *scaling wave*, which is the current stage's wave: every stage restarts the curve at Wave 1.
-* **Compounding HP**: $+10\%$ per wave ($\text{Base} \times 1.10^{\text{Wave}-1}$).
+* **Compounding HP**: $+8\%$ per wave ($\text{Base} \times 1.08^{\text{Wave}-1}$).
 * **Compounding Damage**: $+5\%$ per wave ($\text{Base} \times 1.05^{\text{Wave}-1}$).
 * **Speed & Attack Rate**: $+5\%$ compounding every 10 waves ($1.05^{\lfloor\text{Wave}/10\rfloor}$).
 * **Damage Reduction**: $+10\%$ every 10 waves (capped at 50% max at Wave 50).
@@ -232,7 +232,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
 
 ### 👑 Stage 1 Wave 50 Final Boss: Apex Overlord Phases
-Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinite horde (0.2s spawn interval, 40 concurrent cap). Victory triggers only when the boss is slain.
+Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinite horde (0.4s spawn interval, 40 concurrent cap). Victory triggers only when the boss is slain.
 * **Phase 1 (100%–66% HP)**: Ground pursuit. Close Slam AoE (14.25m radius, 1.6× damage + knockup) or long-range dual plasma (0.45× damage).
 * **Phase 2 (66%–33% HP)**: Aerial flight (Y ≈ 14m). Plasma bombs (6.75m AoE, 0.85× damage), Red Aura target lock (0.7s telegraph), and Hyper Dive (60 m/s, 15.75m AoE, 2.2× damage).
 * **Phase 3 (<33% HP)**: Winged Fallen Angel. 6-muzzle needle curtain (65 m/s, 0.09× damage per needle), Cataclysmic Mega Orb (18.0m AoE, 2.8× damage), 8.0s exhaustion vulnerability window, and Supersonic Dive (105 m/s, 17.25m AoE, 2.5× damage). Needles that hit the ground (and the dive impact) leave ice spikes that deal needle damage every 0.5s on contact; the Mega Orb impact detonates them all in a ripple (3m radius, 2× needle damage). The spike blast also punches 4.5m straight down, so spikes on the platform still hit operatives hiding under it.
@@ -262,7 +262,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :--- |
 | **Shadow Spider** | 40.0 | 6.0 m/s | 8.0 bite / 24.0 pounce | 0.8s bite, 5s pounce | Swarmer-style bite (1.6m); pounces when within 5m | 100% → ~19% | Pitch-black body, only its red eyes glow. Weight decays 5% every 5 waves and another 10% every 10 waves |
 | **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 17.5% → 15% | Wave 6+. Decays 5% every 5 waves |
-| **Bog Slime** | 800.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 5% | Wave 11+. Hunched translucent lime ooze rising from a spreading puddle; a fanged skull shows through its clearer head, bone spikes and arrows jut from its back. Spits the operative out, then pauses 1.2s |
+| **Bog Slime** | 700.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 2.5% | Wave 11+. Hunched translucent lime ooze rising from a spreading puddle; a fanged skull shows through its clearer head, bone spikes and arrows jut from its back. Spits the operative out, then pauses 1.2s |
 | **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
 | **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
 | **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee & hunt / 30–45 m/s tree hop / 42 m/s leap | 200 (fixed) | 0.3s pin strikes | Shadow ambush, Engage Mode tree hops, pin, lifesteal, Bleed; 4 HP phases | Wave 50 | Fixed HP & damage; infinite horde until it dies |

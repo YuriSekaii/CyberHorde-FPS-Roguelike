@@ -63,8 +63,8 @@ func _exit_tree() -> void:
 func _apply_wave_scaling() -> void:
 	# Every stage restarts the curve at Wave 1
 	var wave_num = GameManager.get_scaling_wave()
-	# 1. Every wave: 10% more HP and 5% more DMG compounding
-	var hp_factor = pow(1.10, float(maxi(0, wave_num - 1)))
+	# 1. Every wave: 8% more HP and 5% more DMG compounding
+	var hp_factor = pow(1.08, float(maxi(0, wave_num - 1)))
 	var dmg_factor = pow(1.05, float(maxi(0, wave_num - 1)))
 	current_health = max_health * hp_factor
 	max_health = current_health

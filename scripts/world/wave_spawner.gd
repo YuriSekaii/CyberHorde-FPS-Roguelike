@@ -189,8 +189,8 @@ func _start_wave(wave_num: int) -> void:
 	if current_wave >= FINAL_WAVE:
 		total_enemies_in_wave = -1
 		enemies_left_to_spawn = -1
-		# Final Boss Fight: all enemies have double spawn rate (half spawn interval: 0.4s -> 0.2s)
-		spawn_interval = 0.2
+		# Final Boss Fight: infinite horde; spawn interval stays at the normal floor (0.4s), no boss-fight spawn bonus
+		spawn_interval = 0.4
 		spawn_timer = get_effective_spawn_interval()
 	else:
 		total_enemies_in_wave = 10 + wave_num * 6
@@ -353,7 +353,7 @@ func _select_stage2_enemy_type(wave_num: int) -> int:
 	if wave_num > SLIME_AFTER_WAVE:
 		w_spider = 0.5 * spider_multiplier
 		w_wyvern = 0.15 * basic_multiplier
-		w_slime = 0.05
+		w_slime = 0.025
 	if wave_num > STALKER_AFTER_WAVE:
 		w_spider = 0.456 * spider_multiplier
 		w_stalker = 0.01
