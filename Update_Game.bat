@@ -1,6 +1,7 @@
 @echo off
 title Updating CyberHorde: Rogue Protocol...
 cd /d "%~dp0"
+call "%~dp0toolsensure_git.bat"
 echo ===================================================
 echo  CyberHorde: Rogue Protocol - Updater (git pull)
 echo ===================================================

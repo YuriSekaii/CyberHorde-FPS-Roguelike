@@ -13,6 +13,8 @@ A fast-paced 3D First-Person Horde Roguelike Shooter with online co-op multiplay
 
 The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks and imports assets on first run with zero external setup. Play_Game.bat re-imports assets automatically when the git commit changed since the last import (stamp in `.godot/last_import_commit.txt`), so manual pulls don't leave stale models.
 
+**Install without git**: On GitHub click **Code → Download ZIP**, extract, and run `Play_Game.bat`. If the PC has no git, [`tools/ensure_git.bat`](tools/ensure_git.bat) (called by `Play_Game.bat` and `Update_Game.bat`) unpacks the bundled portable git (`git.zip`, MinGit 2.56, ~40 MB) into `git_portable/` and adds it to `PATH`, so the in-game updater works too. A ZIP install has no `.git` folder, so on its first online launch the folder becomes a clone (`git init` + `fetch origin main` + `reset --hard`, keeping untracked files like saves). If that fetch fails (offline), `.git` is removed and the next launch tries again.
+
 | Launcher Script | Description |
 | :--- | :--- |
 | **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine and renders missing/deleted assets before launch. |
@@ -322,6 +324,8 @@ CyberHorde-FPS-Roguelike/
 ├── Test_Coop_2Players.bat            # 2-player local co-op launcher
 ├── Open_In_Godot_Editor.bat          # Godot Editor launcher
 ├── Push_To_GitHub.bat                # Git commit & push script
+├── engine.zip / git.zip              # Bundled Godot 4.7.2 and portable git (unpacked on first run)
+├── tools/ensure_git.bat              # Uses bundled git when none installed; turns ZIP installs into a clone
 ├── assets/models/<name>/            # AI-generated .glb assets (see docs/ASSET_PIPELINE.md)
 ├── docs/ASSET_PIPELINE.md / ASSET_PROMPTS.md  # Image → Hunyuan3D-2 → Blender → Godot pipeline + Gemini prompts
 ├── tools/asset_pipeline/            # make_asset.ps1, batch.ps1, prep_prop.py, assets_manifest.csv, ghoul_pose_harness.gd

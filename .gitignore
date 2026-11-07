@@ -16,3 +16,5 @@ Thumbs.db
 relay_runtime.log
 Reference/
 *.blend1
+# Extracted portable Git (keep git clean; git.zip is used for distribution)
+git_portable/

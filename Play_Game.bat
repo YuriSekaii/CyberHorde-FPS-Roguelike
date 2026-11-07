@@ -1,6 +1,7 @@
 @echo off
 title CyberHorde: Rogue Protocol - Launching Game...
 cd /d "%~dp0"
+call "%~dp0toolsensure_git.bat"
 
 set "GODOT_EXE="
 
