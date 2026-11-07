@@ -10,7 +10,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##             (medium damage, heals the Ghoul 1% Max HP per landed strike) while their camera stays locked looking
 ##             up at it, until they mash A / D 10 times to escape. Then it's knocked down for 1s and flees REALLY
 ##             fast to a random tree to hide again.
-##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (4s in phase 4), then flees.
+##   MISS      If the jump misses, momentum drags it 5m past the locked spot and it falls: stunned for 5s (3s in phase 4), then flees.
 ##   ENGAGE    After 10s total hiding with nobody in its 25m reach (the count only restarts after a leap), its eyes
 ##             glow red and it takes 90% less damage while hiding. Whenever no operative has looked at it for 2s
 ##             (staring pauses the count, 2s of staring resets it) it hops to another tree closer to the nearest
@@ -26,7 +26,7 @@ extends "res://scripts/enemies/enemy_base.gd"
 ##   2  > 1/3    Engages after 5s, hops after 1s unwatched, hops 50% faster.
 ##   3  > 10%    Permanently engaged; hops the instant nobody is looking at it.
 ##   4  <= 10%   Stops hiding: hunts the nearest operative endlessly, with 90% damage reduction. Locks on
-##               the instant an operative is within 25m (then leaps 0.25s later); knockdown 1.5s, miss stun 4s.
+##               the instant an operative is within 25m (then leaps 0.25s later); knockdown 1.5s, miss stun 3s.
 
 enum GhoulState { HIDING, LEAPING, OVERSHOOT, FALLEN, PINNING, KNOCKDOWN, FLEEING, HOPPING, HUNTING }
 
@@ -77,7 +77,7 @@ const PHASE_4_HP: float = 0.1
 const PHASE_2_TIME_MULT: float = 0.5 # Engage trigger and hop wait from phase 2
 const PHASE_2_HOP_SPEED_MULT: float = 1.5
 const PHASE_4_DAMAGE_REDUCTION: float = 0.9 # While exposed; multiplies with the wave reduction
-const PHASE_4_FALL_STUN_TIME: float = 4.0
+const PHASE_4_FALL_STUN_TIME: float = 3.0
 const PHASE_4_KNOCKDOWN_TIME: float = 1.5
 const HUNT_SPEED: float = 24.0
 const HUNT_HOLD_DIST: float = 12.0 # Closes to this range, then crouches for the lock
