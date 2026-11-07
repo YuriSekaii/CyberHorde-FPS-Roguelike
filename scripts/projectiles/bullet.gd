@@ -423,6 +423,13 @@ func _handle_hit(collider: Object, hit_pos: Vector3, hit_normal: Vector3) -> voi
 	if collider in already_hit:
 		return
 	
+	# Visual copy of a teammate's shot: their client deals the damage, we only show the impact
+	if shooter == null and NetworkManager.is_multiplayer:
+		if is_explosive and get_parent():
+			ExplosionScript.spawn_explosion(get_parent(), hit_pos, 0.0, GameManager.explosion_radius)
+		_release()
+		return
+	
 	if collider is Node and collider.is_in_group("enemies"):
 		already_hit.append(collider)
 		if collider is CollisionObject3D:

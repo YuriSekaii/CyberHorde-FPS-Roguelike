@@ -22,7 +22,8 @@ const EXPLOSION_SCENE = preload("res://scenes/projectiles/explosion.tscn")
 
 static func spawn_explosion(parent: Node, pos: Vector3, dmg: float, rad: float, attacker: Node = null) -> void:
 	# Deal instant synchronous damage via static cache
-	_deal_static_damage(pos, dmg, rad, attacker)
+	if dmg > 0.0:
+		_deal_static_damage(pos, dmg, rad, attacker)
 	
 	# Find available pooled explosion visual
 	var exp_inst: Node = null

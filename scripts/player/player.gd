@@ -17,6 +17,13 @@ var target_net_pos: Vector3 = Vector3.ZERO
 var target_net_rot_y: float = 0.0
 var target_net_head_pitch: float = 0.0
 var net_sync_timer: float = 0.0
+var last_sent_pos: Vector3 = Vector3.ZERO
+var last_sent_rot_y: float = 0.0
+var last_sent_head_pitch: float = 0.0
+var last_sent_weapon_idx: int = -1
+var last_sent_vel: Vector3 = Vector3.ZERO
+var last_net_send_msec: int = 0
+var last_net_packet_msec: int = 0
 
 # Movement Settings
 const BASE_WALK_SPEED: float = 7.0
@@ -241,6 +248,7 @@ func _ready() -> void:
 	
 	target_net_pos = global_position
 	target_net_rot_y = rotation.y
+	last_net_packet_msec = Time.get_ticks_msec()
 
 func setup_peer(id: int, p_class: String = "") -> void:
 	if not is_node_ready():
@@ -513,8 +521,11 @@ func _physics_process(delta: float) -> void:
 
 	# Remote player interpolation
 	if not is_local_player:
-		global_position = global_position.lerp(target_net_pos, 18.0 * delta)
-		rotation.y = lerp_angle(rotation.y, target_net_rot_y, 18.0 * delta)
+		var since_packet = minf((Time.get_ticks_msec() - last_net_packet_msec) / 1000.0, 0.1)
+		var predicted_pos = target_net_pos + Vector3(velocity.x, 0.0, velocity.z) * since_packet
+		var interp_weight = 1.0 - exp(-15.0 * delta)
+		global_position = global_position.lerp(predicted_pos, interp_weight)
+		rotation.y = lerp_angle(rotation.y, target_net_rot_y, interp_weight)
 		if tp_head:
 			tp_head.rotation.x = target_net_head_pitch
 		_animate_third_person_legs(delta)
@@ -525,8 +536,20 @@ func _physics_process(delta: float) -> void:
 	if NetworkManager.is_multiplayer:
 		net_sync_timer += delta
 		if net_sync_timer >= 0.033:
-			net_sync_timer = 0.0
-			rpc_sync_state.rpc(global_position, rotation.y, head.rotation.x, velocity, active_weapon_idx)
+			net_sync_timer -= 0.033
+			net_sync_timer = minf(net_sync_timer, 0.033)
+			var now_msec = Time.get_ticks_msec()
+			var moved = global_position.distance_to(last_sent_pos) >= 0.01
+			var turned = absf(rotation.y - last_sent_rot_y) >= 0.01 or absf(head.rotation.x - last_sent_head_pitch) >= 0.01
+			var vel_changed = velocity.distance_to(last_sent_vel) >= 0.1 # so peers stop extrapolating when we stop
+			if moved or turned or vel_changed or active_weapon_idx != last_sent_weapon_idx or now_msec - last_net_send_msec >= 250:
+				rpc_sync_state.rpc(global_position, rotation.y, head.rotation.x, velocity, active_weapon_idx)
+				last_sent_pos = global_position
+				last_sent_rot_y = rotation.y
+				last_sent_head_pitch = head.rotation.x
+				last_sent_weapon_idx = active_weapon_idx
+				last_sent_vel = velocity
+				last_net_send_msec = now_msec
 	
 	# Abyss out-of-bounds safety recovery
 	if global_position.y < -15.0:
@@ -1343,6 +1366,7 @@ func die() -> void:
 func rpc_sync_state(pos: Vector3, rot_y: float, head_pitch: float, vel: Vector3, wep_idx: int) -> void:
 	if is_local_player:
 		return
+	last_net_packet_msec = Time.get_ticks_msec()
 	target_net_pos = pos
 	target_net_rot_y = rot_y
 	target_net_head_pitch = head_pitch

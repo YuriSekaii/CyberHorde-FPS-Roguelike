@@ -51,6 +51,8 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 * **LAN Networking**: High-level ENet multiplayer (`ENetMultiplayerPeer`) over UDP port `7777`.
 * **Online Networking**: The same high-level RPCs, sent through the CyberHorde lobby relay at `wss://phu-ai-lab.tailbca584.ts.net/cyberhorde` (Tailscale Funnel → [`server/lobby_relay.py`](server/lobby_relay.py) on port `8095`). The lobby creator is the authoritative host (peer 1). Joiners get ids 2–4, and a lobby holds max 4 players. When the host leaves, the lobby closes.
+* **Player Sync**: Each player sends its own position, yaw, head pitch, velocity and weapon slot up to 30×/s, but only when something changed (plus a 0.25s keepalive), so idle players cost almost nothing. Remote players are predicted forward with their horizontal velocity (max 0.1s) and smoothed, so they don't lag behind or stutter between packets.
+* **Shot Sync**: Only the shooter's client deals damage (one `rpc_take_damage` per hit). Teammates' shots are replayed as visual-only bullets (impact + explosion visuals, no damage).
 * **Squad Avatars**: Host (Player 1) has Neon Cyan accents; Client (Player 2) has Neon Amber accents. Overhead tags show name and live HP bar.
 * **Shared Economy**: XP and Scrap are squad-shared. Upgrade card selection is simultaneous; choosing cards activates an **Aegis Stasis** protective shield.
 * **Revive System**: Downed players lie flat on their back (same pose and low camera as a Blood Ghoul pin) and can still crawl, marked by a beacon. Teammates hold `E` for 5 seconds within 3m to revive them with 50% HP and 3s invulnerability (4.0s for Medics).
