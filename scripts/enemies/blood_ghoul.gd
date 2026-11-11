@@ -68,9 +68,12 @@ const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding
 const ENGAGE_IDLE_TIME: float = 10.0 # Nobody within reach this long: Engage mode
 const ENGAGED_DAMAGE_REDUCTION: float = 0.9 # While hiding in Engage mode; multiplies with the wave reduction
 const PIN_DAMAGE_REDUCTION: float = 0.9 # While pinning (phases 1-3); multiplies with the wave reduction
-const ENGAGED_EYE_GLOW: float = 4.0 # Visible from across the jungle, as bright as the full hunting blaze
-const LURK_EYE_GLOW: float = 6.0 # Red eyes always burn in the shadows so players can spot and shoot it
+const ENGAGED_EYE_GLOW: float = 8.0 # Visible from across the jungle, as bright as the full hunting blaze
+const LURK_EYE_GLOW: float = 2.5 # Red eyes always burn in the shadows so players can spot and shoot it
 const EYE_FLARE_SIZE: float = 0.36 # World size (m) of each eye's glow flare
+const LURK_FLARE_COLOR: Color = Color(0.75, 0.4, 0.3) # Dull ember while just hiding
+const ENGAGED_FLARE_COLOR: Color = Color(1.0, 0.08, 0.05) # Deep blood red once engaged
+const ENGAGED_FLARE_SCALE: float = 1.5
 const HOP_UNWATCHED_TIME: float = 2.0 # Unwatched this long: hop to the next tree
 const HOP_STARE_RESET_TIME: float = 2.0 # Stared at this long: the unwatched count resets
 const HOP_SPEED: float = 30.0
@@ -159,6 +162,7 @@ var blood_rain_tick_timer: float = 0.0
 @onready var pupil_mat: StandardMaterial3D = null # EyeL's active material (shared by both eyes)
 @onready var skin_mat: ShaderMaterial = ($MeshRoot/Body/Ribcage as MeshInstance3D).mesh.material
 var eye_flare_mat: StandardMaterial3D = null
+var eye_flares: Array[MeshInstance3D] = []
 var body_glow: float = 0.0 # 0 dormant in the shadows .. 1 fully awake
 
 # ----------------- RIGGED MODEL RETARGET -----------------
@@ -825,7 +829,7 @@ func _setup_model() -> void:
 	grad.fill_from = Vector2(0.5, 0.5)
 	grad.fill_to = Vector2(0.5, 0.0)
 	grad.gradient = Gradient.new()
-	grad.gradient.set_color(0, Color(1, 0.6, 0.45, 1))
+	grad.gradient.set_color(0, Color(1, 0.9, 0.85, 1)) # Near-white core: albedo_color sets the tint
 	grad.gradient.set_color(1, Color(1, 0, 0, 0))
 	eye_flare_mat.albedo_texture = grad
 	for eye_name in ["EyeL", "EyeR"]:
@@ -840,7 +844,8 @@ func _setup_model() -> void:
 		flare.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		e.add_child(flare)
 		flare.position = e.mesh.get_aabb().get_center()
-		flare.global_basis = Basis.IDENTITY # Size in world meters regardless of the rig's scale
+		quad.size /= e.global_basis.get_scale().x # Size in world meters regardless of the rig's scale
+		eye_flares.append(flare)
 	if eye and eye.mesh:
 		pupil_mat = eye.get_active_material(0) as StandardMaterial3D
 		if pupil_mat == null:
@@ -1271,7 +1276,12 @@ func _animate_head(delta: float) -> void:
 	if pupil_mat:
 		pupil_mat.emission_energy_multiplier = maxf(maxf(EYE_GLOW * minf(body_glow * 2.0, 1.0), ENGAGED_EYE_GLOW * eye_engage), LURK_EYE_GLOW if _is_lurking() else 0.0)
 		if eye_flare_mat:
-			eye_flare_mat.albedo_color.a = clampf(pupil_mat.emission_energy_multiplier / EYE_GLOW, 0.0, 1.0)
+			# Lurking: a dim ember glint; Engage Mode: a big, saturated blood-red glare
+			var a := clampf(pupil_mat.emission_energy_multiplier / EYE_GLOW, 0.0, 1.0)
+			eye_flare_mat.albedo_color = LURK_FLARE_COLOR.lerp(ENGAGED_FLARE_COLOR, eye_engage)
+			eye_flare_mat.albedo_color.a = a
+			for f in eye_flares:
+				f.scale = Vector3.ONE * lerpf(1.0, ENGAGED_FLARE_SCALE, eye_engage)
 	if skin_mat:
 		skin_mat.set_shader_parameter("glow", body_glow)
 	# Keep the rigged body nearly invisible in the shadows and fully lit once it wakes.

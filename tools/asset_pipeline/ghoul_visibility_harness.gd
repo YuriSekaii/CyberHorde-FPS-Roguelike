@@ -50,6 +50,7 @@ func _process(_delta: float) -> bool:
 			ghoul.global_position = spot
 			if OS.get_environment("MARK") != "": ghoul.add_child(_marker())
 			ghoul.state = ghoul.GhoulState.HIDING
+			ghoul.engaged = OS.get_environment("ENGAGED") != ""
 			ghoul.look_at(Vector3(eye.x, spot.y, eye.z), Vector3.UP, true)
 			cam.global_position = eye
 			cam.look_at(spot + Vector3(0, 0.8, 0))
