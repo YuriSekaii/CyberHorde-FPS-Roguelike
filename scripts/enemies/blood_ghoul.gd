@@ -68,11 +68,11 @@ const HIDE_RELOCATE_DAMAGE: float = 0.01 # Fraction of Max HP taken while hiding
 const ENGAGE_IDLE_TIME: float = 10.0 # Nobody within reach this long: Engage mode
 const ENGAGED_DAMAGE_REDUCTION: float = 0.9 # While hiding in Engage mode; multiplies with the wave reduction
 const PIN_DAMAGE_REDUCTION: float = 0.9 # While pinning (phases 1-3); multiplies with the wave reduction
-const ENGAGED_EYE_GLOW: float = 8.0 # Visible from across the jungle, as bright as the full hunting blaze
-const LURK_EYE_GLOW: float = 2.5 # Red eyes always burn in the shadows so players can spot and shoot it
-const EYE_FLARE_SIZE: float = 0.16 # World size (m) of each eye's glint: eye-sized, not a floating ball
-const LURK_FLARE_COLOR: Color = Color(0.6, 0.2, 0.12) # Dim ember while just hiding
-const ENGAGED_FLARE_COLOR: Color = Color(1.0, 0.0, 0.0) # Pure bright red once engaged
+const ENGAGED_EYE_GLOW: float = 6.0 # Visible from across the jungle, as bright as the full hunting blaze
+const SOCKET_EYE_SCALE: float = 2.0 # Socket eyeball size vs the modelled eye's bounds
+const LURK_EYE_COLOR: Color = Color(0.9, 0.03, 0.01)
+const ENGAGED_EYE_COLOR: Color = Color(1.0, 0.0, 0.0)
+const LURK_EYE_GLOW: float = 3.0 # Red eyes always burn in the shadows so players can spot and shoot it
 const HOP_UNWATCHED_TIME: float = 2.0 # Unwatched this long: hop to the next tree
 const HOP_STARE_RESET_TIME: float = 2.0 # Stared at this long: the unwatched count resets
 const HOP_SPEED: float = 30.0
@@ -160,7 +160,6 @@ var blood_rain_tick_timer: float = 0.0
 @onready var model: Node3D = $MeshRoot/Model # mesh_root comes from EnemyBase
 @onready var pupil_mat: StandardMaterial3D = null # EyeL's active material (shared by both eyes)
 @onready var skin_mat: ShaderMaterial = ($MeshRoot/Body/Ribcage as MeshInstance3D).mesh.material
-var eye_flare_mat: StandardMaterial3D = null
 var body_glow: float = 0.0 # 0 dormant in the shadows .. 1 fully awake
 
 # ----------------- RIGGED MODEL RETARGET -----------------
@@ -805,6 +804,31 @@ func _find_skeleton(node: Node) -> Skeleton3D:
 			return found
 	return null
 
+## The modelled eyeballs sit deep in the sockets and render as 1px pinpoints from range: put bigger
+## eyeballs (same glowing material) in each socket, riding the Head bone.
+func _add_socket_eyes() -> void:
+	var head := skeleton.find_bone("Head")
+	if head < 0 or pupil_mat == null:
+		return
+	var att := BoneAttachment3D.new()
+	att.bone_idx = head
+	skeleton.add_child(att)
+	var to_head := skeleton.get_bone_global_rest(head).affine_inverse()
+	for eye_name in ["EyeL", "EyeR"]:
+		var e = model.find_child(eye_name, true, false) as MeshInstance3D
+		if e == null or e.mesh == null:
+			continue
+		var box: AABB = e.mesh.get_aabb()
+		var ball := MeshInstance3D.new()
+		var sphere := SphereMesh.new()
+		sphere.radius = box.size.length() * 0.5 * SOCKET_EYE_SCALE
+		sphere.height = sphere.radius * 2.0
+		ball.mesh = sphere
+		ball.material_override = pupil_mat
+		ball.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		att.add_child(ball)
+		ball.position = to_head * box.get_center()
+
 func _setup_model() -> void:
 	if not model or not mesh_root:
 		return
@@ -814,40 +838,13 @@ func _setup_model() -> void:
 		return
 	# The old pupils were the glowing eyes; the rig's EyeL/EyeR now share this material.
 	var eye = model.find_child("EyeL", true, false) as MeshInstance3D
-	# The eyeballs sit deep in the skull and read as 1px from range: a billboard flare over each one
-	eye_flare_mat = StandardMaterial3D.new()
-	eye_flare_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	eye_flare_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	eye_flare_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	eye_flare_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	eye_flare_mat.billboard_keep_scale = true
-	eye_flare_mat.no_depth_test = false
-	var grad := GradientTexture2D.new()
-	grad.fill = GradientTexture2D.FILL_RADIAL
-	grad.fill_from = Vector2(0.5, 0.5)
-	grad.fill_to = Vector2(0.5, 0.0)
-	grad.gradient = Gradient.new()
-	grad.gradient.set_color(0, Color(1, 0.9, 0.85, 1)) # Near-white core: albedo_color sets the tint
-	grad.gradient.set_color(1, Color(1, 0, 0, 0))
-	grad.gradient.add_point(0.45, Color(1, 0.5, 0.4, 0.9)) # Hard-edged core so it reads as an eye
-	eye_flare_mat.albedo_texture = grad
-	for eye_name in ["EyeL", "EyeR"]:
-		var e = model.find_child(eye_name, true, false) as MeshInstance3D
-		if e == null or e.mesh == null:
-			continue
-		var flare := MeshInstance3D.new()
-		var quad := QuadMesh.new()
-		quad.size = Vector2.ONE * EYE_FLARE_SIZE
-		flare.mesh = quad
-		flare.material_override = eye_flare_mat
-		flare.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		e.add_child(flare)
-		flare.position = e.mesh.get_aabb().get_center()
-		quad.size /= e.global_basis.get_scale().x # Size in world meters regardless of the rig's scale
 	if eye and eye.mesh:
 		pupil_mat = eye.get_active_material(0) as StandardMaterial3D
 		if pupil_mat == null:
 			pupil_mat = eye.mesh.surface_get_material(0) as StandardMaterial3D
+	if pupil_mat:
+		pupil_mat.albedo_color = Color.BLACK # Only the emission colours the eyes, so it stays red instead of burning white
+	_add_socket_eyes()
 	for body_name in ["BloodGhoul", "BloodGhoul_head"]:
 		var mi = model.find_child(body_name, true, false) as MeshInstance3D
 		if mi == null or mi.mesh == null:
@@ -1273,11 +1270,7 @@ func _animate_head(delta: float) -> void:
 	eye_engage = lerpf(eye_engage, 1.0 if engaged and _is_lurking() else 0.0, 4.0 * delta)
 	if pupil_mat:
 		pupil_mat.emission_energy_multiplier = maxf(maxf(EYE_GLOW * minf(body_glow * 2.0, 1.0), ENGAGED_EYE_GLOW * eye_engage), LURK_EYE_GLOW if _is_lurking() else 0.0)
-		if eye_flare_mat:
-			# Lurking: a dim ember glint; Engage Mode: a big, saturated blood-red glare
-			var a := clampf(pupil_mat.emission_energy_multiplier / EYE_GLOW, 0.0, 1.0)
-			eye_flare_mat.albedo_color = LURK_FLARE_COLOR.lerp(ENGAGED_FLARE_COLOR, eye_engage)
-			eye_flare_mat.albedo_color.a = a
+		pupil_mat.emission = LURK_EYE_COLOR.lerp(ENGAGED_EYE_COLOR, eye_engage) # Dull red lurking, pure red engaged
 	if skin_mat:
 		skin_mat.set_shader_parameter("glow", body_glow)
 	# Keep the rigged body nearly invisible in the shadows and fully lit once it wakes.

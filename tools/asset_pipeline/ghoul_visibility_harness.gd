@@ -24,7 +24,7 @@ func _setup_shots() -> void:
 	var rng := RandomNumberGenerator.new(); rng.seed = 7
 	for i in 3:
 		var s: Vector3 = spots[rng.randi() % spots.size()]
-		for d in [12.0, 20.0]:
+		for d in ([3.0] if OS.get_environment("CLOSE") != "" else [12.0, 20.0]):
 			shots.append(["tree%d_%dm" % [i, int(d)], s, d, rng.randf() * TAU])
 
 func _process(_delta: float) -> bool:
@@ -51,9 +51,9 @@ func _process(_delta: float) -> bool:
 			if OS.get_environment("MARK") != "": ghoul.add_child(_marker())
 			ghoul.state = ghoul.GhoulState.HIDING
 			ghoul.engaged = OS.get_environment("ENGAGED") != ""
-			ghoul.look_at(Vector3(eye.x, spot.y, eye.z), Vector3.UP, true)
+			ghoul.look_at(Vector3(eye.x, spot.y, eye.z), Vector3.UP)
 			cam.global_position = eye
-			cam.look_at(spot + Vector3(0, 0.8, 0))
+			cam.look_at(spot + Vector3(0, 0.8 if shots[idx][2] > 5.0 else 1.6, 0))
 	return false
 
 func _marker() -> MeshInstance3D:
