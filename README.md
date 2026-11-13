@@ -229,7 +229,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 37.5 m/s rush attack | ~4.0–4.25% | Wave 11+, rushes only with a clear lane; wall crash causes 3.5s self-stun |
 | **Void Spawner** | 3,500.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns 2 Spawnlings per cycle | 0.25% | Wave 20+, drops Loot Cache on defeat |
-| **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only. Ignored by companion drones; players pass through them (no body block)** |
+| **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only. Ignored by companion drones; players pass through them (no body block). Hovers at a 1.3m keep-out radius around the player's head while drilling, so it can always be shot** |
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
 
 ### 👑 Stage 1 Wave 50 Final Boss: Apex Overlord Phases

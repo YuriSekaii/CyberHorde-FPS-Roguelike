@@ -6,7 +6,10 @@ var drill_rotation_speed: float = 25.0
 var launch_decay: float = 0.35
 
 const ATTACK_INTERVAL: float = 0.15
-const CONNECT_RANGE: float = 1.45
+const CONNECT_RANGE: float = 1.7
+# Keep-out radius around the player's head: bullets spawn 0.5m ahead of the camera and ray sweeps
+# ignore shapes they start inside, so a Spawnling hugging the player (r 0.45) would be unshootable
+const STANDOFF_RADIUS: float = 1.3
 
 @onready var drill_body: Node3D = $MeshRoot/DrillBody
 @onready var wing_left: Node3D = $MeshRoot/WingLeft
@@ -27,7 +30,8 @@ func _ready() -> void:
 			self.add_collision_exception_with(p)
 
 func _behave(delta: float) -> void:
-	var aim_target = target_player.global_position + Vector3(0, 1.1, 0)
+	var head = target_player.get_node_or_null("Head")
+	var aim_target = head.global_position if head else target_player.global_position + Vector3(0, 1.6, 0)
 	var to_player = aim_target - global_position
 	var dist = to_player.length()
 	var dir = to_player.normalized()
@@ -39,9 +43,9 @@ func _behave(delta: float) -> void:
 		var target_rot_x = asin(clampf(dir.y, -0.9, 0.9))
 		rotation.x = lerp_angle(rotation.x, target_rot_x, 9.0 * delta)
 	
-	# Fast aerial homing flight
+	# Fast aerial homing flight that stops (or backs off) at the keep-out radius
 	var effective_speed = speed * slow_multiplier
-	var target_vel = dir * effective_speed
+	var target_vel = dir * clampf((dist - STANDOFF_RADIUS) * 10.0, -effective_speed, effective_speed)
 	if launch_decay > 0.0:
 		launch_decay -= delta
 		velocity = velocity.lerp(target_vel, 8.0 * delta)
