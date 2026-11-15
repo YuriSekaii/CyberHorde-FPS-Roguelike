@@ -24,6 +24,7 @@ var unlocked_cols: int = DEFAULT_COLS
 var highest_wave_reached: int = 1
 var stage1_boss_defeated: bool = false
 var stage2_boss_defeated: bool = false
+var save_path: String = SAVE_PATH
 
 var placed_components: Array[ComponentData] = []
 var stash: Array[ComponentData] = []
@@ -338,17 +339,17 @@ func save_to_disk() -> void:
 	}
 	
 	var json_str = JSON.stringify(save_dict, "\t")
-	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
 		file.store_string(json_str)
 		file.close()
 
 func load_from_disk() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	if not FileAccess.file_exists(save_path):
 		_init_default_save()
 		return
 	
-	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var file = FileAccess.open(save_path, FileAccess.READ)
 	if not file:
 		_init_default_save()
 		return
@@ -398,16 +399,4 @@ func _init_default_save() -> void:
 	placed_components.clear()
 	stash.clear()
 	grid_cells.clear()
-	
-	# Give starter components in stash so the player immediately has items to equip
-	var starter1 = ComponentDataScript.generate_random_component("Common", "1x1")
-	starter1.name = "Kinetic Servo [1x1]"
-	starter1.stats = {"damage_mult": 0.20}
-	stash.append(starter1)
-	
-	var starter2 = ComponentDataScript.generate_random_component("Common", "1x2")
-	starter2.name = "Pulse Capacitor [1x2]"
-	starter2.stats = {"fire_rate_mult": 0.25, "max_health_bonus": 25.0}
-	stash.append(starter2)
-	
 	save_to_disk()
