@@ -38,6 +38,7 @@ var drag_original_pos: Vector2i = Vector2i(-1, -1)
 var hover_grid_cell: Vector2i = Vector2i(-1, -1)
 var hovered_comp: ComponentData = null
 var mouse_grid_pos: Vector2 = Vector2.ZERO
+var _last_tooltip_target: Variant = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -468,7 +469,7 @@ func _on_grid_viewport_gui_input(event: InputEvent) -> void:
 			hover_grid_cell = Vector2i(c, r)
 			var occupant = core_grid.get_component_at(c, r)
 			if occupant != null and active_drag_comp == null:
-				_show_tooltip_for_comp(occupant, grid_viewport.get_global_position() + Vector2(float(c + 1) * CELL_SIZE + 10.0, float(r) * CELL_SIZE))
+				_show_tooltip_for_comp(occupant, grid_viewport.get_global_position() + event.position + Vector2(16, 16))
 			elif active_drag_comp == null:
 				hide_tooltip()
 		else:
@@ -476,7 +477,7 @@ func _on_grid_viewport_gui_input(event: InputEvent) -> void:
 			if active_drag_comp == null:
 				# Check if hovering locked cell
 				if c < MAX_DISPLAY_COLS and r < MAX_DISPLAY_ROWS:
-					_show_locked_tooltip(c, r, grid_viewport.get_global_position() + event.position + Vector2(15, 15))
+					_show_locked_tooltip(c, r, grid_viewport.get_global_position() + event.position + Vector2(16, 16))
 				else:
 					hide_tooltip()
 		
@@ -605,6 +606,12 @@ func _show_tooltip_for_comp(comp: ComponentData, global_pos: Vector2) -> void:
 	if not tooltip_panel:
 		return
 	
+	if _last_tooltip_target == comp and tooltip_panel.visible:
+		_position_tooltip(global_pos)
+		return
+	
+	_last_tooltip_target = comp
+	
 	var r_col = comp.get_rarity_color()
 	tooltip_name.text = comp.name
 	tooltip_name.set("theme_override_colors/font_color", r_col)
@@ -615,12 +622,13 @@ func _show_tooltip_for_comp(comp: ComponentData, global_pos: Vector2) -> void:
 	tooltip_shape.text = "Shape: %s (%d cells)" % [comp.shape_type, comp.base_cells.size()]
 	
 	for child in tooltip_stats_vbox.get_children():
-		child.queue_free()
+		child.free()
 	
 	var descs = comp.get_stat_descriptions()
 	for d in descs:
 		var lbl = Label.new()
 		lbl.text = "• " + d
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		lbl.set("theme_override_colors/font_color", Color(0.85, 0.95, 1.0, 0.95))
 		lbl.set("theme_override_font_sizes/font_size", 11)
 		tooltip_stats_vbox.add_child(lbl)
@@ -629,11 +637,19 @@ func _show_tooltip_for_comp(comp: ComponentData, global_pos: Vector2) -> void:
 		tooltip_hint.text = "Left-Click: Pick / Place • Right-Click: Rotate 90°"
 	
 	tooltip_panel.visible = true
+	tooltip_panel.reset_size()
 	_position_tooltip(global_pos)
 
 func _show_locked_tooltip(col: int, row: int, global_pos: Vector2) -> void:
 	if not tooltip_panel or not core_grid:
 		return
+	
+	var target_key = Vector2i(col, row)
+	if _last_tooltip_target == target_key and tooltip_panel.visible:
+		_position_tooltip(global_pos)
+		return
+	
+	_last_tooltip_target = target_key
 	
 	tooltip_name.text = "🔒 LOCKED NEURAL SLOT"
 	tooltip_name.set("theme_override_colors/font_color", Color(1.0, 0.4, 0.4))
@@ -643,9 +659,10 @@ func _show_locked_tooltip(col: int, row: int, global_pos: Vector2) -> void:
 	tooltip_shape.text = "Coordinates: [%d, %d]" % [col, row]
 	
 	for child in tooltip_stats_vbox.get_children():
-		child.queue_free()
+		child.free()
 	
 	var req_lbl = Label.new()
+	req_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if col >= core_grid.get_cols():
 		var wave_needed = (col - CoreGrid.DEFAULT_COLS + 1) * 10
 		req_lbl.text = "• Requires reaching Wave %d to unlock this column." % wave_needed
@@ -660,15 +677,19 @@ func _show_locked_tooltip(col: int, row: int, global_pos: Vector2) -> void:
 		tooltip_hint.text = "Keep progressing through waves to expand 'Your Body'!"
 	
 	tooltip_panel.visible = true
+	tooltip_panel.reset_size()
 	_position_tooltip(global_pos)
 
 func _position_tooltip(pos: Vector2) -> void:
 	var vp_size = get_viewport().get_visible_rect().size
 	var panel_size = tooltip_panel.size
-	var target_x = clampf(pos.x, 10.0, vp_size.x - panel_size.x - 10.0)
-	var target_y = clampf(pos.y, 10.0, vp_size.y - panel_size.y - 10.0)
+	var max_x = maxf(10.0, vp_size.x - panel_size.x - 10.0)
+	var max_y = maxf(10.0, vp_size.y - panel_size.y - 10.0)
+	var target_x = clampf(pos.x, 10.0, max_x)
+	var target_y = clampf(pos.y, 10.0, max_y)
 	tooltip_panel.global_position = Vector2(target_x, target_y)
 
 func hide_tooltip() -> void:
+	_last_tooltip_target = null
 	if tooltip_panel:
 		tooltip_panel.visible = false
