@@ -27,6 +27,7 @@ static var all_enemies: Array[Node] = []
 const DAMAGE_NUMBER_SCENE = preload("res://scenes/ui/damage_number.tscn")
 const DamageNumberScript = preload("res://scripts/ui/damage_number.gd")
 const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
+const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 
 const DAMAGE_TYPE_DIRECT: int = 0
 const DAMAGE_TYPE_RICOCHET: int = 1
@@ -330,3 +331,27 @@ func _drop_loot() -> void:
 		get_parent().call_deferred("add_child", hp)
 		hp.position = drop_pos + Vector3(0, 0.5, 0)
 		hp.setup(1, 25)
+	
+	# 4. Chance of Loot Box (chest)
+	_check_loot_box_drop(drop_pos)
+
+func _check_loot_box_drop(drop_pos: Vector3) -> void:
+	# Void Spawner and Spore Pit guarantee a Loot Box drop; standard horde has rare drop chance (3.5%)
+	var is_guaranteed = (enemy_name == "Void Spawner" or enemy_name == "Spore Pit" or is_in_group("spore_pits"))
+	var box_chance: float = 1.0 if is_guaranteed else 0.035
+	if randf() < box_chance:
+		var chest_pos = Vector3(clampf(drop_pos.x, -34.0, 34.0), 0.5, clampf(drop_pos.z, -34.0, 34.0))
+		if NetworkManager.is_multiplayer:
+			if NetworkManager.is_server:
+				rpc_drop_chest.rpc(chest_pos)
+		else:
+			_drop_chest(chest_pos)
+
+@rpc("call_local", "reliable")
+func rpc_drop_chest(pos: Vector3) -> void:
+	_drop_chest(pos)
+
+func _drop_chest(pos: Vector3) -> void:
+	var chest = CHEST_SCENE.instantiate()
+	get_parent().call_deferred("add_child", chest)
+	chest.position = pos

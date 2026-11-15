@@ -4,11 +4,15 @@ signal mission_started()
 
 @onready var panel: Panel = $Panel
 @onready var main_buttons: VBoxContainer = $Panel/VBoxContainer/MainButtons
+@onready var play_container: VBoxContainer = get_node_or_null("Panel/VBoxContainer/PlayContainer")
 @onready var host_container: VBoxContainer = $Panel/VBoxContainer/HostContainer
 @onready var join_container: VBoxContainer = $Panel/VBoxContainer/JoinContainer
 @onready var update_container: VBoxContainer = $Panel/VBoxContainer/UpdateContainer
 @onready var boss_container: VBoxContainer = $Panel/VBoxContainer/BossContainer
 @onready var class_select_container: VBoxContainer = $Panel/VBoxContainer/ClassSelectContainer
+
+var core_menu_scene: PackedScene = null
+var core_menu_instance: Node = null
 
 @onready var host_class_medic: Button = get_node_or_null("Panel/VBoxContainer/HostContainer/ClassContainer/HostMedicBtn")
 @onready var host_class_rogue: Button = get_node_or_null("Panel/VBoxContainer/HostContainer/ClassContainer/HostRogueBtn")
@@ -109,6 +113,18 @@ func _unhandled_input(event: InputEvent) -> void:
 					get_viewport().set_input_as_handled()
 					return
 			
+			if play_container and play_container.visible:
+				if event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE:
+					_show_main_view()
+					get_viewport().set_input_as_handled()
+					return
+			
+			if (host_container and host_container.visible) or (join_container and join_container.visible) or (boss_container and boss_container.visible) or (update_container and update_container.visible):
+				if event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE:
+					_on_back_pressed()
+					get_viewport().set_input_as_handled()
+					return
+			
 			if event.keycode == KEY_M or event.physical_keycode == KEY_M:
 				_on_window_mode_pressed()
 				get_viewport().set_input_as_handled()
@@ -126,6 +142,23 @@ func _set_panel_width(w: float) -> void:
 func _show_main_view() -> void:
 	_set_panel_width(520.0)
 	main_buttons.visible = true
+	if play_container:
+		play_container.visible = false
+	host_container.visible = false
+	join_container.visible = false
+	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = false
+	status_label.text = "Select an operation."
+	_update_footer_version()
+
+func _show_play_view() -> void:
+	_set_panel_width(520.0)
+	main_buttons.visible = false
+	if play_container:
+		play_container.visible = true
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = false
@@ -136,9 +169,42 @@ func _show_main_view() -> void:
 	status_label.text = "Select deployment mode."
 	_update_footer_version()
 
+func _on_play_menu_pressed() -> void:
+	_show_play_view()
+
+func _on_play_back_pressed() -> void:
+	_show_main_view()
+
+func _on_exit_pressed() -> void:
+	get_tree().quit()
+
+func _on_core_menu_pressed() -> void:
+	if not core_menu_instance:
+		if ResourceLoader.exists("res://scenes/ui/core_menu.tscn"):
+			core_menu_scene = load("res://scenes/ui/core_menu.tscn")
+			if core_menu_scene:
+				core_menu_instance = core_menu_scene.instantiate()
+				if core_menu_instance.has_signal("closed"):
+					core_menu_instance.closed.connect(_on_core_menu_closed)
+				add_child(core_menu_instance)
+	if core_menu_instance:
+		if core_menu_instance.has_method("open"):
+			core_menu_instance.open()
+		else:
+			core_menu_instance.visible = true
+		panel.visible = false
+	else:
+		status_label.text = "Core menu not available."
+
+func _on_core_menu_closed() -> void:
+	panel.visible = true
+	_show_main_view()
+
 func _show_class_select(target: ClassSelectTarget) -> void:
 	pending_class_target = target
 	main_buttons.visible = false
+	if play_container:
+		play_container.visible = false
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = false
@@ -155,6 +221,8 @@ func _on_solo_pressed() -> void:
 func _on_host_menu_pressed() -> void:
 	GameManager.reset_game()
 	main_buttons.visible = false
+	if play_container:
+		play_container.visible = false
 	host_container.visible = true
 	join_container.visible = false
 	update_container.visible = false
@@ -211,6 +279,8 @@ func _set_online_mode(enabled: bool) -> void:
 func _on_join_menu_pressed() -> void:
 	GameManager.reset_game()
 	main_buttons.visible = false
+	if play_container:
+		play_container.visible = false
 	host_container.visible = false
 	join_container.visible = true
 	update_container.visible = false
@@ -239,6 +309,8 @@ func _on_start_squad_pressed() -> void:
 
 func _on_update_menu_pressed() -> void:
 	main_buttons.visible = false
+	if play_container:
+		play_container.visible = false
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = true
@@ -361,9 +433,12 @@ func _on_check_again_pressed() -> void:
 	_on_update_menu_pressed()
 
 func _on_back_pressed() -> void:
+	if update_container and update_container.visible:
+		_show_main_view()
+		return
 	NetworkManager.cleanup_network()
 	GameManager.reset_game()
-	_show_main_view()
+	_show_play_view()
 
 ## Target selector added above the deploy buttons
 func _ensure_boss_target_select() -> void:
@@ -384,6 +459,8 @@ func _ensure_boss_target_select() -> void:
 func _on_boss_menu_pressed() -> void:
 	_ensure_boss_target_select()
 	main_buttons.visible = false
+	if play_container:
+		play_container.visible = false
 	host_container.visible = false
 	join_container.visible = false
 	update_container.visible = false
@@ -420,6 +497,8 @@ func _on_deploy_boss_host_pressed() -> void:
 		GameManager.setup_boss_battle_mode()
 		
 		main_buttons.visible = false
+		if play_container:
+			play_container.visible = false
 		boss_container.visible = false
 		host_container.visible = true
 		_set_online_mode(false)

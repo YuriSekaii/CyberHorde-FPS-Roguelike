@@ -10,7 +10,7 @@ var current_options: Array[Dictionary] = []
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	GameManager.level_up.connect(_on_level_up)
+	# GameManager.level_up.connect(_on_level_up) # Suppressed: level ups no longer grant card perks
 	GameManager.upgrade_requested.connect(open_menu)
 	GameManager.scrap_changed.connect(_on_scrap_changed)
 	GameManager.progression_reset.connect(_on_progression_reset)

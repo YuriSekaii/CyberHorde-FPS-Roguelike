@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
 
@@ -81,6 +81,54 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(1, 0.45, 0.55, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_play"]
+bg_color = Color(0.08, 0.22, 0.35, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.9, 1, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_play_hover"]
+bg_color = Color(0.12, 0.35, 0.55, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_core"]
+bg_color = Color(0.14, 0.08, 0.28, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.65, 0.35, 1, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_core_hover"]
+bg_color = Color(0.22, 0.12, 0.42, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.5, 1, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -269,53 +317,21 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="SoloBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+[node name="PlayBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🎮  SINGLE PLAYER (SOLO)"
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_play")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_play_hover")
+text = "▶  PLAY"
 
-[node name="HostBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+[node name="CoreBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🌐  HOST LAN CO-OP (SERVER)"
-
-[node name="JoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🔗  JOIN LAN CO-OP (CLIENT)"
-
-[node name="OnlineHostBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "🛰️  HOST ONLINE LOBBY (INTERNET)"
-
-[node name="OnlineJoinBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "📡  JOIN ONLINE LOBBY (CODE)"
-
-[node name="BossBattleBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_boss")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_boss_hover")
-text = "⚔️  BOSS BATTLE (WAVE 50)"
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_core")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_core_hover")
+text = "🧬  CORE (YOUR BODY)"
 
 [node name="UpdateBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -325,6 +341,14 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🔄  CHECK FOR UPDATES"
 
+[node name="ExitBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🚪  EXIT GAME"
+
 [node name="WindowModeBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
@@ -332,6 +356,66 @@ theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🖥️  WINDOW MODE: WINDOWED (CLICK TO TOGGLE)"
+
+[node name="PlayContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SoloBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🎮  SINGLE PLAYER (SOLO)"
+
+[node name="HostBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🌐  HOST LAN CO-OP (SERVER)"
+
+[node name="JoinBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🔗  JOIN LAN CO-OP (CLIENT)"
+
+[node name="OnlineHostBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🛰️  HOST ONLINE LOBBY (INTERNET)"
+
+[node name="OnlineJoinBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "📡  JOIN ONLINE LOBBY (CODE)"
+
+[node name="BossBattleBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_boss")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_boss_hover")
+text = "⚔️  BOSS BATTLE (WAVE 50)"
+
+[node name="PlayBackBtn" type="Button" parent="Panel/VBoxContainer/PlayContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
 
 [node name="HostContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
 visible = false
@@ -935,13 +1019,18 @@ theme_override_font_sizes/font_size = 11
 text = "CyberHorde v1.0.0"
 horizontal_alignment = 1
 
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/SoloBtn" to="." method="_on_solo_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/HostBtn" to="." method="_on_host_menu_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/JoinBtn" to="." method="_on_join_menu_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/OnlineHostBtn" to="." method="_on_online_host_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/OnlineJoinBtn" to="." method="_on_online_join_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/PlayBtn" to="." method="_on_play_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/CoreBtn" to="." method="_on_core_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/UpdateBtn" to="." method="_on_update_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/ExitBtn" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/WindowModeBtn" to="." method="_on_window_mode_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/SoloBtn" to="." method="_on_solo_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/HostBtn" to="." method="_on_host_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/JoinBtn" to="." method="_on_join_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/OnlineHostBtn" to="." method="_on_online_host_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/OnlineJoinBtn" to="." method="_on_online_join_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/BossBattleBtn" to="." method="_on_boss_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayContainer/PlayBackBtn" to="." method="_on_play_back_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/StartSquadBtn" to="." method="_on_start_squad_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HostContainer/HostBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ConnectBtn" to="." method="_on_connect_pressed"]
@@ -951,7 +1040,6 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/RestartBtn" to="." method="_on_restart_game_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/CheckAgainBtn" to="." method="_on_check_again_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/UpdateContainer/ActionButtons/UpdateBackBtn" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/BossBattleBtn" to="." method="_on_boss_menu_pressed"]
 [connection signal="text_submitted" from="Panel/VBoxContainer/BossContainer/KeyContainer/BossKeyInput" to="." method="_on_boss_key_submitted"]
 [connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossSoloBtn" to="." method="_on_deploy_boss_solo_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/BossContainer/DeployBossHostBtn" to="." method="_on_deploy_boss_host_pressed"]

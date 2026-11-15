@@ -808,6 +808,7 @@ func die() -> void:
 		ice_spike_field = null
 	
 	GameManager.boss_defeated.emit()
+	CoreGrid.unlock_boss_defeat(1)
 	SoundManager.play("explosion", 0.3, -3.0)
 	
 	# Cascading catastrophic death explosions

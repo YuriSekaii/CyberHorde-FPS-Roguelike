@@ -102,6 +102,14 @@ var stage_banner: Label = null
 var stage_banner_tween: Tween = null
 var status_pulse: float = 0.0
 
+# Loot Box & Component Notification UI
+var loot_popup_panel: PanelContainer = null
+var loot_popup_title: Label = null
+var loot_popup_name: Label = null
+var loot_popup_shape: Label = null
+var loot_popup_stats: Label = null
+var loot_popup_tween: Tween = null
+
 func _ready() -> void:
 	hitmarker.visible = false
 	reload_label.visible = false
@@ -121,6 +129,8 @@ func _ready() -> void:
 	GameManager.fever_tier_demoted.connect(_on_fever_tier_demoted)
 	GameManager.stage_changed.connect(_on_stage_changed)
 	GameManager.progression_reset.connect(_on_progression_reset)
+	GameManager.component_looted.connect(_on_component_looted)
+	CoreGrid.get_instance().dimensions_expanded.connect(_on_dimensions_expanded)
 	_build_stage_ui()
 	
 	_update_fever_display(GameManager.get_fever_tier_name(), GameManager.fever_tier_index, GameManager.fever_duration, GameManager.FEVER_MAX_DURATION)
@@ -665,6 +675,126 @@ func _build_stage_ui() -> void:
 	stage_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage_banner.modulate.a = 0.0
 	add_child(stage_banner)
+
+	# Loot Box / Component Acquired Notification Popup
+	loot_popup_panel = PanelContainer.new()
+	loot_popup_panel.name = "LootPopupPanel"
+	loot_popup_panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	loot_popup_panel.offset_left = -230
+	loot_popup_panel.offset_right = 230
+	loot_popup_panel.offset_top = 210
+	loot_popup_panel.offset_bottom = 330
+	loot_popup_panel.pivot_offset = Vector2(230, 60)
+	loot_popup_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	loot_popup_panel.visible = false
+
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.06, 0.08, 0.12, 0.94)
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.border_color = Color(0.4, 0.8, 1.0)
+	sb.corner_radius_top_left = 8
+	sb.corner_radius_top_right = 8
+	sb.corner_radius_bottom_left = 8
+	sb.corner_radius_bottom_right = 8
+	sb.content_margin_left = 16
+	sb.content_margin_top = 10
+	sb.content_margin_right = 16
+	sb.content_margin_bottom = 12
+	loot_popup_panel.add_theme_stylebox_override("panel", sb)
+
+	var vbox = VBoxContainer.new()
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	loot_popup_panel.add_child(vbox)
+
+	loot_popup_title = Label.new()
+	loot_popup_title.text = "⚡ CORE COMPONENT ACQUIRED ⚡"
+	loot_popup_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	loot_popup_title.add_theme_font_size_override("font_size", 13)
+	loot_popup_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(loot_popup_title)
+
+	loot_popup_name = Label.new()
+	loot_popup_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	loot_popup_name.add_theme_font_size_override("font_size", 18)
+	loot_popup_name.add_theme_constant_override("outline_size", 4)
+	loot_popup_name.add_theme_color_override("font_outline_color", Color.BLACK)
+	vbox.add_child(loot_popup_name)
+
+	loot_popup_shape = Label.new()
+	loot_popup_shape.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	loot_popup_shape.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(loot_popup_shape)
+
+	loot_popup_stats = Label.new()
+	loot_popup_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	loot_popup_stats.add_theme_font_size_override("font_size", 13)
+	loot_popup_stats.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	vbox.add_child(loot_popup_stats)
+
+	add_child(loot_popup_panel)
+
+func _on_dimensions_expanded(new_rows: int, new_cols: int) -> void:
+	_show_stage_banner("CORE GRID EXPANDED: %d x %d SLOTS!" % [new_rows, new_cols], Color(0.3, 1.0, 0.6))
+	SoundManager.play("upgrade_select", 0.3, 0.9)
+
+func _on_component_looted(comp: Variant) -> void:
+	_show_loot_popup(comp)
+
+func _show_loot_popup(comp: Variant) -> void:
+	if not loot_popup_panel:
+		return
+	
+	var c_name = "Core Component"
+	var c_rarity = "Common"
+	var c_shape = "1x1"
+	var c_color = Color(0.4, 0.8, 1.0)
+	var stats_lines: Array[String] = []
+	
+	if comp is ComponentData:
+		c_name = comp.name
+		c_rarity = comp.rarity
+		c_shape = comp.shape_type
+		c_color = comp.get_rarity_color()
+		stats_lines = comp.get_stat_descriptions()
+	elif comp is Dictionary:
+		c_name = comp.get("name", "Core Component")
+		c_rarity = comp.get("rarity", "Common")
+		c_shape = comp.get("shape_type", "1x1")
+		c_color = ComponentData.get_color_for_rarity(c_rarity)
+		var raw_stats = comp.get("stats", {})
+		for k in raw_stats:
+			stats_lines.append("+ %s: %s" % [k.capitalize(), str(raw_stats[k])])
+	
+	loot_popup_name.text = c_name
+	loot_popup_name.add_theme_color_override("font_color", c_color)
+	loot_popup_shape.text = "[ %s ]  •  Shape: %s" % [c_rarity.to_upper(), c_shape]
+	loot_popup_shape.add_theme_color_override("font_color", c_color.lerp(Color.WHITE, 0.3))
+	loot_popup_stats.text = "\n".join(stats_lines) if not stats_lines.is_empty() else "Socket into Core to activate"
+	
+	var style: StyleBoxFlat = loot_popup_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if style:
+		style.border_color = c_color
+	
+	SoundManager.play("upgrade_select", 0.25, 1.2)
+	
+	if loot_popup_tween and loot_popup_tween.is_valid():
+		loot_popup_tween.kill()
+	
+	loot_popup_panel.visible = true
+	loot_popup_panel.modulate.a = 0.0
+	loot_popup_panel.scale = Vector2(0.92, 0.92)
+	
+	loot_popup_tween = create_tween()
+	loot_popup_tween.set_parallel(true)
+	loot_popup_tween.tween_property(loot_popup_panel, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	loot_popup_tween.tween_property(loot_popup_panel, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	loot_popup_tween.chain().tween_interval(3.2)
+	loot_popup_tween.chain().tween_property(loot_popup_panel, "modulate:a", 0.0, 0.5)
+	loot_popup_tween.chain().tween_callback(func(): loot_popup_panel.visible = false)
 
 func _on_progression_reset() -> void:
 	refresh_progression()

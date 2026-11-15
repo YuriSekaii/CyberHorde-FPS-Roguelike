@@ -1383,6 +1383,7 @@ func die() -> void:
 	if is_instance_valid(arena) and arena.has_method("set_blood_rain"):
 		arena.set_blood_rain(false)
 	GameManager.boss_defeated.emit()
+	CoreGrid.unlock_boss_defeat(2)
 	SoundManager.play("explosion", 0.3, -3.0)
 
 	var death_exp = EXPLOSION_SCENE.instantiate()

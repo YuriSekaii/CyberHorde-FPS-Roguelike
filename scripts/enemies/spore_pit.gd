@@ -11,7 +11,6 @@ const IMPACT_RADIUS: float = 5.0
 const GRAVITY: float = 18.0
 
 const SPORE_MORTAR_SCRIPT = preload("res://scripts/projectiles/spore_mortar.gd")
-const CHEST_SCENE = preload("res://scenes/loot/chest.tscn")
 
 var fire_timer: float = 2.0
 var pulse_time: float = 0.0
@@ -64,22 +63,4 @@ func _animate(delta: float) -> void:
 	if tendrils:
 		tendrils.rotation.y += delta * 0.25
 
-func die() -> void:
-	if is_dead:
-		return
-	var chest_pos = Vector3(clampf(global_position.x, -34.0, 34.0), 0.5, clampf(global_position.z, -34.0, 34.0))
-	if NetworkManager.is_multiplayer:
-		if NetworkManager.is_server:
-			rpc_drop_chest.rpc(chest_pos)
-	else:
-		_drop_chest(chest_pos)
-	super.die()
 
-@rpc("call_local", "reliable")
-func rpc_drop_chest(pos: Vector3) -> void:
-	_drop_chest(pos)
-
-func _drop_chest(pos: Vector3) -> void:
-	var chest = CHEST_SCENE.instantiate()
-	get_parent().call_deferred("add_child", chest)
-	chest.position = pos

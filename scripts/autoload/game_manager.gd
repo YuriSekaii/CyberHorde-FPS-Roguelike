@@ -26,6 +26,7 @@ signal fever_tier_promoted(new_tier_name: String, new_tier_index: int)
 signal fever_tier_demoted(new_tier_name: String, new_tier_index: int)
 signal stage_changed(stage: int)
 signal progression_reset()
+signal component_looted(component: Variant)
 
 # Fever System Constants & State
 const FEVER_TIERS: Array[String] = ["D", "C", "B", "A", "S"]
@@ -101,6 +102,11 @@ var cooldown_reduction: bool = false
 var dual_capacitor: bool = false
 var player_class: String = "medic"
 var greed_mult: float = 1.0
+
+# Backpack Battles Core Grid reference
+const ComponentDataScript = preload("res://scripts/core/component_data.gd")
+const CoreGridScript = preload("res://scripts/core/core_grid.gd")
+var core_grid = null
 
 # Active Upgrades tracker: id -> count
 var active_upgrades: Dictionary = {}
@@ -315,6 +321,9 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_inputs()
+	core_grid = CoreGridScript.get_instance()
+	core_grid.grid_changed.connect(func(): apply_core_stats())
+	apply_core_stats()
 	wave_cleared.connect(_on_wave_cleared)
 	_apply_fps_limit()
 	load_display_settings()
@@ -347,7 +356,10 @@ func cycle_fps_limit() -> int:
 	fps_limit_changed.emit(fps_limit)
 	return fps_limit
 
-func _on_wave_cleared(_wave_num: int) -> void:
+func _on_wave_cleared(wave_num: int) -> void:
+	CoreGridScript.unlock_wave_milestone(wave_num)
+	if wave_num >= 50:
+		CoreGridScript.unlock_boss_defeat(current_stage)
 	if second_wind_unlocked and not second_wind_available:
 		second_wind_cooldown_waves -= 1
 		if second_wind_cooldown_waves <= 0:
@@ -501,46 +513,13 @@ func _reset_progression() -> void:
 	reroll_cost = 500
 	rerolls_used = 0
 	
-	damage_mult = 1.0
-	fire_rate_mult = 1.0
-	speed_mult = 1.0
-	reload_speed_mult = 1.0
-	magazine_mult = 1.0
-	magnet_radius = 6.0
-	extra_projectiles = 0
-	extra_projectile_mult = 0.0
-	pierce_count = 0
-	explosive_rounds = false
-	explosion_radius = 2.5
-	bouncing_bullets = false
-	bounce_count = 0
-	chain_lightning = false
-	chain_lightning_targets = 0
-	vampiric_heal = 0.0
-	shield_max = 0.0
-	current_shield = 0.0
-	drone_count = 0
-	cryo_slow = false
-	crit_chance = 0.10
-	crit_damage = 2.0
-	max_health_bonus = 0.0
-	player_damage_reduction = 0.0
-	hit_invulnerability_duration = 0.0
-	null_barrier_unlocked = false
-	second_wind_unlocked = false
-	second_wind_available = false
-	second_wind_cooldown_waves = 0
-	dash_unlocked = false
-	cooldown_reduction = false
-	dual_capacitor = false
-	greed_mult = 1.0
-	
 	fever_tier_index = 0
 	fever_duration = 0.0
 	_fever_sync_timer = 0.0
 	fever_updated.emit("D", 0, 0.0, FEVER_MAX_DURATION)
 	
 	active_upgrades.clear()
+	apply_core_stats()
 
 func add_xp(amount: int) -> void:
 	var final_xp = int(amount * greed_mult)
@@ -551,7 +530,7 @@ func add_xp(amount: int) -> void:
 		xp_to_next_level = _next_xp_requirement(xp_to_next_level)
 		SoundManager.play("level_up")
 		level_up.emit(player_level)
-		prompt_upgrade_menu()
+		# Upgrade card prompt suppressed: perks are replaced by Core components and Loot Boxes
 	xp_changed.emit(player_xp, xp_to_next_level)
 
 func _next_xp_requirement(current_requirement: int) -> int:
@@ -696,12 +675,50 @@ func get_fever_loot_mult() -> float:
 func get_fever_spawn_rate_mult() -> float:
 	return 1.0 + 0.25 * float(fever_tier_index)
 
+func apply_core_stats(custom_bonuses: Dictionary = {}) -> void:
+	if core_grid == null:
+		core_grid = CoreGridScript.get_instance()
+	
+	var bonuses = custom_bonuses if not custom_bonuses.is_empty() else core_grid.calculate_aggregate_bonuses()
+	
+	damage_mult = bonuses.get("damage_mult", 1.0)
+	fire_rate_mult = bonuses.get("fire_rate_mult", 1.0)
+	speed_mult = bonuses.get("speed_mult", 1.0)
+	reload_speed_mult = bonuses.get("reload_speed_mult", 1.0)
+	magazine_mult = bonuses.get("magazine_mult", 1.0)
+	magnet_radius = bonuses.get("magnet_radius", 6.0)
+	extra_projectiles = bonuses.get("extra_projectiles", 0)
+	extra_projectile_mult = bonuses.get("extra_projectile_mult", 0.0)
+	pierce_count = bonuses.get("pierce_count", 0)
+	explosive_rounds = bonuses.get("explosive_rounds", false)
+	explosion_radius = bonuses.get("explosion_radius", 2.5)
+	bouncing_bullets = bonuses.get("bouncing_bullets", false)
+	bounce_count = bonuses.get("bounce_count", 0)
+	chain_lightning = bonuses.get("chain_lightning", false)
+	chain_lightning_targets = bonuses.get("chain_lightning_targets", 0)
+	vampiric_heal = bonuses.get("vampiric_heal", 0.0)
+	shield_max = bonuses.get("shield_max", 0.0)
+	current_shield = minf(current_shield, shield_max)
+	drone_count = bonuses.get("drone_count", 0)
+	cryo_slow = bonuses.get("cryo_slow", false)
+	crit_chance = bonuses.get("crit_chance", 0.10)
+	crit_damage = bonuses.get("crit_damage", 2.0)
+	max_health_bonus = bonuses.get("max_health_bonus", 0.0)
+	player_damage_reduction = bonuses.get("player_damage_reduction", 0.0)
+	hit_invulnerability_duration = bonuses.get("hit_invulnerability_duration", 0.0)
+	null_barrier_unlocked = bonuses.get("null_barrier_unlocked", false)
+	second_wind_unlocked = bonuses.get("second_wind_unlocked", false)
+	if second_wind_unlocked and second_wind_cooldown_waves <= 0:
+		second_wind_available = true
+	cooldown_reduction = bonuses.get("cooldown_reduction", false)
+	dual_capacitor = bonuses.get("dual_capacitor", false)
+	greed_mult = bonuses.get("greed_mult", 1.0)
+	
+	stats_updated.emit()
+
 func prompt_upgrade_menu() -> void:
-	state = GameState.UPGRADING
-	if not NetworkManager.is_multiplayer:
-		get_tree().paused = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	upgrade_requested.emit()
+	# Card selection suppressed in RPG progression mode: Core components power builds
+	pass
 
 func has_available_upgrades() -> bool:
 	for id in upgrade_database:
@@ -729,6 +746,19 @@ func get_current_rarity_weights() -> Dictionary:
 		"Epic": 4.0,
 		"Legendary": 1.0
 	}
+
+func roll_component_rarity() -> String:
+	var weights = get_current_rarity_weights()
+	var total_w: float = 0.0
+	for r in weights:
+		total_w += weights[r]
+	var roll = randf() * total_w
+	var cur: float = 0.0
+	for r in ["Common", "Rare", "Epic", "Legendary"]:
+		cur += weights.get(r, 0.0)
+		if roll <= cur:
+			return r
+	return "Common"
 
 func get_upgrade_options(count: int = 3, exclude_ids: Array[String] = []) -> Array[Dictionary]:
 	# Group available items by rarity

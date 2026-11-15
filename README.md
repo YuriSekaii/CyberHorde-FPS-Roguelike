@@ -5,7 +5,7 @@
 [![Multiplayer](https://img.shields.io/badge/Networking-ENet%20Co--op%20Multiplayer-brightgreen)](https://docs.godotengine.org/en/stable/classes/class_enetmultiplayerpeer.html)
 [![Repository](https://img.shields.io/badge/GitHub-YuriSekaii%2FCyberHorde--FPS--Roguelike-181717?logo=github)](https://github.com/YuriSekaii/CyberHorde-FPS-Roguelike)
 
-A fast-paced 3D First-Person Horde Roguelike Shooter with online co-op multiplayer built in Godot 4.7. Survive escalating cybernetic waves, harvest Nanite XP and Scrap, crack open loot caches, and assemble overpowered builds solo or in squad co-op.
+A fast-paced 3D First-Person Horde Progression RPG Shooter with online co-op multiplayer built in Godot 4.7. Survive escalating cybernetic waves, crack open enemy-dropped Loot Boxes, and craft persistent overpowered builds using a Backpack Battles-style grid inventory ('Your Body') solo or in squad co-op.
 
 ---
 
@@ -17,23 +17,24 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 
 | Launcher Script | Description |
 | :--- | :--- |
-| **`Play_Game.bat`** | Launches the game lobby (Solo, Host, Join, Boss Battle, Updates). Auto-unpacks engine and renders missing/deleted assets before launch. |
+| **`Play_Game.bat`** | Launches the game lobby (Play, Core, Updates, Exit). Auto-unpacks engine and renders missing/deleted assets before launch. |
 | **`Update_Game.bat`** | Runs `git pull` from Windows Explorer and re-imports/renders assets. |
 | **`Test_Coop_2Players.bat`** | Launches two game windows side-by-side for local 2-player co-op testing. Auto-imports assets if missing. |
 | **`Open_In_Godot_Editor.bat`** | Opens the project directly inside the Godot 4.7 Editor. |
 | **`Push_To_GitHub.bat`** | Stages, commits, and pushes local changes to `origin main`. |
 
-### Game Modes
-* **Single Player**: Standard horde survival starting from Stage 1 (Day) Wave 1. Beating the Wave 50 boss continues into Stage 2 (Night) Wave 1 (see [Stages](#-stages)).
-* **Host LAN Co-op (Server)**: Hosts an ENet multiplayer squad lobby on your network (default port: `7777`).
-* **Join LAN Co-op (Client)**: Connects to a host IP (`127.0.0.1` for local multi-instance testing).
-* **Host Online Lobby (Internet)**: Creates an online lobby and shows a 5-character code (e.g. `K7QXM`). Share it with up to 3 friends anywhere on the internet. No port forwarding needed.
-* **Join Online Lobby (Code)**: Enter the host's lobby code and click Connect.
-* **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to a late-game target without grinding earlier waves.
-  * **Target** (dropdown): `Stage 1 · Wave 50 — Apex Overlord`, `Stage 2 · Wave 50 — Blood Ghoul (Blood Moon)`, or `Stage 2 · Wave 1 — Nightfall Jungle`.
-  * **Authorization Key**: Requires entering `HereComeTheChallenger`.
-  * **Loadout**: Wave 50 targets start at Level 50 with all perks fully maxed (infinite-stack perks get 10 stacks each). The `Stage 2 · Wave 1` target starts fresh like a real Stage 2: Level 1, no perks.
-  * **Mode**: Playable Solo or Hosted as Co-op.
+### Main Menu Navigation
+The primary interface provides 4 streamlined choices:
+* **`▶ PLAY`**: Expands into deployment operations:
+  * **Single Player (Solo)**: Standard horde survival starting from Stage 1 (Day) Wave 1. Beating the Wave 50 boss continues into Stage 2 (Night) Wave 1.
+  * **Host LAN Co-op (Server)**: Hosts an ENet multiplayer squad lobby on your network (default port: `7777`).
+  * **Join LAN Co-op (Client)**: Connects to a host IP (`127.0.0.1` for local multi-instance testing).
+  * **Host Online Lobby (Internet)**: Creates an online lobby and generates a 5-character code (e.g. `K7QXM`). No port forwarding needed.
+  * **Join Online Lobby (Code)**: Enter host code and connect directly.
+  * **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to a late-game target (`Apex Overlord`, `Blood Ghoul`, or `Stage 2 Wave 1`) with `HereComeTheChallenger` key.
+* **`🧬 CORE (YOUR BODY)`**: Opens the Backpack Battles-style grid augmentation matrix where players equip collected cyberware components to build persistent character stats.
+* **`🔄 CHECK FOR UPDATES`**: Direct in-game update manager with async fetch, 1-click git pull, and auto-restart.
+* **`🚪 EXIT GAME`**: Cleans up resources and quits to desktop.
 
 ---
 
@@ -76,12 +77,13 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **Aim (ADS)** | `Right Mouse Button` (hold) | Zoom to 65° FOV, half spread; gun bob/sway/kick and screen shake cut by 90% |
 | **Reload** | `R` | Manual reload (automatic when magazine is empty) |
 | **Switch Weapon** | `1`, `2`, `3` or `Mouse Wheel` | Cycle between Rifle, Shotgun, and Plasma (0.1s equip delay before firing, reduced by fire rate bonuses) |
-| **Interact / Cache** | `E` | Opens floating Loot Caches |
+| **Interact / Loot Box** | `E` | Opens dropped Loot Boxes |
 | **Revive Ally** | `E` (hold 5s) | Within 3m of downed squadmate (4.0s for Medics) |
 | **Class Active Skill** | `Q` | Triggers class active (Medic: Restore, Rogue: Dash, Gunner: Berserk) |
 | **Escape Trap** | Alternate `A` / `D` | Breaks a Bog Slime engulf (−0.5s per press) or a Blood Ghoul pin (10 presses). Presses must alternate A→D→A… (or D→A→D…); holding or repeating one key doesn't count. No class skill, weapon fire, or reloading while trapped (a reload in progress is cancelled) |
-| **Select Upgrade Card** | `1`, `2`, `3` or `Click` | Picks 1 of 3 cards on level up or cache opening |
-| **Reroll Cards** | `Click` button | Rerolls 3 cards with Scrap (starts at 500, doubles per use) |
+| **Core: Pick & Place** | `Left Mouse Button` | Select component from stash/grid and socket into 'Your Body' matrix |
+| **Core: Rotate Component** | `Right Mouse Button` or `R` | Rotates component 90° clockwise in stash or in-place on grid |
+| **Core: Return to Stash** | `Clear All` button | Recalls all installed components from grid back to stash |
 | **Pause Menu** | `Escape` | Master volume, **Bullet Effect** volume (explosion, ricochet and chain-lightning sounds only; default 50%), mouse sensitivity, display options |
 | **Toggle Window / Fullscreen**| `F11`, `Alt + Enter`, `M` (menus) | Cycles Windowed and Borderless Fullscreen |
 | **Toggle Damage Numbers** | `F8` or Pause Menu | Toggles floating damage labels ON/OFF |
@@ -160,48 +162,70 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 * **Hit Penalty**: Every hit taken drains **10.0s** from the current tier. The drain stops at 0.0s of the current tier, which then demotes to the lower tier at **19.0s**; any leftover penalty is discarded. Hits nullified by Null Barrier or blocked by invulnerability (dash, skills, Phase-Shield) cost nothing.
 * **Promotion Callout**: Each promotion flashes a short fade-out text under the rank letter listing what the new tier grants.
 * **Economy & Horde Buffs**: Tier D provides no bonuses. Each tier above D grants **+25% MORE** XP and Scrap drops, **+25% MORE** enemy spawn rate (halving spawn interval at S), expands concurrent enemy cap up to 80, and reduces round intermission delay down to 2.25s at Tier S to sustain combat momentum.
-* **Rarer Perk Upgrades**: Common perk base weight is increased by 25% from 64 to 80. Advancing Fever tiers decays Common weight by $80 \times 0.75^{\text{tier}}$, more than doubling the offering probability of Rare, Epic, and Legendary cards at Tier S.
+* **Rarer Component Drops**: Common component base weight is 80. Advancing Fever tiers decays Common weight by $80 \times 0.75^{\text{tier}}$, more than doubling the drop probability of Rare, Epic, and Legendary cyberware components from Loot Boxes at Tier S.
 
 ---
 
-## 🧬 Roguelike Upgrades System
+## 🧬 Core Matrix ('Your Body') & Backpack RPG System
 
-### Upgrade Mechanics
-* **Card Offer**: Leveling up or opening a Loot Cache offers 3 cards. Rarity rates: Common (~79.2% at Tier D down to ~54.7% at Tier S), with Rare, Epic, and Legendary cards appearing more than twice as frequently at max Fever.
-* **Scrap Reroll**: Reshuffles 3 cards. Costs 500 Scrap initially, doubling per use (500 → 1,000 → 2,000 → 4,000...), shared across co-op.
-* **Crits & Explosions**: Projectiles roll weapon crit chance (+ *Precision Optics*). Base crit multiplier is 2.0× (+ *Hollow-Point Rounds*). Explosions derive damage from initial hit damage and do not double-dip crits.
-* **Knockback Removal**: Player weapons have zero knockback on enemies to prevent stunlock exploits.
-* **Tesla Chaining**: Arcs sequentially up to 2–4 targets within 8.5m dealing 75% bullet damage (+50% damage boost). Does not trigger on ricochets (retains Plasma Core ricochet synergy). Can bounce back and forth (ping-pong) between 2+ alive targets; prioritizes unhit targets first.
+CyberHorde features an ARPG progression model inspired by *Backpack Battles*: instead of picking transient perk cards on level up, operative builds are permanently powered by **Cyberware Components** equipped into the **"Your Body"** neural grid inventory.
 
-### Perk Catalog
+### 📐 Grid Dimensions & Milestone Progression
+* **Starting Grid**: Begins as a **4 rows × 5 columns** (20 slots) neural matrix.
+* **Wave Milestones (+1 Col / 10 Waves)**: Reaching every 10 waves reached (Wave 10, Wave 20, Wave 30...) permanently unlocks **+1 column**.
+* **Stage Boss Defeats (+2 Rows / Boss)**:
+  * Defeating Stage 1 Wave 50 Final Boss (**Apex Overlord**) permanently unlocks **+2 rows**.
+  * Defeating Stage 2 Wave 50 Final Boss (**Blood Ghoul**) permanently unlocks **+2 rows**.
+* **Locked Cell Indicators**: Outer grid perimeter displays locked cyber-cells (`🔒`); hovering over locked cells reveals exact unlock criteria (wave or boss requirement).
+* **Persistence**: Placed grid components, stash inventory, and unlocked matrix dimensions are saved persistently to `user://save_core.json`.
 
-| Upgrade | Rarity | Effect | Max Stacks |
-| :--- | :--- | :--- | :---: |
-| **Heavy Caliber** | `Common` | +25% Projectile Damage across all weapons | Infinite |
-| **Vital Plating** | `Common` | +25 Maximum Health (heals immediately on selection) | Infinite |
-| **Precision Optics** | `Common` | +10% Critical Strike Chance | 5 |
-| **Overclock Trigger** | `Common` | +25% Fire Rate | 6 |
-| **Rapid Loader** | `Common` | +25% Reload Speed across all weapons | 6 |
-| **Extended Mag** | `Common` | +30% Magazine Capacity across all weapons | 6 |
-| **Kinetic Thrusters** | `Common` | +18% Movement Speed and +15% Jump Power | 1 |
-| **Nanite Magnet** | `Common` | +60% XP & Loot collection radius | 2 |
-| **Hardened Alloy** | `Rare` | +10% Damage Reduction against all incoming damage | 5 (50% max) |
-| **Hollow-Point Rounds** | `Rare` | +0.5× Critical Hit Damage Multiplier | Infinite |
-| **Hyper-Penetrator** | `Rare` | Projectiles pierce through +1 enemy (pierced enemies are excluded from the bullet's sweep, so it carries on to the next target) | 2 |
-| **Aegis Energy Shield** | `Rare` | +25 Regenerating Shield capacity (grants shield on pick) | Infinite |
-| **Vampiric Siphon** | `Rare` | Restores +4 HP on enemy kill | 1 |
-| **Cryo Rounds** | `Rare` | Every damage instance you deal (direct, ricochet, explosion AoE, chain lightning, drone) slows the target by 25% for 3 seconds | 1 |
-| **Nanite Scavenger** | `Rare` | +40% XP and Scrap drops from defeated enemies | 1 |
-| **Explosive Payload** | `Epic` | Bullets explode on impact (2.5m AoE). Plasma Core AoE +25% (5.0m → 6.25m) | 1 |
-| **Reactive Phase-Shield** | `Epic` | Taking damage grants 0.25s invulnerability | 1 |
-| **Null Barrier** | `Epic` | Nullifies damage instance every 10s (triggers invulnerability perks) | 1 |
-| **Multi-Barrel Splitter** | `Epic` | +100% Projectiles per shot (doubles shot count) | 2 |
-| **Tesla Arc Emitter** | `Epic` | Direct hits arc chain lightning (75% damage) to 2 targets (+2 per stack, up to 4 max within 8.5m; no ricochet trigger except Plasma Core). Synergizes with Plasma Core | 2 |
-| **Smart Bouncing Core** | `Epic` | Bullets ricochet with on-hit explosion per bounce (and Plasma Core chain lightning) | 2 |
-| **Assault Drone Unit** | `Epic` | Deploys autonomous companion drone with 1 of 3 weapons (1/4 base fire rate, inherits all weapon perks, Gunner passive crit bonus, Gunner Berserk Protocol active, and Rogue passive reload speed). Drones never target Spawnlings | 3 |
-| **Emergency Defibrillator**| `Legendary`| Prevents fatal damage, fully restores HP & Shield + 5s invulnerability. Recharges every 10 waves. Co-op: only fires once the whole squad is down (a downed holder gets back up the moment the last teammate falls) | 1 |
-| **Cooldown Reduction** | `Legendary`| Reduces your class active skill cooldown by 50% | 1 |
-| **Dual Capacitor** | `Legendary`| Your class active skill holds 2 charges. Charges recharge one at a time. | 1 |
+### 📦 Loot Boxes & Fever-Driven Drops
+* **Drop Mechanics**: Standard horde enemies have a **3.5% rare chance** to drop a **Loot Box** on death (server-authoritative and co-op synced). High-value targets (**Void Spawners** and **Spore Pits**) have a **100% guaranteed** Loot Box drop.
+* **Fever Scaling**: Opening a Loot Box (`E`) rolls component rarity based on the active **Squad Fever Tier**:
+  $$\text{Common Weight} = 80.0 \times 0.75^{\text{FeverTier}}$$
+  Higher Fever tiers rapidly decay Common rates, making Rare, Epic, and Legendary components drop far more frequently at Tier A and S.
+* **HUD Loot Banner**: Looting a component triggers a celebratory cyber banner showing component name, rarity badge & color, shape dimensions, and rolled stat attributes.
+
+### 🧩 Shapes, Sizes & Rotation
+* **Polyomino Shapes**: Components drop in diverse shapes: `1x1`, `1x2`, `2x1`, `1x3`, `3x1`, `2x2`, `L_shape`, and `T_shape`.
+* **Multi-Cell Scaling**: Larger shapes roll higher stat multipliers and multiple concurrent stats (e.g. 4-cell components roll 2 to 4 powerful rolled attributes).
+* **Rotation Controls**:
+  * **Stash**: Click "ROTATE" button on card or press Right-Click / `R` while dragging.
+  * **On-Grid Rotation**: Right-Click any placed component on the grid to rotate it 90° clockwise in-place (if space allows).
+* **Drag-and-Drop Preview**: Left-click to pick or place. Glowing green preview indicates a valid socket; glowing red indicates collision or boundary blockage.
+* **Recall All**: Click "RECALL ALL TO STASH" to quickly clear the grid for a clean build redesign.
+
+### ⚙️ Cyberware Component & Stat Catalog
+
+All original roguelike perks have been converted into randomized component stat attributes:
+
+| Stat / Perk Root | Rarity Tier | Numerical Roll Range | In-Game Effect |
+| :--- | :---: | :---: | :--- |
+| **Caliber Core** | `Common` | +15% to +35% | Projectile damage multiplier across all weapons |
+| **Trigger Actuator** | `Common` | +10% to +40% | Fire rate increase across all weapons |
+| **Vital Plating** | `Common` | +20 to +50 HP | Maximum Health increase (heals on install) |
+| **Energy Shield Matrix** | `Rare` | +20 to +50 Shield | Regenerating energy shield buffer |
+| **Optic Lens** | `Common` | +5% to +20% | Critical strike chance (capped at 35% base roll) |
+| **Hollow-Point Module** | `Rare` | +0.25× to +0.75× | Critical hit damage multiplier |
+| **Kinetic Thruster** | `Common` | +10% to +25% | Movement speed and sprint velocity |
+| **Rapid Loader** | `Common` | +15% to +35% | Reload speed across all weapons |
+| **Expanded Magazine** | `Common` | +15% to +40% | Magazine capacity across all weapons |
+| **Nanite Collector** | `Common` | +2.0m to +5.0m | Nanite XP and Scrap collection radius |
+| **Scavenger Sensor** | `Rare` | +20% to +50% | Nanite XP and Scrap drop yield |
+| **Hardened Alloy** | `Rare` | +5% to +15% | Damage reduction against incoming hits (capped at 60%) |
+| **Phase-Shield Emitter** | `Epic` | +0.15s to +0.30s | Invulnerability window upon taking damage |
+| **Siphon Conduit** | `Rare` | +2 to +6 HP | Nanite leech: HP restored on enemy kill |
+| **Penetrator Spike** | `Rare` | +1 to +2 Pierce | Bullets pierce through additional enemies |
+| **Barrel Splitter** | `Epic` | +1 Projectile | Fires an additional projectile per volley |
+| **Ricochet Mod** | `Epic` | 1 to 2 Bounces | Bullets bounce off targets with on-hit explosions |
+| **Explosive Warhead** | `Epic` | 2.5m AoE | Bullets explode on impact in a 2.5m blast radius |
+| **Cryo Capacitor** | `Rare` | 25% Chill | Slows enemies hit by 25% for 3 seconds |
+| **Tesla Arc Emitter** | `Epic` | 2 to 3 Targets | Direct hits arc chain lightning dealing 75% damage |
+| **Assault Drone Bay** | `Epic` | +1 Drone | Autonomous companion drone equipped with arsenal weapons |
+| **Null Barrier Aegis** | `Epic` | 10s Cooldown | Nullifies the next instance of incoming damage |
+| **Defibrillator Protocol**| `Legendary`| 10 Waves CD | Emergency Defibrillator: fatal damage revival & 5s invulnerability |
+| **Chrono Accelerator** | `Legendary`| -50% CD | Cuts operative class active skill cooldown in half |
+| **Dual Capacitor** | `Legendary`| +1 Charge | Class active skill holds 2 charges (recharging sequentially) |
 
 ---
 
@@ -228,7 +252,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 | **Photon Hornet** | 90.0 | 5.5 m/s | 18.0 | 1.2s | Thin laser bolt, 48 m/s (28.0m); orbits target at ~11m, hovers ~3.5m up | Spitter's | Wave 41+, replaces Spitter |
 | **Armored Goliath (Brute)** | 500.0 | 4.5 m/s | 35.0 | 3.5s | Slam AoE (7.2m, 5.7m trigger, 0.56s windup) + 10.0 knockup | 7.2% | Wave 6+ heavy tank |
 | **Cyber Charger** | 220.0 | 3.2 m/s | 48.0 | 2.5s | 37.5 m/s rush attack | ~4.0–4.25% | Wave 11+, rushes only with a clear lane; wall crash causes 3.5s self-stun |
-| **Void Spawner** | 3,500.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns 2 Spawnlings per cycle | 0.25% | Wave 20+, drops Loot Cache on defeat |
+| **Void Spawner** | 3,500.0 | 2.8 m/s | — | 4.5s spawn | High-altitude flight (8.5m), spawns 2 Spawnlings per cycle | 0.25% | Wave 20+, guaranteed Loot Box drop on defeat |
 | **Cyber Spawnling** | 14.0 | 12.0 m/s | 2.5 / 0.15s | 0.15s tick | Rapid spinning drill contact | Portal spawn | **Immune to AoE, ricochet, & lightning; direct bullet hits only. Ignored by companion drones; players pass through them (no body block). Hovers at a 1.3m keep-out radius around the player's head while drilling, so it can always be shot** |
 | **Apex Overlord (Boss)** | 1,000,000.0 | 3.2–105 m/s | 120–540 | Multi-stage | Multi-stage ground & aerial attack loops | Wave 50 | Fixed HP & cadence; infinite horde until boss dies |
 
@@ -248,9 +272,9 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **2** | Night | Moonlit jungle (flat grass, 26 trees, no platform, no jump pads) | Shadow Spider, Venom Wyvern, Bog Slime, Mantis Stalker, Spore Pit | Blood Ghoul (Red Moon) |
 
 * **Progression**: Killing Stage 1's Wave 50 boss clears the horde and starts Stage 2 at **Wave 1** after a 10s "NIGHT FALLS IN" intermission. The arena swaps and the squad regroups at the center. Killing the Stage 2 boss wins the run.
-* **Fresh build each stage**: Entering Stage 2 resets level (Lv 1), XP, all perks (drones, shield, Second Wind…), Scrap, reroll cost and Fever, and enemy scaling restarts at Wave 1. Operatives return to 100 Max HP at full health. Class and run stats (kills, damage, time) are kept. A level-up pick still open from Stage 1 is dropped.
+* **Stage Transition & Persistent Core**: Entering Stage 2 resets wave number, level (Lv 1), XP, Scrap, and Fever, with enemy scaling restarting at Wave 1. Your persistent **Core Grid ('Your Body') components and matrix unlocks remain fully active**, carrying your progression build seamlessly into the night. Operatives return to full health. Class and run stats (kills, damage, time) are kept.
 * **HUD**: Wave label reads `DAY — WAVE n` / `NIGHT — WAVE n`; a banner announces Stage 2 and the Blood Moon.
-* **Wave rules** (count, spawn interval, Loot Cache every 2 waves, infinite Wave 50 horde) are the same in both stages; only the roster differs.
+* **Wave rules** (count, spawn interval, enemy-dropped Loot Boxes, infinite Wave 50 horde) are the same in both stages; only the roster differs.
 
 ### 🌲 Stage 2 Arena: Nightfall Jungle
 * Same 80×80m footprint, perimeter walls (dark hedge) and invisible sky barriers as Stage 1. All flat ground covered in wind-swayed grass. Tree trunks are the only cover and block shots and movement. Silhouette treeline beyond the walls.
@@ -265,7 +289,7 @@ Reaching Wave 50 spawns the Apex Overlord on the center platform with an infinit
 | **Venom Wyvern** | 70.0 | 5.0 m/s | 8.0 + Poison | 3.4s | Fast venom glob, 42 m/s (30m); glides ~3.2m above its target at ~14m range | 17.5% → 15% | Wave 6+. Decays 5% every 5 waves |
 | **Bog Slime** | 700.0 | 3.0 m/s | 10 dmg/s (trap) | — | Touch (1.6m) engulfs the operative for 3s | 2.5% | Wave 11+. Hunched translucent lime ooze rising from a spreading puddle; a fanged skull shows through its clearer head, bone spikes and arrows jut from its back. Spits the operative out, then pauses 1.2s |
 | **Mantis Stalker** | 200.0 | 2.0 m/s watched / 20.0 m/s unwatched | 40.0 | 1.5s watched / 0.3s unwatched | Scythe slash (2.3m) | 1% | Wave 21+. Brown void-mantis. "Watched" = inside any operative's view cone (~37°) with clear line of sight. **Unwatched: 75% damage reduction**, multiplied with the wave reduction (e.g. 40% wave DR → takes 15%) |
-| **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Drops a Loot Cache |
+| **Spore Pit (Mini-Boss)** | 5,000.0 | Rooted | 60.0 | 2.8s | Global mortar: spore glob arcs into the sky and lands on a random operative's spot (5m AoE, 2.2s flight, landing zone marked); leaves a 5m poison puddle for 3s | 0.1% | Wave 31+, no alive cap. Guaranteed Loot Box drop |
 | **Blood Ghoul (Boss)** | 1,000,000.0 | 24 m/s flee & hunt / 30–45 m/s tree hop / 42 m/s leap | 200 (fixed) | 0.3s pin strikes | Shadow ambush, Engage Mode tree hops, pin, lifesteal, Bleed, Blood Rain (Corrupted Blood); 4 HP phases | Wave 50 | Fixed HP & damage; infinite horde until it dies; 1.25× scale |
 
 ### 🧪 Stage 2 Status Effects

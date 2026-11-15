@@ -1,0 +1,351 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/core_menu.gd" id="1_core"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.04, 0.07, 0.12, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.75, 1, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back"]
+bg_color = Color(0.12, 0.18, 0.28, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.85, 1, 0.7)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back_hover"]
+bg_color = Color(0.18, 0.3, 0.45, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_action"]
+bg_color = Color(0.08, 0.14, 0.22, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.6, 0.8, 0.5)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_action_hover"]
+bg_color = Color(0.14, 0.25, 0.38, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.9, 1, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
+bg_color = Color(0.03, 0.05, 0.09, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.9, 1, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 8
+
+[node name="CoreMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 15
+script = ExtResource("1_core")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.06, 0.96)
+
+[node name="MainLayout" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="MainLayout/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleVBox" type="VBoxContainer" parent="MainLayout/VBoxContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleLabel" type="Label" parent="MainLayout/VBoxContainer/HeaderHBox/TitleVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "🧬 CORE AUGMENTATION MATRIX — [ YOUR BODY ]"
+
+[node name="SubtitleLabel" type="Label" parent="MainLayout/VBoxContainer/HeaderHBox/TitleVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "Matrix Capacity: 4 Rows × 5 Cols (20 Slots) • Waves Survived: 1 • Boss Cores Defeated: 0/2"
+
+[node name="BackBtn" type="Button" parent="MainLayout/VBoxContainer/HeaderHBox"]
+custom_minimum_size = Vector2(170, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_back")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_back_hover")
+text = "← BACK TO MAIN MENU"
+
+[node name="HSeparator" type="HSeparator" parent="MainLayout/VBoxContainer"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="MainLayout/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="LeftSidebar" type="PanelContainer" parent="MainLayout/VBoxContainer/ContentHBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsTitle" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚡ AUGMENTATION STATS"
+horizontal_alignment = 1
+
+[node name="HSep" type="HSeparator" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatsScroll" type="ScrollContainer" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsListVBox" type="VBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/LeftSidebar/MarginContainer/VBoxContainer/StatsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CenterGridPanel" type="PanelContainer" parent="MainLayout/VBoxContainer/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GridHeaderHBox" type="HBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="GridTitle" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "CYBER CORE MATRIX ('YOUR BODY')"
+
+[node name="GridInfoLabel" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "Active Capacity: 5x4"
+
+[node name="HSep" type="HSeparator" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="GridScroll" type="ScrollContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridCenterContainer" type="CenterContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GridViewport" type="Control" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridScroll/GridCenterContainer"]
+custom_minimum_size = Vector2(520, 416)
+layout_mode = 2
+
+[node name="GridBottomHBox" type="HBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ClearAllBtn" type="Button" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridBottomHBox"]
+custom_minimum_size = Vector2(130, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_action")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_action_hover")
+text = "RECALL TO STASH"
+
+[node name="RotateBtn" type="Button" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridBottomHBox"]
+custom_minimum_size = Vector2(130, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_action")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_action_hover")
+text = "ROTATE [R / RMB]"
+
+[node name="GridTipLabel" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/CenterGridPanel/MarginContainer/VBoxContainer/GridBottomHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.75)
+theme_override_font_sizes/font_size = 11
+text = "Left-Click: Pick/Place • Right-Click: Rotate • Drag & Drop supported"
+horizontal_alignment = 2
+
+[node name="RightStashPanel" type="PanelContainer" parent="MainLayout/VBoxContainer/ContentHBox"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StashHeaderHBox" type="HBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="StashTitle" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer/StashHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "📦 CYBERWARE STASH"
+
+[node name="StashCountLabel" type="Label" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer/StashHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 0.95, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "(0)"
+
+[node name="HSep" type="HSeparator" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="StashScroll" type="ScrollContainer" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StashListVBox" type="VBoxContainer" parent="MainLayout/VBoxContainer/ContentHBox/RightStashPanel/MarginContainer/VBoxContainer/StashScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TooltipPanel" type="PanelContainer" parent="."]
+visible = false
+top_level = true
+custom_minimum_size = Vector2(240, 0)
+offset_right = 240.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tooltip")
+
+[node name="MarginContainer" type="MarginContainer" parent="TooltipPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="TooltipVBox" type="VBoxContainer" parent="TooltipPanel/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="TooltipName" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Component Name"
+
+[node name="TooltipRarity" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "[ COMMON CYBERWARE ]"
+
+[node name="TooltipShape" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 0.9, 0.8)
+theme_override_font_sizes/font_size = 10
+text = "Shape: 1x1 (1 cell)"
+
+[node name="TooltipSep" type="HSeparator" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+
+[node name="TooltipStatsVBox" type="VBoxContainer" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="TooltipHint" type="Label" parent="TooltipPanel/MarginContainer/TooltipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.7, 0.85, 0.6)
+theme_override_font_sizes/font_size = 10
+text = "Left-Click: Pick / Place • Right-Click: Rotate"
