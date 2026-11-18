@@ -3,6 +3,10 @@ extends Node
 ## Central Game Manager & Roguelike Protocol
 ## Handles player stats, roguelike upgrades, loot economy, wave director, and input bindings.
 
+enum GameMode { ROGUELITE, RPG }
+var current_game_mode: GameMode = GameMode.ROGUELITE
+
+signal game_mode_changed(mode: GameMode)
 signal xp_changed(current_xp: int, xp_needed: int)
 signal level_up(new_level: int)
 signal scrap_changed(new_scrap: int)
@@ -356,10 +360,21 @@ func cycle_fps_limit() -> int:
 	fps_limit_changed.emit(fps_limit)
 	return fps_limit
 
+func set_game_mode(mode: GameMode) -> void:
+	current_game_mode = mode
+	game_mode_changed.emit(mode)
+
+func is_rpg_mode() -> bool:
+	return current_game_mode == GameMode.RPG
+
+func is_roguelite_mode() -> bool:
+	return current_game_mode == GameMode.ROGUELITE
+
 func _on_wave_cleared(wave_num: int) -> void:
-	CoreGridScript.unlock_wave_milestone(wave_num)
-	if wave_num >= 50:
-		CoreGridScript.unlock_boss_defeat(current_stage)
+	if is_rpg_mode():
+		CoreGridScript.unlock_wave_milestone(wave_num)
+		if wave_num >= 50:
+			CoreGridScript.unlock_boss_defeat(current_stage)
 	if second_wind_unlocked and not second_wind_available:
 		second_wind_cooldown_waves -= 1
 		if second_wind_cooldown_waves <= 0:
@@ -519,7 +534,43 @@ func _reset_progression() -> void:
 	fever_updated.emit("D", 0, 0.0, FEVER_MAX_DURATION)
 	
 	active_upgrades.clear()
-	apply_core_stats()
+	if is_roguelite_mode():
+		damage_mult = 1.0
+		fire_rate_mult = 1.0
+		speed_mult = 1.0
+		reload_speed_mult = 1.0
+		magazine_mult = 1.0
+		magnet_radius = 6.0
+		extra_projectiles = 0
+		extra_projectile_mult = 0.0
+		pierce_count = 0
+		explosive_rounds = false
+		explosion_radius = 2.5
+		bouncing_bullets = false
+		bounce_count = 0
+		chain_lightning = false
+		chain_lightning_targets = 0
+		vampiric_heal = 0.0
+		shield_max = 0.0
+		current_shield = 0.0
+		drone_count = 0
+		cryo_slow = false
+		crit_chance = 0.10
+		crit_damage = 2.0
+		max_health_bonus = 0.0
+		player_damage_reduction = 0.0
+		hit_invulnerability_duration = 0.0
+		null_barrier_unlocked = false
+		second_wind_unlocked = false
+		second_wind_available = false
+		second_wind_cooldown_waves = 0
+		dash_unlocked = false
+		cooldown_reduction = false
+		dual_capacitor = false
+		greed_mult = 1.0
+		stats_updated.emit()
+	elif is_rpg_mode():
+		apply_core_stats()
 
 func add_xp(amount: int) -> void:
 	var final_xp = int(amount * greed_mult)
@@ -530,7 +581,8 @@ func add_xp(amount: int) -> void:
 		xp_to_next_level = _next_xp_requirement(xp_to_next_level)
 		SoundManager.play("level_up")
 		level_up.emit(player_level)
-		# Upgrade card prompt suppressed: perks are replaced by Core components and Loot Boxes
+		if is_roguelite_mode():
+			prompt_upgrade_menu()
 	xp_changed.emit(player_xp, xp_to_next_level)
 
 func _next_xp_requirement(current_requirement: int) -> int:
@@ -676,6 +728,8 @@ func get_fever_spawn_rate_mult() -> float:
 	return 1.0 + 0.25 * float(fever_tier_index)
 
 func apply_core_stats(custom_bonuses: Dictionary = {}) -> void:
+	if not is_rpg_mode():
+		return
 	if core_grid == null:
 		core_grid = CoreGridScript.get_instance()
 	
@@ -717,8 +771,11 @@ func apply_core_stats(custom_bonuses: Dictionary = {}) -> void:
 	stats_updated.emit()
 
 func prompt_upgrade_menu() -> void:
-	# Card selection suppressed in RPG progression mode: Core components power builds
-	pass
+	state = GameState.UPGRADING
+	if not NetworkManager.is_multiplayer:
+		get_tree().paused = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	upgrade_requested.emit()
 
 func has_available_upgrades() -> bool:
 	for id in upgrade_database:

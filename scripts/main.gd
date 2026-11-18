@@ -29,17 +29,21 @@ func _on_lobby_mission_started() -> void:
 	if NetworkManager.is_multiplayer:
 		if NetworkManager.is_server:
 			# Server tells all peers to start the mission together
-			rpc_start_mission.rpc(NetworkManager.connected_peers, GameManager.is_boss_battle_mode, NetworkManager.get_all_classes(), GameManager.boss_battle_target)
+			rpc_start_mission.rpc(NetworkManager.connected_peers, GameManager.is_boss_battle_mode, NetworkManager.get_all_classes(), GameManager.boss_battle_target, GameManager.current_game_mode)
 	else:
-		_start_mission_local([1], {1: GameManager.player_class})
+		_start_mission_local([1], {1: GameManager.player_class}, GameManager.current_game_mode)
 
 @rpc("call_local", "reliable")
-func rpc_start_mission(peer_ids: Array, is_boss_mode: bool = false, classes_dict: Dictionary = {}, boss_target: int = 1) -> void:
+func rpc_start_mission(peer_ids: Array, is_boss_mode: bool = false, classes_dict: Dictionary = {}, boss_target: int = 1, synced_mode: int = -1) -> void:
+	if synced_mode != -1:
+		GameManager.set_game_mode(synced_mode)
 	if is_boss_mode:
 		GameManager.setup_boss_battle_mode(boss_target)
-	_start_mission_local(peer_ids, classes_dict)
+	_start_mission_local(peer_ids, classes_dict, synced_mode)
 
-func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}) -> void:
+func _start_mission_local(peer_ids: Array, classes_dict: Dictionary = {}, synced_mode: int = -1) -> void:
+	if synced_mode != -1:
+		GameManager.set_game_mode(synced_mode)
 	is_mission_active = true
 	
 	if lobby_menu:

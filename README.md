@@ -5,7 +5,7 @@
 [![Multiplayer](https://img.shields.io/badge/Networking-ENet%20Co--op%20Multiplayer-brightgreen)](https://docs.godotengine.org/en/stable/classes/class_enetmultiplayerpeer.html)
 [![Repository](https://img.shields.io/badge/GitHub-YuriSekaii%2FCyberHorde--FPS--Roguelike-181717?logo=github)](https://github.com/YuriSekaii/CyberHorde-FPS-Roguelike)
 
-A fast-paced 3D First-Person Horde Progression RPG Shooter with online co-op multiplayer built in Godot 4.7. Survive escalating cybernetic waves, crack open enemy-dropped Loot Boxes, and craft persistent overpowered builds using a Backpack Battles-style grid inventory ('Your Body') solo or in squad co-op.
+A fast-paced 3D First-Person Horde Shooter with online co-op multiplayer built in Godot 4.7. Choose between two distinct game modes: classic **🔥 Roguelite** (session-based card drafting on level up and wave loot caches) or persistent **🧬 RPG** (Backpack Battles-style 'Your Body' grid matrix, enemy loot box drops, and cyberware component progression) solo or in squad co-op.
 
 ---
 
@@ -24,7 +24,7 @@ The project includes bundled Godot 4.7.2 (`engine.zip`, 82 MB) that auto-unpacks
 | **`Push_To_GitHub.bat`** | Stages, commits, and pushes local changes to `origin main`. |
 
 ### Main Menu Navigation
-The primary interface provides 4 streamlined choices:
+The primary interface provides streamlined choices:
 * **`▶ PLAY`**: Expands into deployment operations:
   * **Single Player (Solo)**: Standard horde survival starting from Stage 1 (Day) Wave 1. Beating the Wave 50 boss continues into Stage 2 (Night) Wave 1.
   * **Host LAN Co-op (Server)**: Hosts an ENet multiplayer squad lobby on your network (default port: `7777`).
@@ -32,9 +32,26 @@ The primary interface provides 4 streamlined choices:
   * **Host Online Lobby (Internet)**: Creates an online lobby and generates a 5-character code (e.g. `K7QXM`). No port forwarding needed.
   * **Join Online Lobby (Code)**: Enter host code and connect directly.
   * **Boss Battle (Wave 50 Test Protocol)**: Direct deployment to a late-game target (`Apex Overlord`, `Blood Ghoul`, or `Stage 2 Wave 1`) with `HereComeTheChallenger` key.
-* **`🧬 CORE (YOUR BODY)`**: Opens the Backpack Battles-style grid augmentation matrix where players equip collected cyberware components to build persistent character stats.
+* **`🔄 SWITCH MODE`**: Toggles between **🔥 ROGUELITE** and **🧬 RPG** modes with instant UI state updates and banner indicators.
+* **`🧬 CORE (YOUR BODY)`**: *(RPG Mode only)* Opens the Backpack Battles-style grid augmentation matrix where players equip collected cyberware components to build persistent character stats. Automatically hidden during Roguelite mode.
 * **`🔄 CHECK FOR UPDATES`**: Direct in-game update manager with async fetch, 1-click git pull, and auto-restart.
 * **`🚪 EXIT GAME`**: Cleans up resources and quits to desktop.
+
+---
+
+## ⚔️ Game Modes: Roguelite vs. RPG
+
+CyberHorde features two distinct ways to play, selectable upon launching the game or via the **`🔄 SWITCH MODE`** button in the lobby:
+
+| Feature / Mechanic | 🔥 Roguelite Mode | 🧬 RPG Mode (Your Body) |
+| :--- | :--- | :--- |
+| **Progression Style** | Run-based session survival (starts fresh at baseline stats each run) | Persistent progression (retains cyberware inventory & grid layout across runs) |
+| **Character Power Source** | Perk Cards drafted during the run upon leveling up & opening chests | Randomized Cyberware Components equipped into the neural matrix grid |
+| **Level-Up Behavior** | Prompts 3 randomized Perk Cards (pauses game in solo; Aegis shield in co-op) | Level increases with XP/Scrap rewards; perk card prompts are suppressed |
+| **Chest / Loot Box Drops** | Upgrade Chests spawn automatically every 2 waves and on final wave. Guaranteed on Void Spawner & Spore Pit. Standard enemies do not drop chests. | Loot Boxes have a 3.5% drop chance from any slain enemy. 100% guaranteed on Void Spawner & Spore Pit. |
+| **Chest / Box Contents** | XP, Scrap, and prompts a free Perk Card selection | XP, Scrap, and a randomized Cyberware Component rolled via Squad Fever |
+| **Core Matrix ("Your Body")** | Hidden and inactive. Grid stats are bypassed. | Fully accessible in the lobby; milestone unlocks (+columns/waves, +rows/bosses) |
+| **Multiplayer Sync** | Host's selected mode is automatically synchronized across all connected peers | Host's selected mode is automatically synchronized across all connected peers |
 
 ---
 
@@ -168,7 +185,7 @@ Operatives channel combat momentum into a squad-shared **Fever** rank shown in t
 
 ## 🧬 Core Matrix ('Your Body') & Backpack RPG System
 
-CyberHorde features an ARPG progression model inspired by *Backpack Battles*: instead of picking transient perk cards on level up, operative builds are permanently powered by **Cyberware Components** equipped into the **"Your Body"** neural grid inventory.
+When playing in **🧬 RPG Mode**, CyberHorde features an ARPG progression model inspired by *Backpack Battles*: instead of picking transient perk cards on level up, operative builds are permanently powered by **Cyberware Components** equipped into the **"Your Body"** neural grid inventory. In **🔥 Roguelite Mode**, players instead draft perk cards on level up and open wave upgrade chests.
 
 ### 📐 Grid Dimensions & Milestone Progression
 * **Starting Grid**: Begins as a **4 rows × 5 columns** (20 slots) neural matrix.
@@ -337,7 +354,7 @@ A tall, starved wendigo-like horror: an emaciated pitch-black body with ribs pre
 * **Nanite XP Crystals** *(Cyan/Green)*: Magnetize to player; fills squad level-up bar.
 * **Medical Stims** *(Red)*: Instantly restores 25 HP. Drops more frequently at low health.
 * **Scrap Currency** *(Gold)*: Currency collected to fund card rerolls.
-* **Loot Caches**: Spawns every 2 waves and drops from defeated Void Spawners and Spore Pits. Press `E` for bonus scrap/health and 1 free card pick.
+* **Upgrade Chests & Loot Boxes**: In **Roguelite Mode**, Upgrade Chests spawn every 2 waves and on the final wave (and drop from defeated Void Spawners and Spore Pits), granting XP, Scrap, and a free Perk Card pick. In **RPG Mode**, Loot Boxes drop dynamically from horde enemies (3.5%) and guaranteed from mini-bosses (100%), granting XP, Scrap, and a random Cyberware Component rolled via Squad Fever.
 * **Jump Pads**: 4 Stage 1 launch pads propelling players skyward for aerial traversal (none in the Stage 2 jungle). Each is a dark rune stone (`assets/models/jump_pad/`) with a glowing teal sigil overlay (`RuneGlow`, additive unshaded plane using `assets/textures/castle/jump_pad_runes.png`).
 * **Spawn Telegraphs**: Each incoming enemy is announced by a color-coded ground portal (spinning ring, filling disc, low 0.5m glow, sparks under ~1.4m, countdown label at 1.2m) kept low so it never blocks the view. The Void Spawner's portal instead beams up to its sky spawn point.
 

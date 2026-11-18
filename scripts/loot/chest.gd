@@ -9,10 +9,11 @@ var is_opened: bool = false
 const LOOT_SCENE = preload("res://scenes/loot/loot_pickup.tscn")
 
 func _ready() -> void:
-	prompt_label.text = "[E] Open Loot Box"
+	prompt_label.text = "[E] Open Upgrade Chest" if GameManager.is_roguelite_mode() else "[E] Open Loot Box"
 	prompt_label.visible = false
 
 func _process(_delta: float) -> void:
+	prompt_label.text = "[E] Open Upgrade Chest" if GameManager.is_roguelite_mode() else "[E] Open Loot Box"
 	if is_player_nearby and not is_opened:
 		if Input.is_action_just_pressed("interact"):
 			if NetworkManager.is_multiplayer:
@@ -46,11 +47,15 @@ func open_chest() -> void:
 		p.global_position = global_position + Vector3(0, 0.6, 0)
 		p.setup(0 if i % 2 == 0 else 2, int(randi_range(20, 40) * fever_mult)) # XP or Scrap
 	
-	# Roll component rarity based on current Fever tier weights and award Core Component
-	var rolled_rarity: String = GameManager.roll_component_rarity()
-	var comp = ComponentData.generate_random_component(rolled_rarity)
-	CoreGrid.add_to_stash_static(comp)
-	GameManager.component_looted.emit(comp)
+	if GameManager.is_roguelite_mode():
+		await get_tree().create_timer(0.4).timeout
+		GameManager.prompt_upgrade_menu()
+	elif GameManager.is_rpg_mode():
+		# Roll component rarity based on current Fever tier weights and award Core Component
+		var rolled_rarity: String = GameManager.roll_component_rarity()
+		var comp = ComponentData.generate_random_component(rolled_rarity)
+		CoreGrid.add_to_stash_static(comp)
+		GameManager.component_looted.emit(comp)
 	
 	# Fade out chest after 5 seconds
 	await get_tree().create_timer(4.0).timeout

@@ -10,6 +10,11 @@ signal mission_started()
 @onready var update_container: VBoxContainer = $Panel/VBoxContainer/UpdateContainer
 @onready var boss_container: VBoxContainer = $Panel/VBoxContainer/BossContainer
 @onready var class_select_container: VBoxContainer = $Panel/VBoxContainer/ClassSelectContainer
+@onready var mode_selection_container: VBoxContainer = get_node_or_null("Panel/VBoxContainer/ModeSelectionContainer")
+@onready var mode_banner: PanelContainer = get_node_or_null("Panel/VBoxContainer/ModeBanner")
+@onready var mode_banner_label: Label = get_node_or_null("Panel/VBoxContainer/ModeBanner/Margin/ModeBannerLabel")
+@onready var switch_mode_btn: Button = get_node_or_null("Panel/VBoxContainer/MainButtons/SwitchModeBtn")
+@onready var core_btn: Button = get_node_or_null("Panel/VBoxContainer/MainButtons/CoreBtn")
 
 var core_menu_scene: PackedScene = null
 var core_menu_instance: Node = null
@@ -72,7 +77,11 @@ func _ready() -> void:
 	visible = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	
-	_show_main_view()
+	if GameManager.has_signal("game_mode_changed"):
+		GameManager.game_mode_changed.connect(_on_game_mode_changed)
+	
+	_show_mode_select_view()
+	_update_mode_ui()
 	
 	NetworkManager.connection_status_changed.connect(_on_status_changed)
 	NetworkManager.peer_connected_signal.connect(_on_peers_updated)
@@ -95,6 +104,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible and event is InputEventKey and event.pressed and not event.echo:
 		var focus_owner = get_viewport().gui_get_focus_owner()
 		if not (focus_owner is LineEdit or focus_owner is TextEdit):
+			if mode_selection_container and mode_selection_container.visible:
+				if event.keycode == KEY_1 or event.physical_keycode == KEY_1:
+					_on_roguelite_selected()
+					get_viewport().set_input_as_handled()
+					return
+				elif event.keycode == KEY_2 or event.physical_keycode == KEY_2:
+					_on_rpg_selected()
+					get_viewport().set_input_as_handled()
+					return
+				elif event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE:
+					_show_main_view()
+					get_viewport().set_input_as_handled()
+					return
+			
 			if class_select_container and class_select_container.visible:
 				if event.keycode == KEY_1 or event.physical_keycode == KEY_1:
 					_on_medic_selected()
@@ -142,6 +165,10 @@ func _set_panel_width(w: float) -> void:
 func _show_main_view() -> void:
 	_set_panel_width(520.0)
 	main_buttons.visible = true
+	if mode_banner:
+		mode_banner.visible = true
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = false
@@ -152,11 +179,16 @@ func _show_main_view() -> void:
 	if class_select_container:
 		class_select_container.visible = false
 	status_label.text = "Select an operation."
+	_update_mode_ui()
 	_update_footer_version()
 
 func _show_play_view() -> void:
 	_set_panel_width(520.0)
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = true
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = true
 	host_container.visible = false
@@ -167,6 +199,7 @@ func _show_play_view() -> void:
 	if class_select_container:
 		class_select_container.visible = false
 	status_label.text = "Select deployment mode."
+	_update_mode_ui()
 	_update_footer_version()
 
 func _on_play_menu_pressed() -> void:
@@ -179,6 +212,9 @@ func _on_exit_pressed() -> void:
 	get_tree().quit()
 
 func _on_core_menu_pressed() -> void:
+	if not _is_rpg_mode():
+		status_label.text = "Core matrix is only available in RPG mode."
+		return
 	if not core_menu_instance:
 		if ResourceLoader.exists("res://scenes/ui/core_menu.tscn"):
 			core_menu_scene = load("res://scenes/ui/core_menu.tscn")
@@ -203,6 +239,10 @@ func _on_core_menu_closed() -> void:
 func _show_class_select(target: ClassSelectTarget) -> void:
 	pending_class_target = target
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = false
@@ -221,6 +261,10 @@ func _on_solo_pressed() -> void:
 func _on_host_menu_pressed() -> void:
 	GameManager.reset_game()
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = true
@@ -279,6 +323,10 @@ func _set_online_mode(enabled: bool) -> void:
 func _on_join_menu_pressed() -> void:
 	GameManager.reset_game()
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = false
@@ -309,6 +357,10 @@ func _on_start_squad_pressed() -> void:
 
 func _on_update_menu_pressed() -> void:
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = false
@@ -436,6 +488,9 @@ func _on_back_pressed() -> void:
 	if update_container and update_container.visible:
 		_show_main_view()
 		return
+	if mode_selection_container and mode_selection_container.visible:
+		_show_main_view()
+		return
 	NetworkManager.cleanup_network()
 	GameManager.reset_game()
 	_show_play_view()
@@ -459,6 +514,10 @@ func _ensure_boss_target_select() -> void:
 func _on_boss_menu_pressed() -> void:
 	_ensure_boss_target_select()
 	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = false
 	if play_container:
 		play_container.visible = false
 	host_container.visible = false
@@ -609,3 +668,88 @@ func _on_window_mode_pressed() -> void:
 
 func _on_window_mode_changed(_is_fullscreen: bool) -> void:
 	_update_window_mode_btn()
+
+func _show_mode_select_view() -> void:
+	_set_panel_width(680.0)
+	main_buttons.visible = false
+	if mode_banner:
+		mode_banner.visible = false
+	if mode_selection_container:
+		mode_selection_container.visible = true
+	if play_container:
+		play_container.visible = false
+	host_container.visible = false
+	join_container.visible = false
+	update_container.visible = false
+	if boss_container:
+		boss_container.visible = false
+	if class_select_container:
+		class_select_container.visible = false
+	status_label.text = "Select game mode: Roguelite (classic survivor) or RPG (Your Body grid)."
+	_update_mode_card_highlights()
+	_update_footer_version()
+
+func _is_rpg_mode() -> bool:
+	if GameManager.has_method("is_rpg_mode"):
+		return GameManager.is_rpg_mode()
+	if "current_game_mode" in GameManager:
+		return GameManager.current_game_mode == 1
+	return false
+
+func _update_mode_ui() -> void:
+	var is_rpg = _is_rpg_mode()
+	if core_btn:
+		core_btn.visible = is_rpg
+	if mode_banner_label:
+		if is_rpg:
+			mode_banner_label.text = "MODE: 🧬 RPG (YOUR BODY GRID MATRIX)"
+			mode_banner_label.modulate = Color(0.85, 0.5, 1.0, 1.0)
+		else:
+			mode_banner_label.text = "MODE: 🔥 ROGUELITE (PERK CARDS & LOOT CACHES)"
+			mode_banner_label.modulate = Color(1.0, 0.65, 0.2, 1.0)
+	if switch_mode_btn:
+		if is_rpg:
+			switch_mode_btn.text = "🔄  SWITCH MODE [CURRENT: 🧬 RPG]"
+		else:
+			switch_mode_btn.text = "🔄  SWITCH MODE [CURRENT: 🔥 ROGUELITE]"
+
+func _update_mode_card_highlights() -> void:
+	var is_rpg = _is_rpg_mode()
+	var roguelite_select_btn = get_node_or_null("Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox/RogueliteSelectBtn")
+	var rpg_select_btn = get_node_or_null("Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox/RPGSelectBtn")
+	if roguelite_select_btn:
+		if not is_rpg:
+			roguelite_select_btn.text = "✓ ACTIVE: ROGUELITE (1)"
+		else:
+			roguelite_select_btn.text = "PLAY ROGUELITE (1)"
+	if rpg_select_btn:
+		if is_rpg:
+			rpg_select_btn.text = "✓ ACTIVE: RPG (2)"
+		else:
+			rpg_select_btn.text = "PLAY RPG (2)"
+
+func _on_game_mode_changed(_mode: Variant) -> void:
+	_update_mode_ui()
+
+func _on_switch_mode_pressed() -> void:
+	SoundManager.play("upgrade_select", 0.05, 0.0)
+	_show_mode_select_view()
+
+func _on_roguelite_selected() -> void:
+	if "GameMode" in GameManager:
+		GameManager.set_game_mode(GameManager.GameMode.ROGUELITE)
+	elif GameManager.has_method("set_game_mode"):
+		GameManager.set_game_mode(0)
+	SoundManager.play("upgrade_select", 0.1, 0.0)
+	_show_main_view()
+
+func _on_rpg_selected() -> void:
+	if "GameMode" in GameManager:
+		GameManager.set_game_mode(GameManager.GameMode.RPG)
+	elif GameManager.has_method("set_game_mode"):
+		GameManager.set_game_mode(1)
+	SoundManager.play("upgrade_select", 0.1, 0.0)
+	_show_main_view()
+
+func _on_mode_back_pressed() -> void:
+	_show_main_view()

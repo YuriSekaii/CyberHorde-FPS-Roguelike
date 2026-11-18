@@ -10,7 +10,7 @@ var current_options: Array[Dictionary] = []
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	# GameManager.level_up.connect(_on_level_up) # Suppressed: level ups no longer grant card perks
+	GameManager.level_up.connect(_on_level_up)
 	GameManager.upgrade_requested.connect(open_menu)
 	GameManager.scrap_changed.connect(_on_scrap_changed)
 	GameManager.progression_reset.connect(_on_progression_reset)
@@ -30,7 +30,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_card(2)
 
 func _on_level_up(_lvl: int) -> void:
-	open_menu()
+	if GameManager.is_roguelite_mode():
+		open_menu()
 
 func open_menu() -> void:
 	if visible:

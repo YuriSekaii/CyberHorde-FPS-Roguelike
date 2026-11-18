@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/lobby_menu.gd" id="1_lobby"]
 
@@ -254,6 +254,90 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_roguelite"]
+bg_color = Color(0.1, 0.05, 0.02, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.5, 0.1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_rpg"]
+bg_color = Color(0.08, 0.04, 0.14, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.75, 0.35, 1, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_roguelite"]
+bg_color = Color(0.32, 0.14, 0.04, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.55, 0.15, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_roguelite_hover"]
+bg_color = Color(0.48, 0.22, 0.06, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.72, 0.25, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_rpg_card"]
+bg_color = Color(0.22, 0.09, 0.38, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.75, 0.4, 1, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_rpg_card_hover"]
+bg_color = Color(0.32, 0.14, 0.54, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9, 0.55, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.04, 0.08, 0.14, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.7, 0.9, 0.5)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="LobbyMenu" type="CanvasLayer"]
 process_mode = 3
 layer = 10
@@ -313,6 +397,24 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
+[node name="ModeBanner" type="PanelContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ModeBanner"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="ModeBannerLabel" type="Label" parent="Panel/VBoxContainer/ModeBanner/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "MODE: 🔥 ROGUELITE (PERK CARDS)"
+horizontal_alignment = 1
+
 [node name="MainButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
@@ -324,6 +426,14 @@ theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_play")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_play_hover")
 text = "▶  PLAY"
+
+[node name="SwitchModeBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🔄  SWITCH MODE [CURRENT: 🔥 ROGUELITE]"
 
 [node name="CoreBtn" type="Button" parent="Panel/VBoxContainer/MainButtons"]
 custom_minimum_size = Vector2(0, 46)
@@ -1002,6 +1112,188 @@ theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
 theme_override_font_sizes/font_size = 13
 text = "← BACK TO MAIN MENU"
 
+[node name="ModeSelectionContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ModeHeader" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "SELECT GAME MODE"
+horizontal_alignment = 1
+
+[node name="ModeSubheader" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.8, 1, 0.75)
+theme_override_font_sizes/font_size = 12
+text = "Choose your gameplay experience before deployment (Press 1 or 2)"
+horizontal_alignment = 1
+
+[node name="CardsHBox" type="HBoxContainer" parent="Panel/VBoxContainer/ModeSelectionContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="RogueliteCard" type="PanelContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox"]
+custom_minimum_size = Vector2(290, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_roguelite")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.15, 1)
+theme_override_font_sizes/font_size = 22
+text = "🔥 ROGUELITE"
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 0.45, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ CLASSIC RUN-BASED SURVIVAL ]"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescTitle" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "OVERVIEW"
+
+[node name="Desc" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.85, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "Classic run-based horde survival with perk cards on level up and wave loot caches."
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="FeatureTitle" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.2, 1)
+theme_override_font_sizes/font_size = 13
+text = "KEY FEATURES"
+
+[node name="FeatureDesc" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.95, 0.9, 0.85, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• Level Up: Choose 1 of 3 perk cards
+• Upgrade caches spawn at wave 2, 4, 6...
+• Clean baseline stats reset each run
+• Fast-paced & action-packed arcade loop"
+autowrap_mode = 2
+
+[node name="RogueliteSelectBtn" type="Button" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_roguelite")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_roguelite_hover")
+text = "PLAY ROGUELITE (1)"
+
+[node name="RPGCard" type="PanelContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox"]
+custom_minimum_size = Vector2(290, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_rpg")
+
+[node name="Margin" type="MarginContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.45, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "🧬 RPG"
+horizontal_alignment = 1
+
+[node name="Role" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.65, 0.9, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ YOUR BODY GRID MATRIX ]"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescTitle" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "OVERVIEW"
+
+[node name="Desc" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.98, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "Backpack Battles 'Your Body' grid matrix, persistent component progression, and enemy loot box drops."
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="FeatureTitle" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "KEY FEATURES"
+
+[node name="FeatureDesc" type="Label" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.95, 0.9, 0.98, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "• Backpack Battles inventory matrix grid
+• Cyberware stats, shapes & adjacency synergies
+• Loot boxes drop from enemies (3.5%) & bosses
+• Persistent cyberware inventory across runs"
+autowrap_mode = 2
+
+[node name="RPGSelectBtn" type="Button" parent="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_rpg_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_rpg_card_hover")
+text = "PLAY RPG (2)"
+
+[node name="ModeBackBtn" type="Button" parent="Panel/VBoxContainer/ModeSelectionContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "← BACK TO MAIN MENU"
+
 [node name="StatusLabel" type="Label" parent="Panel/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -1020,6 +1312,7 @@ text = "CyberHorde v1.0.0"
 horizontal_alignment = 1
 
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/PlayBtn" to="." method="_on_play_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainButtons/SwitchModeBtn" to="." method="_on_switch_mode_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/CoreBtn" to="." method="_on_core_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/UpdateBtn" to="." method="_on_update_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainButtons/ExitBtn" to="." method="_on_exit_pressed"]
@@ -1054,3 +1347,6 @@ horizontal_alignment = 1
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinMedicBtn" to="." method="_on_join_medic_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinRogueBtn" to="." method="_on_join_rogue_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/JoinContainer/ClassContainer/JoinGunnerBtn" to="." method="_on_join_gunner_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RogueliteCard/Margin/VBox/RogueliteSelectBtn" to="." method="_on_roguelite_selected"]
+[connection signal="pressed" from="Panel/VBoxContainer/ModeSelectionContainer/CardsHBox/RPGCard/Margin/VBox/RPGSelectBtn" to="." method="_on_rpg_selected"]
+[connection signal="pressed" from="Panel/VBoxContainer/ModeSelectionContainer/ModeBackBtn" to="." method="_on_mode_back_pressed"]

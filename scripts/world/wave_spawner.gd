@@ -206,12 +206,12 @@ func _start_wave(wave_num: int) -> void:
 	else:
 		GameManager.wave_started.emit(current_wave)
 	
-	# Milestone check: Every 10 waves reached (+1 col first time)
-	CoreGrid.unlock_wave_milestone(wave_num)
-	
-	# Chests no longer spawn automatically at wave start; Loot Boxes drop rarely from slain enemies
-	# if wave_num % 2 == 0 or wave_num >= FINAL_WAVE:
-	# 	_spawn_loot_chest()
+	if GameManager.is_roguelite_mode():
+		if wave_num % 2 == 0 or wave_num >= FINAL_WAVE:
+			_spawn_loot_chest()
+	elif GameManager.is_rpg_mode():
+		# Milestone check: Every 10 waves reached (+1 col first time)
+		CoreGrid.unlock_wave_milestone(wave_num)
 
 func _spawn_one_enemy() -> void:
 	var players = get_tree().get_nodes_in_group("player")
@@ -571,10 +571,11 @@ func _on_boss_defeated() -> void:
 		return
 	if current_wave >= FINAL_WAVE and is_wave_active:
 		# Trigger Core Grid expansion for boss defeat (+2 rows first time)
-		if GameManager.current_stage == 1:
-			CoreGrid.unlock_boss_defeat(1)
-		elif GameManager.current_stage >= 2:
-			CoreGrid.unlock_boss_defeat(2)
+		if GameManager.is_rpg_mode():
+			if GameManager.current_stage == 1:
+				CoreGrid.unlock_boss_defeat(1)
+			elif GameManager.current_stage >= 2:
+				CoreGrid.unlock_boss_defeat(2)
 		
 		# Overlord reactor meltdown clears remaining horde units & completes final wave
 		enemies_left_to_spawn = 0

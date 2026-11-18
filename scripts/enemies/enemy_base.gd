@@ -336,10 +336,10 @@ func _drop_loot() -> void:
 	_check_loot_box_drop(drop_pos)
 
 func _check_loot_box_drop(drop_pos: Vector3) -> void:
-	# Void Spawner and Spore Pit guarantee a Loot Box drop; standard horde has rare drop chance (3.5%)
+	# Void Spawner and Spore Pit guarantee a Loot Box drop; standard horde has rare drop chance (3.5%) in RPG mode, 0.0 in Roguelite mode
 	var is_guaranteed = (enemy_name == "Void Spawner" or enemy_name == "Spore Pit" or is_in_group("spore_pits"))
-	var box_chance: float = 1.0 if is_guaranteed else 0.035
-	if randf() < box_chance:
+	var box_chance: float = 1.0 if is_guaranteed else (0.0 if GameManager.is_roguelite_mode() else 0.035)
+	if box_chance > 0.0 and randf() < box_chance:
 		var chest_pos = Vector3(clampf(drop_pos.x, -34.0, 34.0), 0.5, clampf(drop_pos.z, -34.0, 34.0))
 		if NetworkManager.is_multiplayer:
 			if NetworkManager.is_server:
